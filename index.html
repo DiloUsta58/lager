@@ -43,66 +43,68 @@
   <select id="categoryFilter">
     <option value="">Alle Kategorien</option>
   </select>
-
-  <!-- Material Tabelle -->
-  <table>
-    <thead>
-      <tr>
-        <th>Material</th>
-        <th>E-Nummer</th>
-        <th>Regal</th>
-        <th>Bestandliste</th>
-        <th>Aktion</th>
-      </tr>
-    </thead>
-    <tbody id="tableBody"></tbody>
-  </table>
-
-  <!-- Änderungshistorie -->
-  <h3>Änderungshistorie</h3>
-  <button onclick="toggleHistory()">Historie anzeigen / ausblenden</button>
-  <button onclick="clearHistory()">Historie löschen</button>
-
-  <table id="historyTable" style="display:none; margin-top:10px;">
-    <thead>
-      <tr>
-        <th>Zeit</th>
-        <th>Feld</th>
-        <th>Alt</th>
-        <th>Neu</th>
-      </tr>
-    </thead>
-    <tbody id="historyBody"></tbody>
-  </table>
-</div>
-
-
-<!-- =========================
-     FS – FIRELINER 
-========================= -->
-<div id="fsSection" id="fsSection" style="display:none">
-  <h3 class="fs-title">Feingussschmelze FS</h3>
-
+<div class="table-scroll">
   <table class="lager-table fs-table">
-    <thead>
-      <tr>
-        <!-- Erste Spalte aus dem Foto -->
-        <th>Kurz Bezeichnung</th>
+      <!-- Material Tabelle -->
+      <table>
+        <thead>
+          <tr>
+            <th>Material</th>
+            <th>E-Nummer</th>
+            <th>Regal</th>
+            <th>Bestandliste</th>
+            <th>Aktion</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
 
-        <th>Bezeichnung</th>
-        <th>Material</th>
-        <th>Stückzahl</th>
-        <th>E-Nummer</th>
-        <th>Kürzel</th>
-        <th>Bestand Konsilager</th>
-        <th>DPC</th>
-      </tr>
-    </thead>
+      <!-- Änderungshistorie -->
+      <h3>Änderungshistorie</h3>
+      <button onclick="toggleHistory()">Historie anzeigen / ausblenden</button>
+      <button onclick="clearHistory()">Historie löschen</button>
 
-    <tbody id="fsTableBody"></tbody>
-  </table>
+      <table id="historyTable" style="display:none; margin-top:10px;">
+        <thead>
+          <tr>
+            <th>Zeit</th>
+            <th>Feld</th>
+            <th>Alt</th>
+            <th>Neu</th>
+          </tr>
+        </thead>
+        <tbody id="historyBody"></tbody>
+      </table>
+    </div>
+
+
+    <!-- =========================
+        FS – FIRELINER 
+    ========================= -->
+    <div id="fsSection" id="fsSection" style="display:none">
+      <h3 class="fs-title">Feingussschmelze FS</h3>
+
+      <table class="lager-table fs-table">
+        <thead>
+          <tr>
+            <!-- Erste Spalte aus dem Foto -->
+            <th>Kurz Bezeichnung</th>
+
+            <th>Bezeichnung</th>
+            <th>Material</th>
+            <th>Stückzahl</th>
+            <th>E-Nummer</th>
+            <th>Kürzel</th>
+            <th>Bestand Konsilager</th>
+            <th>DPC</th>
+          </tr>
+        </thead>
+
+        <tbody id="fsTableBody"></tbody>
+      </table>
+    </div>
+</table>
 </div>
-
 
 <script src="js/data_store.js"></script>
 <script src="js/daten.js"></script>

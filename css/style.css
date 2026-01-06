@@ -78,3 +78,68 @@ tr:hover .edit-icon {
   justify-content: space-between;
   align-items: center;
 }
+/* =========================
+   MOBILE TABLE OPTIMIERUNG
+========================= */
+
+.table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Tabellen bleiben breit */
+.lager-table {
+  min-width: 900px;
+}
+
+/* Sticky Header */
+.lager-table thead th {
+  position: sticky;
+  top: 0;
+  background: #fff6a3;
+  z-index: 2;
+}
+
+/* Touch-freundliche Zellen */
+.lager-table td,
+.lager-table th {
+  padding: 10px 8px;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+/* Edit-Icon besser klickbar */
+.edit-icon {
+  font-size: 18px;
+  padding: 6px;
+}
+
+/* Buttons mobil */
+button {
+  padding: 10px 14px;
+  font-size: 15px;
+  border-radius: 6px;
+}
+
+/* Überschrift sauber */
+.fs-title {
+  margin: 12px 0 8px;
+  font-size: 18px;
+}
+
+/* Kategorie-Zeilen */
+.category-row td {
+  font-size: 15px;
+  padding: 8px;
+}
+
+@media (max-width: 768px) {
+  .edit-icon {
+    opacity: 1;
+  }
+
+  .edit-wrapper {
+    justify-content: space-between;
+  }
+}
