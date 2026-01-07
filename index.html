@@ -21,90 +21,101 @@
      GESCHÜTZTE APP
 ========================= -->
 <div id="app" style="display:none">
+        <!-- Logout sperrt die komplette Liste wieder -->
+        <button onclick="logout()">Logout</button>
 
-  <!-- Logout sperrt die komplette Liste wieder -->
-  <button onclick="logout()">Logout</button>
+        <!-- Button: komplette Liste anzeigen / ausblenden -->
+        <button id="toggleListBtn" onclick="toggleKE()">📋 Rohstoffliste anzeigen</button>
+        <button id="fsToggleBtn"  onclick="toggleFS()"  style="display:none">FS-Liste anzeigen</button>
+        <h2>Materialliste</h2>
 
-  <!-- Button: komplette Liste anzeigen / ausblenden -->
-  <button id="toggleListBtn" onclick="toggleList()">📋 Liste anzeigen</button>
-  <button id="fsToggleBtn"  onclick="toggleFS()"  style="display:none">FS-Liste anzeigen</button>
-  <h2>Materialliste</h2>
+        <!-- Key-Freischaltung -->
+        <input id="keyInput" type="password" placeholder="Key eingeben">
+        <button id="unlockBtn" onclick="unlockEditing()">Freischalten</button>
+        <button onclick="lockEditing()">Sperren</button>
+        <span id="status"></span>
 
-  <!-- Key-Freischaltung -->
-  <input id="keyInput" type="password" placeholder="Key eingeben">
-  <button id="unlockBtn" onclick="unlockEditing()">Freischalten</button>
-  <button onclick="lockEditing()">Sperren</button>
-  <span id="status"></span>
+        <br><br>
 
-  <br><br>
-
-  <!-- Suche & Filter -->
-  <input id="search" placeholder="Suche (Material, E-Nummer, Regal)">
-  <select id="categoryFilter">
-    <option value="">Alle Kategorien</option>
-  </select>
-<div class="table-scroll">
-  <table class="lager-table fs-table">
-      <!-- Material Tabelle -->
-      <table>
-        <thead>
-          <tr>
-            <th>Material</th>
-            <th>E-Nummer</th>
-            <th>Regal</th>
-            <th>Bestandliste</th>
-            <th>Aktion</th>
-          </tr>
-        </thead>
-        <tbody id="tableBody"></tbody>
-      </table>
-
-      <!-- Änderungshistorie -->
-      <h3>Änderungshistorie</h3>
-      <button onclick="toggleHistory()">Historie anzeigen / ausblenden</button>
-      <button onclick="clearHistory()">Historie löschen</button>
-
-      <table id="historyTable" style="display:none; margin-top:10px;">
-        <thead>
-          <tr>
-            <th>Zeit</th>
-            <th>Feld</th>
-            <th>Alt</th>
-            <th>Neu</th>
-          </tr>
-        </thead>
-        <tbody id="historyBody"></tbody>
-      </table>
-    </div>
+        <!-- Suche & Filter -->
+        <input id="search" placeholder="Suche (Material, E-Nummer, Regal)">
+        <select id="categoryFilter">
+          <option value="">Alle Kategorien</option>
+        </select>
 
 
-    <!-- =========================
-        FS – FIRELINER 
-    ========================= -->
-    <div id="fsSection" id="fsSection" style="display:none">
-      <h3 class="fs-title">Feingussschmelze FS</h3>
+        <div id="KeSection" style="display:none">
+            <!-- ======= Spaltenmenü ============= -->
+            <div class="ke-column-controls">
+              <label class="locked"><input type="checkbox" checked disabled> Material</label>
+              <label><input type="checkbox" data-col="e" checked> E-Nummer</label>
+              <label><input type="checkbox" data-col="regal" checked> Regal</label>
+              <label><input type="checkbox" data-col="bestand" checked> Bestandliste</label>
+            </div>
+        <!-- =========================
+            MATERIAL LISTE
+        ========================= -->
+        <div class="table-scroll">
+          <table class="lager-table KE-table">
+            <thead>
+              <tr>
+                <th>Material</th>
+                <th>E-Nummer</th>
+                <th>Regal</th>
+                <th>Bestandliste</th>
+                <th>Aktion</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+      </div>
 
-      <table class="lager-table fs-table">
-        <thead>
-          <tr>
-            <!-- Erste Spalte aus dem Foto -->
-            <th>Kurz Bezeichnung</th>
-
-            <th>Bezeichnung</th>
-            <th>Material</th>
-            <th>Stückzahl</th>
-            <th>E-Nummer</th>
-            <th>Kürzel</th>
-            <th>Bestand Konsilager</th>
-            <th>DPC</th>
-          </tr>
-        </thead>
-
-        <tbody id="fsTableBody"></tbody>
-      </table>
-    </div>
-</table>
+        <!-- =========================
+            FS – FEINGUSSSCHMELZE
+        ========================= -->
+        <div id="fsSection" style="display:none">
+            <div class="fs-column-controls">
+              <!-- ❌ NICHT ausblendbar -->
+              <label class="locked"><input type="checkbox" checked disabled>Bezeichnung</label>
+              <!-- ✅ Ausblendbar -->
+              <label><input type="checkbox" data-col="kurz">Kurz</label>
+              <label><input type="checkbox" data-col="material">Material</label>
+              <label><input type="checkbox" data-col="stueck" checked>Stückzahl</label>
+              <label><input type="checkbox" data-col="e" checked>E-Nummer</label>
+              <label><input type="checkbox" data-col="kuerzel">Kürzel</label>
+              <label><input type="checkbox" data-col="bestand" checked>Bestand Konsilager</label>
+              <label><input type="checkbox" data-col="dpc">DPC</label>
+            </div>
+          <h3 class="fs-title">Feingussschmelze FS</h3>
+          <div class="table-scroll">
+            <table class="lager-table fs-table">
+              <thead>
+                <tr>
+                  <th>Kurz Bezeichnung</th>
+                  <th>Bezeichnung</th>
+                  <th>Material</th>
+                  <th>Stückzahl</th>
+                  <th>E-Nummer</th>
+                  <th>Kürzel</th>
+                  <th>Bestand Konsilager</th>
+                  <th>DPC</th>
+                </tr>
+              </thead>
+              <tbody id="fsTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+  <!-- =========================
+       ÄNDERUNGSHISTORIE
+  ========================= -->
+  <div id="historySection">
+    <h3>Änderungshistorie</h3>
+    <div id="historyLog"></div>
+  </div>        
 </div>
+
+
 
 <script src="js/data_store.js"></script>
 <script src="js/daten.js"></script>

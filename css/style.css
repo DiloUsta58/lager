@@ -78,6 +78,70 @@ tr:hover .edit-icon {
   justify-content: space-between;
   align-items: center;
 }
+
+.column-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 10px 0;
+  font-size: 14px;
+}
+
+/* =========================
+   FS = MATERIAL UX ANGLEICHEN
+========================= */
+
+.fs-table td,
+.fs-table th {
+  padding: 8px;
+  font-size: 14px;
+}
+
+.fs-table .edit-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.fs-table .edit-icon {
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+/* Hover Desktop */
+.fs-table td:hover .edit-icon {
+  opacity: 1;
+}
+
+/* =========================
+   SPALTEN-CHECKBOXEN LAYOUT
+========================= */
+
+.ke-column-controls,
+.fs-column-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: center;
+}
+
+.ke-column-controls label,
+.fs-column-controls label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+
+/* Mobile: immer sichtbar */
+@media (max-width: 768px) {
+  .fs-table .edit-icon {
+    opacity: 1;
+  }
+}
+
 /* =========================
    MOBILE TABLE OPTIMIERUNG
 ========================= */
@@ -141,5 +205,53 @@ button {
 
   .edit-wrapper {
     justify-content: space-between;
+  }
+}
+/* Kompaktmodus (nur Mobile) */
+/* =========================
+   MOBILE KOMPAKTANSICHT
+========================= */
+@media (max-width: 768px) {
+
+  .lager-table thead {
+    display: none;
+  }
+
+  .lager-table,
+  .lager-table tbody,
+  .lager-table tr {
+    display: block;
+    width: 100%;
+  }
+
+  .lager-table tr {
+    margin-bottom: 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 8px;
+    background: #fff;
+  }
+
+  .lager-table td {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 4px;
+    border: none;
+    font-size: 14px;
+  }
+
+  .lager-table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #444;
+    margin-right: 10px;
+  }
+
+  .category-row td {
+    display: block;
+    text-align: center;
+    font-weight: bold;
+    background: #ffeb3b;
+    border-radius: 6px;
   }
 }

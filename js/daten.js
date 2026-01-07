@@ -19,6 +19,35 @@ let editEnabled = localStorage.getItem("editEnabled") === "true";
 let lockTimer = null;
 let fsVisible = false;
 
+
+/* =========================
+   SPALTEN-ZUORDNUNG (KE / FS)
+   Index basiert auf <th>-Reihenfolge
+========================= */
+
+/* KE-TABELLE (Materialliste) */
+const KE_COLUMN_MAP = {
+  material: 0,
+  e: 1,
+  regal: 2,
+  bestand: 3
+};
+
+/* =========================
+   FS – SPALTENINDEX
+========================= */
+const FS_COLUMN_MAP = {
+  kurz: 0,
+  bezeichnung: 1,
+  material: 2,
+  stueck: 3,
+  e: 4,
+  kuerzel: 5,
+  bestand: 6,
+  dpc: 7
+};
+
+
 /* =====================================================
    DATEN
 ===================================================== */
@@ -33,18 +62,29 @@ function login() {
 
   if (user === LOGIN_USER && pass === LOGIN_PASS) {
     loggedIn = true;
-    listVisible = false;
+    /* sessionStorage bleibt bei Reload ✔ / endet bei Tab schließen ✔*/
+    sessionStorage.setItem("loggedIn", "true");
+
     loginBox.style.display = "none";
     app.style.display = "block";
     tableBody.innerHTML = "";
+    // KE-Bereich freigeben
+    document.getElementById("toggleListBtn").style.display = "inline-block";
     // FS-Bereich freigeben
     document.getElementById("fsToggleBtn").style.display = "inline-block";
-    fsVisible = false;
+
+    document.getElementById("KeSection").style.display = "none";
     document.getElementById("fsSection").style.display = "none";
+ 
+    listVisible = false;   
+    fsVisible = false;
+
 
     initCategories();
     syncUI();
     updateToggleButton();
+
+
   } else {
     alert("Login fehlgeschlagen");
   }
@@ -54,38 +94,52 @@ function logout() {
   loggedIn = false;
   listVisible = false;
   editEnabled = false;
+  /* Beim Logout Session korrekt beenden */
+  sessionStorage.removeItem("loggedIn");
+
+
+   // KE sperren
+    document.getElementById("KeSection").style.display = "none";
+    document.getElementById("toggleListBtn").style.display = "none";
+
     // FS sperren
     fsVisible = false;
     document.getElementById("fsSection").style.display = "none";
     document.getElementById("fsToggleBtn").style.display = "none";
 
-  localStorage.removeItem("editEnabled");
-  app.style.display = "none";
-  loginBox.style.display = "block";
-  tableBody.innerHTML = "";
+    localStorage.removeItem("editEnabled");
+    app.style.display = "none";
+    loginBox.style.display = "block";
+    tableBody.innerHTML = "";
 }
 
 /* =====================================================
    LISTE EIN / AUS
 ===================================================== */
-function toggleList() {
+
+
+function toggleKE() {
   if (!loggedIn) return;
 
   listVisible = !listVisible;
-  updateToggleButton();
+
+  const KeSection = document.getElementById("KeSection");
+  const btn = document.getElementById("toggleListBtn");
 
   if (listVisible) {
-    render();
+    KeSection.style.display = "block";
+    render();                 // 🔴 FEHLTE
+    reapplyKEColumns();       // 🔴 FEHLTE
   } else {
+    KeSection.style.display = "none";
     tableBody.innerHTML = "";
   }
+
+  btn.textContent = listVisible
+    ? "📋 Rohstoffliste ausblenden"
+    : "📋 Rohstoffliste anzeigen";
 }
 
-function updateToggleButton() {
-  toggleListBtn.textContent = listVisible
-    ? "📋 Liste ausblenden"
-    : "📋 Liste anzeigen";
-}
 
 function toggleFS() {
   if (!loggedIn) return;
@@ -100,6 +154,15 @@ function toggleFS() {
     ? "FS-Liste ausblenden"
     : "FS-Liste anzeigen";
 }
+
+function updateToggleButton() {
+  toggleListBtn.textContent = listVisible
+    ? "📋 Rohstoffliste ausblenden"
+    : "📋 Rohstoffliste anzeigen";
+}
+
+
+
 
 /* =====================================================
    STORAGE
@@ -127,6 +190,7 @@ function unlockEditing() {
   startAutoLock();
   syncUI();
   render();
+  reapplyKEColumns();
 }
 
 function lockEditing() {
@@ -135,6 +199,7 @@ function lockEditing() {
   clearTimeout(lockTimer);
   syncUI();
   render();
+  reapplyKEColumns();
 }
 
 function startAutoLock() {
@@ -148,6 +213,38 @@ function syncUI() {
     ? "🔓 Bearbeitung aktiv"
     : "🔒 Geschützt";
 }
+
+/* =====================================
+   KE – KOMPLETTE SPALTE EIN / AUS - 
+================================= */
+function toggleKEColumn(colIndex, visible) {
+  const table = document.querySelector(".KE-table");
+  if (!table) return;
+
+  table.querySelectorAll("tr").forEach(row => {
+    const cell = row.children[colIndex];
+    if (cell) {
+      cell.style.display = visible ? "" : "none";
+    }
+  });
+}
+
+/* =========================
+   FS – KOMPLETTE SPALTE EIN / AUS
+========================= */
+function toggleFSColumn(colIndex, visible) {
+  const table = document.querySelector(".fs-table");
+  if (!table) return;
+
+  table.querySelectorAll("tr").forEach(row => {
+    const cell = row.children[colIndex];
+    if (cell) {
+      cell.style.display = visible ? "" : "none";
+    }
+  });
+}
+
+
 
 /* =====================================================
    KATEGORIEN INITIALISIEREN
@@ -272,6 +369,7 @@ function editCell(icon, index, field) {
       newValue: input.value
     });
     render();
+    reapplyKEColumns();
   });
 }
 
@@ -297,5 +395,40 @@ categoryFilter.addEventListener("change", render);
   })
 );
 
+/* Listener KE/WA ...*/
+document.querySelectorAll(".ke-column-controls input[type=checkbox]")
+  .forEach(cb => {
+    cb.addEventListener("change", () => {
+      const key = cb.dataset.col;
+      const colIndex = KE_COLUMN_MAP[key];
+
+      if (colIndex !== undefined) {
+        toggleKEColumn(colIndex, cb.checked);
+      }
+    });
+  });
+
+
+function reapplyKEColumns() {
+  document.querySelectorAll(".ke-column-controls input")
+    .forEach(cb => cb.dispatchEvent(new Event("change")));
+}
+
+
+
+
 syncUI();
 updateToggleButton();
+
+
+document.addEventListener("DOMContentLoaded", () => {
+  if (sessionStorage.getItem("loggedIn") === "true") {
+    loggedIn = true;
+
+    document.getElementById("loginBox").style.display = "none";
+    document.getElementById("app").style.display = "block";
+
+    // optional: initiale Views
+    updateToggleButton?.();
+  }
+});

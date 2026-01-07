@@ -201,6 +201,22 @@ let fsData = JSON.parse(localStorage.getItem(FS_KEY)) || [
   }
 ];
 
+
+/* =========================
+   FS – KOMPLETTE SPALTE EIN / AUS
+========================= */
+function toggleFSColumn(colIndex, visible) {
+  const table = document.querySelector(".fs-table");
+  if (!table) return;
+
+  table.querySelectorAll("tr").forEach(row => {
+    const cell = row.children[colIndex];
+    if (cell) {
+      cell.style.display = visible ? "" : "none";
+    }
+  });
+}
+
 /* =========================
    STORAGE
 ========================= */
@@ -218,25 +234,26 @@ function renderFS() {
   fsData.forEach((r, i) => {
     body.innerHTML += `
       <tr>
-        <td>${r.kurz || ""}</td>
-        <td>${r.bezeichnung}</td>
-        <td>${r.material}</td>
-        <td>${r.stueck}</td>
-        ${fsCell(r.eNummer, i, "eNummer")}
-        <td>${r.kuerzel}</td>
-        ${fsCell(r.bestand, i, "bestand")}
-        ${fsCell(r.dpc, i, "dpc")}
+        <td data-label="Kurz Bezeichnung">${r.kurz || ""}</td>
+        <td data-label="Bezeichnung">${r.bezeichnung || ""}</td>
+        <td data-label="Material">${r.material || ""}</td>
+        <td data-label="Stückzahl">${r.stueck || ""}</td>
+        ${fsCell(r.eNummer, i, "eNummer", "E-Nummer")}
+        <td data-label="Kürzel">${r.kuerzel || ""}</td>
+        ${fsCell(r.bestand, i, "bestand", "Bestand Konsilager")}
+        ${fsCell(r.dpc, i, "dpc", "DPC")}
       </tr>
     `;
   });
 }
 
+
 /* =========================
    INLINE EDIT
 ========================= */
-function fsCell(value, index, field) {
+function fsCell(value, index, field, label, colClass) {
   return `
-    <td>
+    <td class="${colClass || ""}" data-label="${label}">
       <div class="edit-wrapper">
         <span>${value || ""}</span>
         <span class="edit-icon" onclick="editFS(this, ${index}, '${field}')">✏️</span>
@@ -244,6 +261,7 @@ function fsCell(value, index, field) {
     </td>
   `;
 }
+
 
 function editFS(icon, index, field) {
   const td = icon.closest("td");
@@ -254,8 +272,43 @@ function editFS(icon, index, field) {
   input.onblur = () => {
     fsData[index][field] = input.value;
     saveFS();
+
+    // 🔴 NEU: Änderungshistorie
+    saveHistory({
+      time: new Date().toISOString(),
+      table: "FS",
+      field,
+      oldValue: old,
+      newValue: input.value,
+      row: fsData[index].bezeichnung
+    });
+
     renderFS();
+    reapplyFsColumns();
   };
 }
 
-document.addEventListener("DOMContentLoaded", renderFS);
+document
+  .querySelectorAll(".fs-column-controls input[type=checkbox]")
+  .forEach(cb => {
+    cb.addEventListener("change", () => {
+      const key = cb.dataset.col;
+      const colIndex = FS_COLUMN_MAP[key];
+
+      if (colIndex !== undefined) {
+        toggleFSColumn(colIndex, cb.checked);
+      }
+    });
+  });
+
+function reapplyFsColumns() {
+  document.querySelectorAll(".fs-column-controls input")
+    .forEach(cb => cb.dispatchEvent(new Event("change")));
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  renderFS();
+  reapplyFsColumns();
+});
+
+
