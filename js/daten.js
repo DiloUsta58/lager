@@ -54,7 +54,16 @@ const FS_COLUMN_MAP = {
 /* =====================================================
    DATEN
 ===================================================== */
-let data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || defaultData;
+/* =====================================================
+   DATEN (INITIAL + STORAGE GETRENNT)
+===================================================== */
+let data = JSON.parse(localStorage.getItem(STORAGE_KEY));
+
+if (!Array.isArray(data)) {
+  data = structuredClone(defaultData); // oder DEFAULT_KE_DATA
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
 
 /* =====================================================
    LOGIN / LOGOUT
@@ -81,7 +90,8 @@ function login() {
  
     listVisible = false;   
     fsVisible = false;
-
+    
+    document.getElementById("resetMaterialDataBtn").style.display = "inline-block";
 
     initCategories();
     syncUI();
@@ -108,7 +118,8 @@ function logout() {
 
     document.getElementById("fsSection").style.display = "none";
     document.getElementById("fsToggleBtn").style.display = "none";
-
+    document.getElementById("resetMaterialDataBtn").style.display = "none";
+    
     localStorage.removeItem("editEnabled");
     app.style.display = "none";
     loginBox.style.display = "block";
@@ -475,4 +486,20 @@ document.addEventListener("DOMContentLoaded", () => {
     updateToggleButton?.();
   }
 });
+
+/* =====================================================
+   ADMIN: INITIALDATEN NEU LADEN
+===================================================== */
+function resetMaterialData() {
+  if (!loggedIn || !isAdmin) return;
+
+  const ok = confirm(
+    "ACHTUNG!\n\nAlle aktuellen Materialdaten werden gelöscht\nund aus den Initialdaten neu geladen.\n\nFortfahren?"
+  );
+
+  if (!ok) return;
+
+  localStorage.removeItem("materialData");
+  location.reload();
+}
 

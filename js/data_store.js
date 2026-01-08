@@ -3,7 +3,6 @@
    DATEN
 ===================================================== */
 
-
 const defaultData = [
 
 /* =======================
@@ -44,6 +43,26 @@ const defaultData = [
 { cat: "Material Wachs", material: "Modellwachs A7 FR 60", e: "E32880700", shelf: "", bestand: "" },
 { cat: "Material Wachs", material: "Paracast FW 14896", e: "E32882600", shelf: "", bestand: "" },
 { cat: "Material Wachs", material: "B559", e: "E32882300", shelf: "", bestand: "" },
+
+/* =======================
+   MATERIAL KERNBEARBEITUNG
+======================= */
+
+{ cat: "Material Kernbearbeitung", material: "SGT5 Blade 3889", e: "32838890", shelf: "CIC", bestand: "" },
+{ cat: "Material Kernbearbeitung", material: "3876-2", e: "E32899602", shelf: "", bestand: "" },
+/* ===========================
+   MATERIAL SCHMELZE / BAFFLE
+============================ */
+{ cat: "Material FS/KE", material: "Baffle Ø 688mm", e: "E00007106", shelf: "Holz/CGT", bestand: "" },
+{ cat: "Material FS/KE", material: "Baffle Ø 910mm", e: "E00007344", shelf: "Holz/CGT", bestand: "" },
+{ cat: "Material FS/KE", material: "Hartfilzplatte 1000x1500", e: "E00033020", shelf: "", bestand: "" },
+
+/* =======================
+   MATERIAL FM / TRENNEREI
+======================= */
+{ cat: "Material FM / Trennerei", material: "Korund NK 60", e: "E32853200", shelf: "", bestand: "" },
+{ cat: "Material FM / Trennerei", material: "Korund NK 90", e: "E32853500", shelf: "", bestand: "" },
+{ cat: "Material FM / Trennerei", material: "Nussschalengranulat", e: "E00010320B", shelf: "", bestand: "" },
 
 /* =======================
    MATERIAL FLÜSSIGKEITEN

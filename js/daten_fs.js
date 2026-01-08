@@ -1,15 +1,13 @@
-
-/* =====================================================
-   FS – FIRELINER LAGER 22 (DATEN + LOGIK)
-===================================================== */
-
-const FS_KEY = "fs_lager_data";
+/* =========================
+   STORAGE KEY – FS
+========================= */
+const FS_KEY = "fs_lager_data_v1";
 
 /* =========================
-   DATEN (1:1 AUS FOTO)
+   INITIALDATEN – FS (NICHT DIREKT ÄNDERN)
 ========================= */
-let fsData = JSON.parse(localStorage.getItem(FS_KEY)) || [
-  {
+const DEFAULT_FS_DATA = [
+{
     kurz: "Penny",
     bezeichnung: "Penny Melt Liner",
     material: "F4A",
@@ -200,6 +198,24 @@ let fsData = JSON.parse(localStorage.getItem(FS_KEY)) || [
     dpc: ""
   }
 ];
+
+/* =========================
+   AKTIVE DATEN (STORAGE ODER DEFAULT)
+========================= */
+let fsData = JSON.parse(localStorage.getItem(FS_KEY));
+
+if (!Array.isArray(fsData)) {
+  fsData = structuredClone(DEFAULT_FS_DATA);
+  localStorage.setItem(FS_KEY, JSON.stringify(fsData));
+}
+
+/* =========================
+   SPEICHERN
+========================= */
+function saveFS() {
+  localStorage.setItem(FS_KEY, JSON.stringify(fsData));
+}
+
 
 
 /* =========================

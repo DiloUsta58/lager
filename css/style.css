@@ -70,6 +70,18 @@ input, select {
   max-width: 180px;
 }
 
+.admin-btn.danger {
+  background: #c62828;
+  color: #fff;
+  border-radius: 8px;
+  padding: 8px 14px;
+  border: none;
+}
+
+.admin-btn.danger:hover {
+  background: #b71c1c;
+}
+
 /* =====================================================
    BUTTONS – WINDOWS 11 STYLE
 ===================================================== */
