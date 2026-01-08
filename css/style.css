@@ -11,6 +11,17 @@
   --row-even: #03fcb1;
   --row-odd: #131208;
   --border: #d0d7e2;
+  --btn-add: #2563eb;
+  --btn-remove: #dc2626;
+  --btn-bg-hover: rgba(0,0,0,0.06);
+
+  --table-head-bg: #e9ecf2;
+  --table-head-text: #111;
+  --table-border: #c8d0e6;
+  --category-bg: #ffe88a;
+  --category-text: #7a3b00;
+  --category-border: #f0b400;
+  --row-hover: rgba(0,0,0,0.04);
 }
 
 [data-theme="dark"] {
@@ -22,7 +33,19 @@
   --row-even: #676864;
   --row-odd: #b17900;
   --border: #334155;
+  --btn-add: #60a5fa;
+  --btn-remove: #f87171;
+  --btn-bg-hover: rgba(255,255,255,0.12);
+
+  --table-head-bg: #1e2430;
+  --table-head-text: #fff;
+  --table-border: #2e3444;
+  --category-bg: #8a4b14;
+  --category-text: #fff;
+  --category-border: #f0b400;
+  --row-hover: #fde68a;
 }
+
 
 /* =====================================================
    GLOBAL
@@ -37,6 +60,8 @@ body {
   background: var(--bg);
   color: var(--text);
 }
+
+
 
 /* =====================================================
    LOGIN BOX – PROFESSIONAL
@@ -86,29 +111,39 @@ input, select {
 ========================= */
 
 .row-action {
-  width: 40px;
-  min-width: 40px;
+  width: 44px;
+  min-width: 44px;
   text-align: center;
   vertical-align: middle;
 }
 
 .row-btn {
-  display: inline-block;
-  font-size: 18px;
-  font-weight: bold;
-  color: #1f2937; /* sichtbar */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 700;
+  min-width: 32px;
+  min-height: 32px;
   cursor: pointer;
-  padding: 2px 6px;
-  border-radius: 6px;
-  line-height: 1;
+  border-radius: 8px;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
+
+
+
 .row-btn.add {
-  color: #2563eb;
+  color: var(--btn-add);
 }
 
 .row-btn.remove {
-  color: #dc2626;
+  color: var(--btn-remove);
+}
+
+.row-lock {
+  color: var(--text);
 }
 
 .row-lock {
@@ -141,12 +176,44 @@ tr.default-row {
   user-select: none;
 }
 
-.row-btn.add:hover {
-  background: #e0f0ff;
+.row-btn:hover,
+.row-btn:active {
+  background: var(--btn-bg-hover);
 }
 
-.row-btn.remove:hover {
-  background: #ffe0e0;
+@media (hover: hover) {
+  .row-btn,
+  .row-lock {
+    opacity: 0;
+  }
+
+  tr:hover .row-btn,
+  tr:hover .row-lock {
+    opacity: 1;
+  }
+}
+
+.edit-wrapper {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.edit-apply {
+  display: none;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: none;
+  background: var(--btn-add);
+  color: white;
+  font-size: 14px;
+}
+
+/* Touch-Geräte */
+@media (hover: none) {
+  .edit-apply {
+    display: inline-block;
+  }
 }
 
 /* =====================================================
@@ -199,41 +266,61 @@ h1, h2, h3 {
 }
 
 
-
-
-
 /* =====================================================
-   TABELLEN – KLARE, RUHIGE DARSTELLUNG
+   GEMEINSAME TABELLEN-BASIS (KE / FS / HISTORY)
 ===================================================== */
-
 .lager-table {
-  width: 100%;
+  width: auto;
+  table-layout: auto;
   border-collapse: collapse;
-  background: var(--bg-card);
+  margin: 16px auto;              /* 🔑 zentriert */
   font-size: 14px;
+  color: var(--text-color);
 }
 
-/* Kopf */
+/* Kopfzeile */
 .lager-table thead th {
-  background: #e5e7eb;
-  color: #111827;
+  background: var(--table-head-bg);
+  color: var(--table-head-text);
   font-weight: 600;
+  padding: 8px 12px;
   text-align: left;
-  padding: 10px 12px;
-  border-bottom: 2px solid var(--border);
-}
-
-/* Dark Mode Kopf */
-[data-theme="dark"] .lager-table thead th {
-  background: #1e293b;
-  color: #e5e7eb;
+  white-space: nowrap;
 }
 
 /* Zellen */
 .lager-table td {
   padding: 9px 12px;
   border-bottom: 1px solid var(--border);
-  white-space: nowrap;
+  white-space: nowrap;      /* kein Umbruch */
+  padding: 8px 12px;        /* „paar Pixel Luft“ */
+}
+
+/* Kategorie-Zeilen */
+.lager-table tr.category td {
+  background: var(--category-bg);
+  color: var(--category-text);
+  font-weight: 600;
+  border-bottom: 2px solid var(--category-border);
+}
+
+/* Hover */
+.lager-table tbody tr:hover {
+  background: var(--row-hover);
+}
+
+.history-table {
+  font-size: 13px;
+}
+
+.history-controls {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.fs-table {
+  font-size: 14px;
 }
 
 /* Ruhiges Zebra – dezent */
@@ -256,8 +343,21 @@ h1, h2, h3 {
 
 /* Hover – KEIN Höhenwechsel */
 .lager-table tbody tr:hover {
-  background: rgba(0, 0, 0, 0.04);
+  background: #fde68a;
 }
+
+.table-wrapper {
+  display: flex;
+  justify-content: center;
+}
+
+
+/* Dark Mode Kopf */
+[data-theme="dark"] .lager-table thead th {
+  background: #1e293b;
+  color: #e5e7eb;
+}
+
 
 /* =====================================================
    KATEGORIE-ZEILEN – GELB (WIE VORLAGE)
@@ -267,7 +367,8 @@ h1, h2, h3 {
 tr.category td {
   background: #fde68a;          /* Gelb */
   color: #78350f;
-  font-weight: 700;
+  padding: 10px 12px;
+  font-weight: 600;
   text-align: left;
   border-top: 2px solid #f59e0b;
   border-bottom: 2px solid #f59e0b;

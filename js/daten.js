@@ -9,33 +9,34 @@ const LOGIN_PASS = "64579";
 const EDIT_KEY = "64579";
 const AUTO_LOCK_MINUTES = 10;
 const PROTECTED_FIELDS = ["material", "e"];
+const IS_ADMIN = true;
 
 /* =====================================================
    STATUS
 ===================================================== */
-let loggedIn = false;
 let listVisible = false;
 let editEnabled = localStorage.getItem("editEnabled") === "true";
 let lockTimer = null;
 let fsVisible = false;
-let isAdmin = false;
+let loggedIn = sessionStorage.getItem("loggedIn") === "true";
+let isAdmin  = loggedIn; // Admin-Login = gleiches Konto
 
 
-/* =========================
-   SPALTEN-ZUORDNUNG (KE / FS)
-   Index basiert auf <th>-Reihenfolge
-========================= */
 
-/* KE-TABELLE (Materialliste) */
+
+/* =====================================================
+   KE-TABELLE – SPALTENZUORDNUNG (MIT AKTIONS-SPALTEN)
+===================================================== */
 const KE_COLUMN_MAP = {
-  material: 0,
-  e: 1,
-  charge: 2,
-  palette: 3,
-  regal: 4,
-  bestand: 5,
-  bemerkung: 6
+  material: 1,
+  e: 2,
+  charge: 3,
+  palette: 4,
+  regal: 5,
+  bestand: 6,
+  bemerkung: 7
 };
+
 
 /* =========================
    FS – SPALTENINDEX
@@ -67,43 +68,71 @@ if (!Array.isArray(data)) {
 
 
 /* =====================================================
-   LOGIN / LOGOUT
+   LOGIN – ENTER-FÄHIG / SESSION-SICHER
+   (angepasst an bestehende Logik, ungekürzt)
 ===================================================== */
-function login() {
-  const user = userInput.value;
-  const pass = passInput.value;
+function login(e) {
+  // ✅ Enter aus Formular abfangen (kein Seiten-Reload)
+  if (e) e.preventDefault();
 
+  const user = userInput.value.trim();
+  const pass = passInput.value.trim();
+
+  // ❌ einfache Validierung
+  if (!user || !pass) {
+    alert("Bitte Benutzer und Passwort eingeben");
+    return;
+  }
+
+  // ✅ Login-Prüfung
   if (user === LOGIN_USER && pass === LOGIN_PASS) {
     loggedIn = true;
-    isAdmin = true;   // ✅ HINZUFÜGEN
-    /* sessionStorage bleibt bei Reload ✔ / endet bei Tab schließen ✔*/
+    isAdmin = true;   // ✅ Admin-Rechte setzen
+
+    /* sessionStorage:
+       - bleibt bei Reload (F5) erhalten
+       - endet bei Tab / Browser schließen */
     sessionStorage.setItem("loggedIn", "true");
 
+    // 🔒 Login-UI ausblenden
     loginBox.style.display = "none";
     app.style.display = "block";
+
+    // Tabelle initial leeren
     tableBody.innerHTML = "";
-    // KE-Bereich freigeben
+
+    // 🔓 KE-Bereich freigeben
     document.getElementById("toggleListBtn").style.display = "inline-block";
-    // FS-Bereich freigeben
+
+    // 🔓 FS-Bereich freigeben
     document.getElementById("fsToggleBtn").style.display = "inline-block";
 
+    // Beide Listen initial verborgen
     document.getElementById("KeSection").style.display = "none";
     document.getElementById("fsSection").style.display = "none";
- 
-    listVisible = false;   
+
+    listVisible = false;
     fsVisible = false;
-    
+
+    // 🔧 Admin-Reset-Button anzeigen
     document.getElementById("resetMaterialDataBtn").style.display = "inline-block";
 
-    initCategories();
-    syncUI();
-    updateToggleButton();
-    syncAdminUI();
+    /* 📜 Änderungshistorie nur für Admin sichtbar */
+    if (user === LOGIN_USER) {
+      document.getElementById("historySection").style.display = "block";
+    }
+
+    // 🔄 Initialisierungen
+    initCategories();     // Kategorien laden
+    syncUI();             // UI-Zustand synchronisieren
+    updateToggleButton(); // Toggle-Buttons aktualisieren
+    syncAdminUI();        // Admin-spezifische UI
 
   } else {
     alert("Login fehlgeschlagen");
   }
 }
+
 
 function logout() {
   loggedIn = false;
@@ -130,6 +159,13 @@ function logout() {
     tableBody.innerHTML = "";
     syncAdminUI();
 }
+
+/* Enter auslösen */
+document.getElementById("loginForm").addEventListener("submit", e => {
+  e.preventDefault();   // verhindert Seitenreload
+  login();              // deine bestehende Login-Funktion
+});
+
 
 /* =====================================================
    LISTE EIN / AUS
@@ -179,6 +215,55 @@ function updateToggleButton() {
     : "📋 Rohstoffliste anzeigen";
 }
 
+/* =====================================================
+   HISTORIE ANZEIGE
+===================================================== */
+
+function toggleHistory() {
+  if (!editEnabled) {
+    alert("Nur für Administratoren sichtbar.");
+    return;
+  }
+
+  const table = document.getElementById("historyTable");
+  table.style.display = table.style.display === "none" ? "table" : "none";
+  if (table.style.display === "table") renderHistory();
+}
+
+function renderHistory() {
+  const body = document.getElementById("historyBody");
+  body.innerHTML = "";
+
+  const history = JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
+
+  history.slice().reverse().forEach(h => {
+    body.innerHTML += `
+      <tr>
+        <td>${new Date(h.time).toLocaleString()}</td>
+        <td>${h.field}</td>
+        <td>${h.oldValue ?? ""}</td>
+        <td>${h.newValue ?? ""}</td>
+      </tr>
+    `;
+  });
+}
+
+/* =====================================================
+   HISTORIE LÖSCHEN
+===================================================== */
+
+function clearHistory() {
+  if (!editEnabled) {
+    alert("Keine Berechtigung.");
+    return;
+  }
+
+  if (!confirm("Soll die gesamte Änderungshistorie gelöscht werden?")) return;
+
+  localStorage.removeItem(HISTORY_KEY);
+  document.getElementById("historyBody").innerHTML = "";
+}
+
 
 
 
@@ -200,15 +285,16 @@ function saveHistory(entry) {
 ===================================================== */
 function unlockEditing() {
   if (keyInput.value !== EDIT_KEY) {
-    alert("Falscher Key");
-    return;
-  }
+        alert("Falscher Key");
+        return;
+      }
   editEnabled = true;
   localStorage.setItem("editEnabled", "true");
   startAutoLock();
   syncUI();
   render();
   reapplyKEColumns();
+  syncAdminUI();   // 🔑 Button einblenden
 }
 
 function lockEditing() {
@@ -218,6 +304,7 @@ function lockEditing() {
   syncUI();
   render();
   reapplyKEColumns();
+  syncAdminUI();   // 🔑 Button einblenden
 }
 
 function startAutoLock() {
@@ -230,6 +317,25 @@ function syncUI() {
   status.textContent = editEnabled
     ? "🔓 Bearbeitung aktiv"
     : "🔒 Geschützt";
+}
+
+/* =====================================================
+   SICHTBARE KE-SPALTEN ZÄHLEN
+===================================================== */
+function getVisibleKEColumnCount() {
+  const table = document.querySelector(".KE-table");
+  if (!table) return 1;
+
+  const headerCells = table.querySelectorAll("thead th");
+  let count = 0;
+
+  headerCells.forEach(th => {
+    if (th.style.display !== "none") {
+      count++;
+    }
+  });
+
+  return count;
 }
 
 /* =====================================
@@ -300,6 +406,7 @@ function highlight(text, q) {
   );
 }
 
+
 /* =====================================================
    RENDERING MIT KATEGORIEN (1:1 LOGIK WIE FRÜHER)
 ===================================================== */
@@ -333,6 +440,11 @@ function render() {
     if (!hit) return;
 
     if (m.cat !== lastCat) {
+      const colCount = document
+        .querySelector(".KE-table thead tr")
+        .querySelectorAll("th:not([style*='display: none'])")
+        .length;
+
       tableBody.innerHTML +=
         `<tr class="category"><td colspan="${colCount}">${m.cat}</td></tr>`;
       lastCat = m.cat;
@@ -391,29 +503,77 @@ function cell(value, index, field) {
   `;
 }
 
+/* =====================================================
+   ZELLE EDITIEREN – ENTER + MOBILE-BUTTON
+===================================================== */
 function editCell(icon, index, field) {
+  // 🔒 Geschützte Felder nur bei freigegebenem Edit
   if (PROTECTED_FIELDS.includes(field) && !editEnabled) return;
 
+  // Aktuelle Tabellenzelle ermitteln
   const td = icon.closest("td");
+  if (!td) return;
+
   const oldValue = data[index][field];
 
-  td.innerHTML = `<input class="edit-input" value="${oldValue}">`;
-  const input = td.querySelector("input");
+  // Edit-UI erzeugen
+  td.innerHTML = `
+    <div class="edit-wrapper">
+      <input class="edit-input" value="${oldValue || ""}">
+      <button class="edit-apply" type="button">Übernehmen</button>
+    </div>
+  `;
+
+  const input = td.querySelector(".edit-input");
+  const btn   = td.querySelector(".edit-apply");
+
+  if (!input) return;
+
   input.focus();
 
-  input.addEventListener("blur", () => {
-    data[index][field] = input.value;
-    save();
-    saveHistory({
-      time: new Date().toISOString(),
-      field,
-      oldValue,
-      newValue: input.value
-    });
+  // Zentrale Commit-Funktion (EINMAL definiert)
+  const commitEdit = () => {
+    const newValue = input.value;
+
+    // Nur speichern, wenn sich wirklich etwas geändert hat
+    if (newValue !== oldValue) {
+      data[index][field] = newValue;
+      save();
+
+      saveHistory({
+        time: new Date().toISOString(),
+        field,
+        oldValue,
+        newValue
+      });
+    }
+
     render();
     reapplyKEColumns();
+  };
+
+  // ✅ ENTER-Taste bestätigt
+  input.addEventListener("keydown", e => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      commitEdit();
+    }
   });
+
+  // ✅ Fokus-Verlust bestätigt (Desktop-Klick außerhalb)
+  input.addEventListener("blur", () => {
+    commitEdit();
+  });
+
+  // ✅ Mobile-Button bestätigt (falls sichtbar)
+  if (btn) {
+    btn.addEventListener("click", e => {
+      e.preventDefault();
+      commitEdit();
+    });
+  }
 }
+
 
 /* =====================================================
    EVENTS & START
@@ -532,27 +692,37 @@ function updateThemeButton() {
   btn.textContent = dark ? "☀️ Light Mode" : "🌙 Dark Mode";
 }
 
-/* Beim Laden wiederherstellen */
-document.addEventListener("DOMContentLoaded", () => {
-  const savedTheme = localStorage.getItem("theme");
-  if (savedTheme === "dark") {
-    document.documentElement.setAttribute("data-theme", "dark");
-  }
-  updateThemeButton();
-});
-
 
 syncUI();
 updateToggleButton();
 
 
 document.addEventListener("DOMContentLoaded", () => {
+    const savedTheme = localStorage.getItem("theme");
+  if (savedTheme === "dark") {
+    document.documentElement.setAttribute("data-theme", "dark");
+  }
+
   if (sessionStorage.getItem("loggedIn") === "true") {
     loggedIn = true;
     isAdmin = true; // ✅ 
     document.getElementById("loginBox").style.display = "none";
     document.getElementById("app").style.display = "block";
 
+    loginBox.style.display = "none";
+    app.style.display = "block";
+
+    // Sichtbarkeit korrekt setzen
+    document.getElementById("toggleListBtn").style.display = "inline-block";
+    document.getElementById("fsToggleBtn").style.display = "inline-block";
+    document.getElementById("historySection").style.display = "block";
+    document.getElementById("categoryFilter").style.display = "block";
+
+    initCategories();
+    syncUI();
+    syncAdminUI();
+
+    updateThemeButton();
     // optional: initiale Views
     updateToggleButton?.();
     syncAdminUI();
@@ -576,9 +746,12 @@ function resetMaterialData() {
 }
 
 function syncAdminUI() {
-  const btn = document.getElementById("resetMaterialDataBtn");
+ const btn = document.getElementById("resetMaterialDataBtn");
   if (!btn) return;
 
-  btn.style.display = (loggedIn && isAdmin) ? "inline-block" : "none";
+  /* 🔑 NUR sichtbar wenn Key aktiv */
+  btn.style.display = editEnabled ? "inline-block" : "none"
+
+
 }
 

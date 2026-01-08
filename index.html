@@ -10,19 +10,22 @@
 <!-- =========================
      LOGIN-BEREICH
 ========================= -->
-<div id="loginBox">
-  <h3>Anmeldung erforderlich</h3>
-  <input id="userInput" placeholder="Benutzer">
-  <input id="passInput" type="password" placeholder="Passwort">
-  <button onclick="login()">Anmelden</button>
-</div>
+<form id="loginForm" onsubmit="login(event)">
+    <div id="loginBox">
+      <h3>🔒 Anmeldung erforderlich</h3>
+      <input id="userInput" placeholder="Benutzer">
+      <input id="passInput" type="password" placeholder="Passwort">
+      <button type="submit">Anmelden</button>
+    </div>
+</form>
 
 <!-- =========================
      GESCHÜTZTE APP
 ========================= -->
 <div id="app" style="display:none">
         <h2>Materialliste</h2>
-        <button  id="resetMaterialDataBtn"  class="admin-btn danger"  onclick="resetMaterialData()">  Initialdaten neu laden</button>
+
+        <button  id="resetMaterialDataBtn"  class="admin-btn danger"  onclick="resetMaterialData()" style="display:none">  Initialdaten neu laden</button>
 
         <button id="themeToggleBtn" onclick="toggleTheme()">🌙 Dark Mode</button>
   <!-- Logout sperrt die komplette Liste wieder -->
@@ -59,69 +62,90 @@
         <!-- =========================
             MATERIAL LISTE
         ========================= -->
-        <div class="table-scroll">
-          <table class="lager-table KE-table">
-            <thead>
-              <tr>
-                <th></th>
-                <th>Material</th>
-                <th>E-Nummer</th>
-                <th>Charge-Nr.</th>
-                <th>Paletten-Nr.</th>
-                <th>Regal</th>
-                <th>Bestand</th>
-                <th>Bemerkung</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody id="tableBody"></tbody>
-          </table>
-        </div>
-      </div>
-
-        <!-- =========================
-            FS – FEINGUSSSCHMELZE
-        ========================= -->
-        <div id="fsSection" style="display:none">
-            <div class="fs-column-controls">
-              <!-- ❌ NICHT ausblendbar -->
-              <label class="locked"><input type="checkbox" checked disabled>Bezeichnung</label>
-              <!-- ✅ Ausblendbar -->
-              <label><input type="checkbox" data-col="kurz">Kurz</label>
-              <label><input type="checkbox" data-col="material">Material</label>
-              <label><input type="checkbox" data-col="stueck" checked>Stückzahl</label>
-              <label><input type="checkbox" data-col="e" checked>E-Nummer</label>
-              <label><input type="checkbox" data-col="kuerzel">Kürzel</label>
-              <label><input type="checkbox" data-col="bestand" checked>Bestand Konsilager</label>
-              <label><input type="checkbox" data-col="dpc">DPC</label>
-            </div>
-          <h3 class="fs-title">Feingussschmelze FS</h3>
+      <div class="table-fullwidth">
           <div class="table-scroll">
-            <table class="lager-table fs-table">
+            <table class="lager-table KE-table">
               <thead>
                 <tr>
-                  <th>Kurz Bezeichnung</th>
-                  <th>Bezeichnung</th>
+                  <th></th>
                   <th>Material</th>
-                  <th>Stückzahl</th>
                   <th>E-Nummer</th>
-                  <th>Kürzel</th>
-                  <th>Bestand Konsilager</th>
-                  <th>DPC</th>
+                  <th>Charge-Nr.</th>
+                  <th>Paletten-Nr.</th>
+                  <th>Regal</th>
+                  <th>Bestand</th>
+                  <th>Bemerkung</th>
+                  <th></th>
                 </tr>
               </thead>
-              <tbody id="fsTableBody"></tbody>
+              <tbody id="tableBody"></tbody>
             </table>
           </div>
         </div>
-  <!-- =========================
-       ÄNDERUNGSHISTORIE
-  ========================= -->
-  <div id="historySection">
-    <h3>Änderungshistorie</h3>
-    <div id="historyLog"></div>
-  </div>        
+    </div>
+        <!-- =========================
+            FS – FEINGUSSSCHMELZE
+        ========================= -->
+        <table class="lager-table fs-table"></table>
+          <div id="fsSection" style="display:none">
+              <div class="fs-column-controls">
+                <!-- ❌ NICHT ausblendbar -->
+                <label class="locked"><input type="checkbox" checked disabled>Bezeichnung</label>
+                <!-- ✅ Ausblendbar -->
+                <label><input type="checkbox" data-col="kurz">Kurz</label>
+                <label><input type="checkbox" data-col="material">Material</label>
+                <label><input type="checkbox" data-col="stueck" checked>Stückzahl</label>
+                <label><input type="checkbox" data-col="e" checked>E-Nummer</label>
+                <label><input type="checkbox" data-col="kuerzel">Kürzel</label>
+                <label><input type="checkbox" data-col="bestand" checked>Bestand Konsilager</label>
+                <label><input type="checkbox" data-col="dpc">DPC</label>
+              </div>
+            <h3 class="fs-title">Feingussschmelze FS</h3>
+            <div class="table-scroll">
+              <table class="lager-table fs-table">
+                <thead>
+                  <tr>
+                    <th>Kurz Bezeichnung</th>
+                    <th>Bezeichnung</th>
+                    <th>Material</th>
+                    <th>Stückzahl</th>
+                    <th>E-Nummer</th>
+                    <th>Kürzel</th>
+                    <th>Bestand Konsilager</th>
+                    <th>DPC</th>
+                  </tr>
+                </thead>
+                <tbody id="fsTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </table>
+          <!-- =========================
+              ÄNDERUNGSHISTORIE
+          ========================= -->
+          <div id="historySection" style="display:none; margin-top:20px;">
+
+            <h3 class="section-title">Änderungshistorie</h3>
+
+            <div class="history-controls">
+              <button onclick="toggleHistory()">Historie anzeigen / ausblenden</button>
+              <button onclick="clearHistory()">Historie löschen</button>
+            </div>
+
+            <table id="historyTable" class="lager-table history-table" style="display:none; margin-top:10px;">
+              <thead>
+                <tr>
+                  <th>Zeit</th>
+                  <th>Feld</th>
+                  <th>Alt</th>
+                  <th>Neu</th>
+                </tr>
+              </thead>
+              <tbody id="historyBody"></tbody>
+            </table>
+    </div>
 </div>
+
 
 
 
