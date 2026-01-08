@@ -18,6 +18,7 @@ let listVisible = false;
 let editEnabled = localStorage.getItem("editEnabled") === "true";
 let lockTimer = null;
 let fsVisible = false;
+let isAdmin = false;
 
 
 /* =========================
@@ -74,6 +75,7 @@ function login() {
 
   if (user === LOGIN_USER && pass === LOGIN_PASS) {
     loggedIn = true;
+    isAdmin = true;   // ✅ HINZUFÜGEN
     /* sessionStorage bleibt bei Reload ✔ / endet bei Tab schließen ✔*/
     sessionStorage.setItem("loggedIn", "true");
 
@@ -96,7 +98,7 @@ function login() {
     initCategories();
     syncUI();
     updateToggleButton();
-
+    syncAdminUI();
 
   } else {
     alert("Login fehlgeschlagen");
@@ -105,6 +107,8 @@ function login() {
 
 function logout() {
   loggedIn = false;
+  isAdmin = false;
+
   listVisible = false;
   fsVisible = false;
   editEnabled = false;
@@ -124,6 +128,7 @@ function logout() {
     app.style.display = "none";
     loginBox.style.display = "block";
     tableBody.innerHTML = "";
+    syncAdminUI();
 }
 
 /* =====================================================
@@ -478,12 +483,13 @@ updateToggleButton();
 document.addEventListener("DOMContentLoaded", () => {
   if (sessionStorage.getItem("loggedIn") === "true") {
     loggedIn = true;
-
+    isAdmin = true; // ✅ 
     document.getElementById("loginBox").style.display = "none";
     document.getElementById("app").style.display = "block";
 
     // optional: initiale Views
     updateToggleButton?.();
+    syncAdminUI();
   }
 });
 
@@ -501,5 +507,12 @@ function resetMaterialData() {
 
   localStorage.removeItem("materialData");
   location.reload();
+}
+
+function syncAdminUI() {
+  const btn = document.getElementById("resetMaterialDataBtn");
+  if (!btn) return;
+
+  btn.style.display = (loggedIn && isAdmin) ? "inline-block" : "none";
 }
 
