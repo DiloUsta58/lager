@@ -299,32 +299,25 @@ function editFS(icon, index, field) {
       row: fsData[index].bezeichnung
     });
 
-    renderFS();
-    reapplyFsColumns();
+    if (typeof renderFS === 'function') { renderFS(); }
+    if (typeof reapplyFsColumns === 'function') { reapplyFsColumns(); }
   };
 }
 
-document
-  .querySelectorAll(".fs-column-controls input[type=checkbox]")
-  .forEach(cb => {
-    cb.addEventListener("change", () => {
-      const key = cb.dataset.col;
-      const colIndex = FS_COLUMN_MAP[key];
-
-      if (colIndex !== undefined) {
-        toggleFSColumn(colIndex, cb.checked);
-      }
-    });
-  });
-
-function reapplyFsColumns() {
-  document.querySelectorAll(".fs-column-controls input")
-    .forEach(cb => cb.dispatchEvent(new Event("change")));
-}
 
 document.addEventListener("DOMContentLoaded", () => {
-  renderFS();
-  reapplyFsColumns();
+  document
+    .querySelectorAll(".fs-column-controls input[type=checkbox]")
+    .forEach(cb => {
+      cb.addEventListener("change", () => {
+        const key = cb.dataset.col;
+        const colIndex = FS_COLUMN_MAP[key];
+        if (colIndex !== undefined) {
+          toggleFSColumn(colIndex, cb.checked);
+        }
+      });
+    });
+
+  if (typeof renderFS === 'function') { renderFS(); }
+  if (typeof reapplyFsColumns === 'function') { reapplyFsColumns(); }
 });
-
-

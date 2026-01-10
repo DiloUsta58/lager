@@ -1,4 +1,15 @@
 
+/* =========================
+   SAFE EVENT BINDING HELPER
+========================= */
+function safeOn(el, evt, fn) {
+  if (el && el.addEventListener) {
+    el.addEventListener(evt, fn);
+  }
+}
+
+
+
 /* =====================================================
    KONFIGURATION
 ===================================================== */
@@ -110,6 +121,7 @@ function login(e) {
     // Beide Listen initial verborgen
     document.getElementById("KeSection").style.display = "none";
     document.getElementById("fsSection").style.display = "none";
+    document.getElementById("historySection").style.display = "none";
 
     listVisible = false;
     fsVisible = false;
@@ -152,6 +164,8 @@ function logout() {
     document.getElementById("fsSection").style.display = "none";
     document.getElementById("fsToggleBtn").style.display = "none";
     document.getElementById("resetMaterialDataBtn").style.display = "none";
+    document.getElementById("historySection").style.display = "none";
+
     
     localStorage.removeItem("editEnabled");
     app.style.display = "none";
@@ -173,6 +187,9 @@ document.getElementById("loginForm").addEventListener("submit", e => {
 
 
 function toggleKE() {
+  TabController.show('ke');
+  return;
+
   if (!loggedIn) return;
 
   listVisible = !listVisible;
@@ -196,6 +213,9 @@ function toggleKE() {
 
 
 function toggleFS() {
+  TabController.show('fs');
+  return;
+
   if (!loggedIn) return;
 
   fsVisible = !fsVisible;
@@ -210,9 +230,8 @@ function toggleFS() {
 }
 
 function updateToggleButton() {
-  toggleListBtn.textContent = listVisible
-    ? "📋 Rohstoffliste ausblenden"
-    : "📋 Rohstoffliste anzeigen";
+  const toggleListBtn = document.getElementById("toggleListBtn");
+  if (!toggleListBtn) return; // Tabs aktiv → kein Toggle-Button
 }
 
 /* =====================================================
@@ -411,7 +430,7 @@ function highlight(text, q) {
    RENDERING MIT KATEGORIEN (1:1 LOGIK WIE FRÜHER)
 ===================================================== */
 function render() {
-  if (!loggedIn || !listVisible) return;
+  if (!loggedIn) return;
 
   tableBody.innerHTML = "";
 
@@ -588,8 +607,8 @@ function debounce(fn, delay = 300) {
 
 const debouncedRender = debounce(render, 300);
 
-search.addEventListener("input", debouncedRender);
-categoryFilter.addEventListener("change", render);
+safeOn(search,("input", debouncedRender));
+safeOn(categoryFilter,("change", render));
 
 ["click", "keydown", "mousemove"].forEach(evt =>
   document.addEventListener(evt, () => {
@@ -709,14 +728,30 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("loginBox").style.display = "none";
     document.getElementById("app").style.display = "block";
 
-    loginBox.style.display = "none";
+    if (loginBox) {
+      loginBox.style.display = "none";
+    }
     app.style.display = "block";
 
     // Sichtbarkeit korrekt setzen
-    document.getElementById("toggleListBtn").style.display = "inline-block";
-    document.getElementById("fsToggleBtn").style.display = "inline-block";
-    document.getElementById("historySection").style.display = "block";
-    document.getElementById("categoryFilter").style.display = "block";
+    const ke = document.getElementById("fsSection");
+    if (ke) {
+      ke.style.display = "none";
+    }
+    const fs = document.getElementById("fsSection");
+    if (fs) {
+      fs.style.display = "none";
+    
+    }
+    const historyTable = document.getElementById("historySection");
+    if (historyTable) {
+      historyTable.style.display = "none";
+    }
+
+    const categoryFil = document.getElementById("categoryFilter");
+    if (categoryFil) {
+      categoryFil.style.display = "none";
+    }
 
     initCategories();
     syncUI();
@@ -754,4 +789,76 @@ function syncAdminUI() {
 
 
 }
+/* =====================================================
+   TAB CONTROLLER (ERWEITERBAR, DOM-SICHER)
+===================================================== */
+window.TabController = (function () {
+  let active = "ke";
+  const sections = {
+    ke: "KeSection",
+    fs: "fsSection",
+    history: "historySection"
+  };
 
+  function show(tab) {
+    active = tab;
+    Object.entries(sections).forEach(([key, id]) => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = key === tab ? "" : "none";
+      const keToolbar = document.getElementById("keToolbar");
+      if (keToolbar) {
+        keToolbar.style.display = tab === "ke" ? "" : "none";
+      }      
+    });
+
+    // 🔑 HIER: gezielt rendern
+    if (tab === "ke") {
+      listVisible = true;
+      render();
+      reapplyKEColumns();
+    }
+
+    if (tab === "fs") {
+      renderFS();
+      if (typeof reapplyFsColumns === "function") reapplyFsColumns();
+    }
+
+    localStorage.setItem("activeTab", tab);
+  }
+
+  function getActive() {
+    return active;
+  }
+
+  function init() {
+    const saved = localStorage.getItem("activeTab") || "ke";
+    show(saved);
+  }
+
+  return { show, init, getActive };
+})();
+
+
+document.addEventListener("DOMContentLoaded", () => {
+  if (window.TabController) TabController.init();
+
+  const search = document.getElementById("search");
+  const categoryFilter = document.getElementById("categoryFilter");
+
+  if (search) {
+    search.addEventListener("input", () => {
+      if (window.TabController?.getActive() === "ke") {
+        render();
+      }
+    });
+  }
+
+  if (categoryFilter) {
+    categoryFilter.addEventListener("change", () => {
+      if (window.TabController?.getActive() === "ke") {
+        render();
+      }
+    });
+  }
+  
+});
