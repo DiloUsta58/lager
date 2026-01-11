@@ -72,6 +72,30 @@ if (!Array.isArray(data)) {
   data = structuredClone(defaultData);
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 }
+/*ZENTRALE FUNKTION: UI verstecken*/
+function hideAllSections() {
+  Object.values(tabs).forEach(cfg => {
+    const el = document.getElementById(cfg.section);
+    if (el) el.classList.remove("active");
+  });
+
+  document.querySelectorAll(".tab-btn").forEach(btn => {
+    btn.classList.remove("active");
+  });
+}
+/* TABELLEN LEEREN (optional, aber empfohlen)*/
+function clearAllTables() {
+  const bodies = [
+    "tableBody",     // KE
+    "fsTableBody",
+    "fmTableBody"
+  ];
+
+  bodies.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = "";
+  });
+}
 
 /* =====================================================
    LOGIN / LOGOUT
@@ -102,13 +126,35 @@ function login(e) {
 function logout() {
   sessionStorage.removeItem("loggedIn");
   localStorage.removeItem("editEnabled");
+  localStorage.removeItem("activeTab");
 
   loggedIn = false;
   editEnabled = false;
 
+  // 🔍 Suche & Highlight zurücksetzen
+  globalSearchTerm = "";
+  if (search) search.value = "";
+
+  // 🧹 Tabellen leeren
+  ["tableBody", "fsTableBody", "fmTableBody"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = "";
+  });
+
+  // 🧭 Tabs & Sections deaktivieren
+  document.querySelectorAll(".tab-btn").forEach(btn => {
+    btn.classList.remove("active");
+  });
+
+  document.querySelectorAll(".tab-section").forEach(sec => {
+    sec.classList.remove("active");
+  });
+
+  // UI wechseln
   app.style.display = "none";
   loginBox.style.display = "block";
 }
+
 
 /* =====================================================
    TAB CONTROLLER (BEREINIGT)
