@@ -101,6 +101,7 @@
         <div class="tab-bar">
           <button class="tab-btn" data-tab="ke">Rohstoff Liste</button>
           <button class="tab-btn" data-tab="fs">FS-Liste</button>
+          <button class="tab-btn" data-tab="fm">FM.List</button>
           <button class="tab-btn" data-tab="history">Historie</button>
         </div>
 
@@ -176,7 +177,54 @@
                   </table>
                 </div>
               </div>
+            </div> <!-- table-scroll -->
+          </div> <!-- table-fullwidth -->
+        </div> <!-- ✅ fsSection ENDE -->
 
+            <!-- =========================
+                FM SECTION
+            ========================= -->
+              <section id="fmSection" class="tab-section">
+
+              <!-- Spaltenauswahl -->
+              <div class="fm-column-toggle">
+                <label><input type="checkbox" data-col="pos1" checked> Pos. #1</label>
+                <label><input type="checkbox" data-col="artikel1" checked> Artikel-Nr. #1</label>
+                <label><input type="checkbox" data-col="artikel2" checked> Artikel-Nr. #2</label>
+                <label><input type="checkbox" data-col="artikel" checked> Artikel</label>
+                <label><input type="checkbox" data-col="koernung" checked> Körnung</label>
+                <label><input type="checkbox" data-col="abmessung" checked> Abmessung</label>
+                <label><input type="checkbox" data-col="verpackung" checked> Verpackung</label>
+                <label><input type="checkbox" data-col="lieferung_pr" checked> Lieferung – PR</label>
+                <label><input type="checkbox" data-col="bestand" checked> Bestand</label>
+                <label><input type="checkbox" data-col="pos2" checked> Pos. #2</label>
+                <label><input type="checkbox" data-col="bemerkung" checked> Bemerkung</label>
+              </div>
+
+              <!-- Tabelle -->
+              <div class="table-fullwidth">
+                <div class="table-scroll">
+                  <table id="fmTable">
+                    <thead>
+                      <tr>
+                        <th data-col="pos1">Pos. #1</th>
+                        <th data-col="artikel1">Artikel-Nr. #1</th>
+                        <th data-col="artikel2">Artikel-Nr. #2</th>
+                        <th data-col="artikel">Artikel</th>
+                        <th data-col="koernung">Körnung</th>
+                        <th data-col="abmessung">Abmessung</th>
+                        <th data-col="verpackung">Verpackung</th>
+                        <th data-col="lieferung_pr">Lieferung – PR</th>
+                        <th data-col="bestand">Bestand</th>
+                        <th data-col="pos2">Pos. #2</th>
+                        <th data-col="bemerkung">Bemerkung</th>
+                      </tr>
+                    </thead>
+                    <tbody id="fmTableBody"></tbody>
+                  </table>
+                </div>
+              </div>
+            </section>
 
             <!-- =========================
                 HISTORY SECTION
@@ -205,7 +253,7 @@
 
 
 
-
+<script src="js/daten_fm.js"></script>
 <script src="js/data_store.js"></script>
 <script src="js/daten_fs.js"></script>
 <script src="js/daten.js"></script>

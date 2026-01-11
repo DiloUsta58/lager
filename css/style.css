@@ -182,9 +182,6 @@ tr.category .row-lock {
   }
 }
 
-
-
-
 /* =====================================================
    TABELLEN – KLARE, RUHIGE DARSTELLUNG
 ===================================================== */
@@ -304,6 +301,87 @@ label {
   display: flex;
   align-items: center;
   gap: 6px;
+}
+
+/* =========================
+   FM SECTION – TABLE STYLE
+========================= */
+
+#fmSection {
+  font-family: Arial, Helvetica, sans-serif;
+  background: #ffffff;
+}
+
+#fmSection table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 13px;
+}
+
+#fmSection th,
+#fmSection td {
+  border: 1px solid #000;
+  padding: 4px 6px;
+  text-align: center;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+#fmSection thead th {
+  background-color: #5b9bd5;
+  color: #ffffff;
+  font-weight: bold;
+}
+
+#fmSection tbody tr:nth-child(even) {
+  background-color: #e9f2fb;
+}
+
+#fmSection tbody tr:nth-child(odd) {
+  background-color: #ffffff;
+}
+
+/* =========================
+   FM – CHECKBOX LAYOUT
+========================= */
+
+#fmSection .fm-column-toggle {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  margin-bottom: 10px;
+}
+
+#fmSection .fm-column-toggle label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+#fmSection .fm-column-toggle {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 8px 12px;
+}
+
+/* =========================
+   SUCHTREFFER HIGHLIGHT
+========================= */
+
+.search-hit {
+  background-color: #ffe066;
+  padding: 0 2px;
+  border-radius: 3px;
+}
+
+mark.search-hit {
+  background: #ffe066;
+  color: #000;
+  padding: 0 2px;
+  border-radius: 3px;
 }
 
 /* =====================================================

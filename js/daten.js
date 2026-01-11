@@ -38,6 +38,7 @@ let editEnabled = localStorage.getItem("editEnabled") === "true";
 let lockTimer = null;
 let loggedIn = sessionStorage.getItem("loggedIn") === "true";
 let isAdmin = loggedIn;
+let globalSearchTerm = "";
 
 /* =====================================================
    COLUMN MAPS
@@ -131,6 +132,15 @@ window.TabController = (() => {
     }
       }
     },
+
+    fm: {
+    section: "fmSection",
+    render: () => {
+    loadFMData();
+    renderFM();
+    }
+  },
+
     history: {
       section: "historySection",
       render: () => {
@@ -167,7 +177,7 @@ window.TabController = (() => {
     show(saved);
   }
 
-  return { init, show };
+  return { init, show, getActive: () => active};   // 🔑 NEU 
 })();
 
 /* =====================================================
@@ -475,6 +485,18 @@ safeOn(categoryFilter, "change", () => {
   render();
 });
 
+safeOn(search, "input", () => {
+  globalSearchTerm = search.value.trim().toLowerCase();
+
+  const current = TabController.getActive();
+  if (current) {
+    TabController.show(current);
+  }
+});
+
+
+
+
 /* =====================================================
    KE – SPALTEN CHECKBOXEN
 ===================================================== */
@@ -542,13 +564,14 @@ function removeRow(index) {
    KE – INLINE EDIT
 ===================================================== */
 function cell(value, index, field) {
+
   const protectedField = PROTECTED_FIELDS.includes(field);
   const canEdit = !protectedField || editEnabled;
 
   return `
     <td class="${protectedField ? "protected" : ""}">
       <div class="edit-wrapper">
-        <span>${value ?? ""}</span>
+        <span>${highlightText(value ?? "", globalSearchTerm)}</span>
         ${
           canEdit
             ? `<span class="edit-icon"
@@ -559,7 +582,6 @@ function cell(value, index, field) {
     </td>
   `;
 }
-
 function editCell(icon, index, field) {
   if (PROTECTED_FIELDS.includes(field) && !editEnabled) return;
 
@@ -687,8 +709,6 @@ render = function () {
     `;
   });
 };
-
-
 
 /* =====================================================
    KEYBOARD SHORTCUTS
@@ -931,6 +951,91 @@ window.addEventListener("resize", () => {
     }
   }, 200);
 });
+
+function renderFM() {
+  if (!loggedIn) return;
+
+  const tbody = document.getElementById("fmTableBody");
+  tbody.innerHTML = "";
+
+  /* ===== FILTER ===== */
+  let fmFiltered = fmData;
+
+  if (globalSearchTerm) {
+    fmFiltered = fmFiltered.filter(row =>
+      Object.values(row).some(v =>
+        String(v).toLowerCase().includes(globalSearchTerm)
+      )
+    );
+  }
+  /* ===== ENDE FILTER ===== */
+
+  fmFiltered.forEach(row => {
+    tbody.innerHTML += `
+      <tr>
+        <td data-col="pos1">
+          ${highlightText(row.pos1 ?? "", globalSearchTerm)}
+        </td>
+        <td data-col="artikel1">
+          ${highlightText(row.artikel1 ?? "", globalSearchTerm)}
+        </td>
+        <td data-col="artikel2">
+          ${highlightText(row.artikel2 ?? "", globalSearchTerm)}
+        </td>
+        <td data-col="artikel">
+          ${highlightText(row.artikel ?? "", globalSearchTerm)}
+        </td>
+        <td data-col="koernung">
+          ${highlightText(row.koernung ?? "", globalSearchTerm)}
+        </td>
+        <td data-col="abmessung">
+          ${highlightText(row.abmessung ?? "", globalSearchTerm)}
+        </td>
+        <td data-col="verpackung">
+          ${highlightText(row.verpackung ?? "", globalSearchTerm)}
+        </td>
+        <td data-col="lieferung_pr">
+          ${highlightText(row.lieferung_pr ?? "", globalSearchTerm)}
+        </td>
+        <td data-col="bestand">
+          ${highlightText(row.bestand ?? "", globalSearchTerm)}
+        </td>
+        <td data-col="pos2">
+          ${highlightText(row.pos2 ?? "", globalSearchTerm)}
+        </td>
+        <td data-col="bemerkung">
+          ${highlightText(row.bemerkung ?? "", globalSearchTerm)}
+        </td>
+      </tr>
+    `;
+  });
+}
+
+
+document
+  .querySelectorAll('#fmSection input[type="checkbox"][data-col]')
+  .forEach(cb => {
+    cb.addEventListener("change", () => {
+      const col = cb.dataset.col;
+      const visible = cb.checked;
+
+      document
+        .querySelectorAll(`#fmSection [data-col="${col}"]`)
+        .forEach(el => {
+          el.style.display = visible ? "" : "none";
+        });
+    });
+  });
+
+  function highlightText(text, term) {
+  if (!term) return text;
+
+  const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const regex = new RegExp(`(${escaped})`, "gi");
+
+  return String(text).replace(regex, '<mark class="search-hit">$1</mark>');
+}
+
 /* =====================================================
    EOF – daten.js vollständig
 ===================================================== */

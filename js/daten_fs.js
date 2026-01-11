@@ -247,21 +247,66 @@ function renderFS() {
   const body = document.getElementById("fsTableBody");
   body.innerHTML = "";
 
-  fsData.forEach((r, i) => {
+  /* ===== FILTER: GENAU HIER ===== */
+  let fsFiltered = fsData;
+
+  if (globalSearchTerm) {
+    fsFiltered = fsFiltered.filter(row =>
+      Object.values(row).some(v =>
+        String(v).toLowerCase().includes(globalSearchTerm)
+      )
+    );
+  }
+  /* ===== ENDE FILTER ===== */
+
+  fsFiltered.forEach((r, i) => {
     body.innerHTML += `
       <tr>
-        <td data-label="Kurz Bezeichnung">${r.kurz || ""}</td>
-        <td data-label="Bezeichnung">${r.bezeichnung || ""}</td>
-        <td data-label="Material">${r.material || ""}</td>
-        <td data-label="Stückzahl">${r.stueck || ""}</td>
-        ${fsCell(r.eNummer, i, "eNummer", "E-Nummer")}
-        <td data-label="Kürzel">${r.kuerzel || ""}</td>
-        ${fsCell(r.bestand, i, "bestand", "Bestand Konsilager")}
-        ${fsCell(r.dpc, i, "dpc", "DPC")}
+        <td data-label="Kurz Bezeichnung">
+          ${highlightText(r.kurz || "", globalSearchTerm)}
+        </td>
+
+        <td data-label="Bezeichnung">
+          ${highlightText(r.bezeichnung || "", globalSearchTerm)}
+        </td>
+
+        <td data-label="Material">
+          ${highlightText(r.material || "", globalSearchTerm)}
+        </td>
+
+        <td data-label="Stückzahl">
+          ${highlightText(r.stueck || "", globalSearchTerm)}
+        </td>
+
+        ${fsCell(
+          highlightText(r.eNummer || "", globalSearchTerm),
+          i,
+          "eNummer",
+          "E-Nummer"
+        )}
+
+        <td data-label="Kürzel">
+          ${highlightText(r.kuerzel || "", globalSearchTerm)}
+        </td>
+
+        ${fsCell(
+          highlightText(r.bestand || "", globalSearchTerm),
+          i,
+          "bestand",
+          "Bestand Konsilager"
+        )}
+
+        ${fsCell(
+          highlightText(r.dpc || "", globalSearchTerm),
+          i,
+          "dpc",
+          "DPC"
+        )}
       </tr>
     `;
   });
 }
+
 
 
 /* =========================
@@ -276,6 +321,19 @@ function fsCell(value, index, field, label, colClass) {
       </div>
     </td>
   `;
+}
+
+function highlightText(text, term) {
+  if (!term) return text;
+
+  const source = String(text);
+  const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+  const regex = new RegExp(escaped, "gi");
+
+  return source.replace(regex, match =>
+    `<span class="search-hit">${match}</span>`
+  );
 }
 
 
