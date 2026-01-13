@@ -47,9 +47,24 @@
 <div id="app" style="display:none">
   <h2>Materialliste</h2>
         <button  id="resetMaterialDataBtn"  class="admin-btn danger"  onclick="resetMaterialData()" style="display:none">  Initialdaten neu laden</button>
-        <button id="themeToggleBtn" class="btn" onclick="toggleTheme()">🌙 Dark Mode</button>
         <!-- Logout sperrt die komplette Liste wieder -->
         <button class="btn" onclick="logout()">Logout</button>
+        <button class="btn" onclick="exportAllData()">EXPORT DATEN</button>
+        
+        <input
+          type="file"
+          id="importFile"
+          accept="application/json"
+          hidden
+          onchange="importAllData()"
+        >
+        <button onclick="document.getElementById('importFile').click()">
+          IMPORT DATEN!
+        </button>
+        
+        
+        <button id="themeToggleBtn" class="btn" onclick="toggleTheme()">🌙 Dark Mode</button>
+
         <!-- Key-Freischaltung -->
         <input class="inputs" id="keyInput" type="password" placeholder="Key eingeben">
         <button id="unlockBtn" class="btn" onclick="unlockEditing()">🔓 Freischalten</button>
@@ -62,7 +77,9 @@
           <button class="tab-btn" data-tab="ke">Rohstoff Liste</button>
           <button class="tab-btn" data-tab="fs">FS-Tiegel Liste</button>
           <button class="tab-btn" data-tab="fm">FM-Schleifbänder</button>
-          <button class="tab-btn" data-tab="inv">Inventur</button>
+          <button class="tab-btn" data-tab="inv">Inventur Liste</button>
+          <button class="tab-btn" data-tab="historySectionIExport">Historie</button>
+
           <!--<button class="tab-btn" data-tab="inv">Inventar - Liste</button>
           <button class="tab-btn" data-tab="history">Historie</button>-->
         </div>
@@ -113,7 +130,7 @@
                 </div>
               </div>
               <!-- =========================
-                  HISTORY SECTION
+                  HISTORY SECTION KE
               ========================= -->
               <div id="historySection" class="tab-section" style="margin-top:10px;">
                 <h3 class="section-title">Änderungshistorie</h3>
@@ -141,14 +158,14 @@
             ========================= -->
             <div id="fsSection" class="tab-section">
               <div class="fs-column-controls">
-                <label class="locked"><input type="checkbox" checked disabled>Bezeichnung</label>
                 <label><input type="checkbox" data-col="kurz">Kurz</label>
+                <label class="locked"><input type="checkbox" checked disabled>Bezeichnung</label>
                 <label><input type="checkbox" data-col="material">Material</label>
                 <label><input type="checkbox" data-col="stueck" checked>Stückzahl</label>
                 <label><input type="checkbox" data-col="e" checked>E-Nummer</label>
-                <label><input type="checkbox" data-col="kuerzel">Kürzel</label>
-                <label><input type="checkbox" data-col="bestand" checked>Bestand Konsilager</label>
-                <label><input type="checkbox" data-col="dpc">DPC</label>
+                <label><input type="checkbox" data-col="kuerzel" checked>Kürzel</label>
+                <label><input type="checkbox" data-col="bestand" checked>Bestand K.</label>
+                <label><input type="checkbox" data-col="dpc" checked>Bestand D</label>
               </div>
 
               <div class="table-fullwidth">
@@ -162,8 +179,8 @@
                         <th>Stückzahl</th>
                         <th>E-Nummer</th>
                         <th>Kürzel</th>
-                        <th>Bestand Konsilager</th>
-                        <th>DPC</th>
+                        <th>Bestand K.</th>
+                        <th>Bestand D</th>
                       </tr>
                     </thead>
                     <tbody id="fsTableBody"></tbody>
@@ -249,6 +266,21 @@
                 </div>
               </div>
             </div>
+          <!-- =========================
+              HISTORY SECTION TAB
+          ========================= -->
+          <section id="historySectionIExport" class="tab-section">
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Zeitpunkt</th>
+                  </tr>
+                </thead>
+                <tbody id="historyBody"></tbody>
+              </table>
+            </div>
+          </section>
 </div>
 
 

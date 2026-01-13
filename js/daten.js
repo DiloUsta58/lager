@@ -43,6 +43,8 @@ let lockTimer = null;
 let loggedIn = sessionStorage.getItem("loggedIn") === "true";
 let isAdmin = loggedIn;
 let globalSearchTerm = "";
+let historyData = [];
+
 
 /* =====================================================
    COLUMN MAPS
@@ -211,7 +213,7 @@ window.TabController = (() => {
     ke: {
       section: "keSection",
       render: () => {
-        render();
+        renderKE();
         reapplyKEColumns();
       }
     },
@@ -242,7 +244,13 @@ window.TabController = (() => {
     history: {
       section: "historySection",
       render: () => {
-        if (editEnabled) renderHistory();
+        if (editEnabled) renderHistoryKE();
+      },
+        },
+    historySectionIExport: {
+      section: "historySectionIExport",
+      render: () => {
+      renderHistory();
       }
     }
   };
@@ -280,7 +288,7 @@ window.TabController = (() => {
 /* =====================================================
    KE RENDERING
 ===================================================== */
-function render() {
+function renderKE() {
   if (!loggedIn) return;
   tableBody.innerHTML = "";
 
@@ -598,9 +606,9 @@ function reapplyKEColumns() {
 }
 
 /* =====================================================
-   HISTORY
+   HISTORY KE
 ===================================================== */
-function renderHistory() {
+function renderHistoryKE() {
   const body = document.getElementById("historyBody");
   body.innerHTML = "";
 
@@ -617,6 +625,35 @@ function renderHistory() {
     `;
   });
 }
+/* =====================================================
+   HISTORY IMPORT / EXPORT
+===================================================== */
+function renderHistory() {
+  const body = document.getElementById("historyBody");
+  if (!body) return;
+
+  body.innerHTML = "";
+
+  historyData.forEach(entry => {
+    body.innerHTML += `
+      <tr>
+        <td>${new Date(entry.timestamp).toLocaleString()}</td>
+      </tr>
+    `;
+  });
+}
+
+/* LocalStorage-Fallback*/
+function saveHistoryData() {
+  localStorage.setItem("historyData", JSON.stringify(historyData));
+}
+
+function loadHistoryData() {
+  const raw = localStorage.getItem("historyData");
+  historyData = raw ? JSON.parse(raw) : [];
+}
+
+
 
 /* =====================================================
    UI
@@ -643,10 +680,11 @@ document.addEventListener("DOMContentLoaded", () => {
     app.style.display = "block";
     document.getElementById("historySection").style.display = "block";
 
-    initCategories();      // ✅ FEHLTE
+    initCategories(); 
     syncUI();
     syncAdminUI();
-
+    loadHistoryData();
+    renderHistory();
     TabController.init();
   }
 });
@@ -750,7 +788,7 @@ function toggleHistory() {
       : "none";
 
   if (table.style.display === "table") {
-    renderHistory();
+    renderHistoryKE();
   }
 }
 
@@ -806,7 +844,7 @@ function resetMaterialData() {
 
         renderFM();
         renderFS();
-        render();
+        renderKE();
         renderInventur();
       // HARD RELOAD ohne App-Reinit
       location.href = location.pathname;
@@ -866,12 +904,12 @@ const debouncedRender = (() => {
 
 safeOn(search, "input", () => {
   if (TabController?.show && TabController) {
-    render();
+    renderKE();
   }
 });
 
 safeOn(categoryFilter, "change", () => {
-  render();
+  renderKE();
 });
 
 safeOn(search, "input", () => {
@@ -923,7 +961,7 @@ function addRowAfter(index) {
 
   data.splice(index + 1, 0, newRow);
   save();
-  render();
+  renderKE();
   reapplyKEColumns();
 }
 
@@ -944,7 +982,7 @@ function removeRow(index) {
 
   data.splice(index, 1);
   save();
-  render();
+  renderKE();
   reapplyKEColumns();
 }
 
@@ -1001,7 +1039,7 @@ function editCell(icon, index, field) {
         newValue
       });
     }
-    render();
+    renderKE();
     reapplyKEColumns();
   };
 
@@ -1053,8 +1091,8 @@ function getFilteredData() {
 /* =====================================================
    KE – RENDER OVERRIDE MIT FILTER
 ===================================================== */
-const _renderOriginal = render;
-render = function () {
+const _renderOriginal = renderKE;
+renderKE = function () {
   if (!loggedIn) return;
 
   tableBody.innerHTML = "";
@@ -1225,7 +1263,7 @@ window.__APP_DEBUG__ = {
   },
   lockEditing,
   unlockEditing,
-  render,
+  renderKE,
   renderFS
 };
 
@@ -1341,7 +1379,129 @@ window.addEventListener("resize", () => {
   }, 200);
 });
 
+/* ==================
+   HISTORIE – BASIS
+=============== */
 
+function saveHistoryData() {
+  localStorage.setItem("historyData", JSON.stringify(historyData));
+}
+
+function loadHistoryData() {
+  const raw = localStorage.getItem("historyData");
+  historyData = raw ? JSON.parse(raw) : [];
+}
+
+
+/* =============
+   EXPORT
+============ */
+function exportAllData() {
+  // 🔹 Historie erweitern (Snapshot)
+  const historyEntry = {
+    timestamp: new Date().toISOString(),
+    keCount: data.length,
+    fsCount: fsData.length,
+    fmCount: fmData.length,
+    note: "Export"
+  };
+
+  historyData.push(historyEntry);
+
+  saveHistoryData();
+  renderHistory();
+
+  const payload = {
+    version: 1,
+    exportedAt: new Date().toISOString(),
+
+    ke: data,
+    fs: fsData,
+    fm: fmData,
+
+    history: historyData
+  };
+
+  const blob = new Blob(
+    [JSON.stringify(payload, null, 2)],
+    { type: "application/json" }
+  );
+
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `lager_backup_${new Date().toISOString().slice(0, 10)}.json`;
+  a.click();
+}
+
+/* =============
+   IMPORT
+============ */
+function importAllData() {
+  const input = document.getElementById("importFile");
+  if (!input || !input.files || !input.files.length) return;
+
+  const file = input.files[0];
+  const reader = new FileReader();
+
+  reader.onload = () => {
+    let jsonText = reader.result;
+
+    // BOM / Whitespaces entfernen
+    if (typeof jsonText === "string") {
+      jsonText = jsonText.trim().replace(/^\uFEFF/, "");
+    }
+
+    let json;
+    try {
+      json = JSON.parse(jsonText);
+    } catch (e) {
+      console.error("JSON-Fehler:", e);
+      alert("Datei ist kein gültiges JSON");
+      return;
+    }
+
+    /* ===== AB HIER KEIN try/catch MEHR ===== */
+
+    data   = Array.isArray(json.ke) ? json.ke : [];
+    fsData = Array.isArray(json.fs) ? json.fs : [];
+    fmData = Array.isArray(json.fm) ? json.fm : [];
+
+    historyData = Array.isArray(json.history) ? json.history : [];
+
+    saveData();
+    saveFSData();
+    saveFMData();
+    saveHistoryData();
+
+    renderKE();
+    renderFS();
+    renderFM();
+    renderInventur();
+    renderHistory();
+
+    alert("Daten erfolgreich geladen");
+  };
+
+  reader.readAsText(file);
+  input.value = "";
+}
+
+
+function saveData() {
+  localStorage.setItem("keData", JSON.stringify(data));
+}
+
+function saveFSData() {
+  localStorage.setItem("fsData", JSON.stringify(fsData));
+}
+
+function saveFMData() {
+  localStorage.setItem("fmData", JSON.stringify(fmData));
+}
+
+function saveHistoryData() {
+  localStorage.setItem("historyData", JSON.stringify(historyData));
+}
 
 /* =====================================================
    EOF – daten.js vollständig

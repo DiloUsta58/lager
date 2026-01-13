@@ -110,7 +110,8 @@ button {
 }
 
 button:hover {
-  background: linear-gradient(180deg, #ffffff, #a5baf5);
+  background: #3b82f6;
+  color: #0c0c0c;
 }
 
 button:active {
@@ -323,12 +324,6 @@ td:hover .edit-icon {
   margin: 12px 0;
 }
 
-label {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
 /* =========================
    FM SECTION – TABLE STYLE
 ========================= */
@@ -360,7 +355,7 @@ label {
 }
 
 [data-theme="dark"] #fmSection th, #fmSection td {
-  border: 1px solid #ffffff;
+  border: 1px solid #523c3c;
   padding: 10px 10px;
   text-align: center;
   vertical-align: middle;
@@ -412,8 +407,8 @@ label {
   margin-bottom: 10px;
 }
 
-#fmSection .fm-column-toggle label {
-  display: inline-flex;
+#fmSection .fm-column-toggle{
+  display: flex;
   align-items: center;
   gap: 6px;
   font-size: 13px;
@@ -433,6 +428,15 @@ label {
   box-sizing: border-box;
   font-size: 13px;
   padding: 2px 4px;
+}
+
+label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
 }
 
 /* =========================
@@ -744,7 +748,8 @@ mark.search-hit {
   }
 
   .ke-column-controls,
-  .fs-column-controls {
+  .fs-column-controls,
+  .fm-column-toggle {
     justify-content: flex-start;
   }
 }
