@@ -48,8 +48,8 @@
   <h2>Materialliste</h2>
         <button  id="resetMaterialDataBtn"  class="admin-btn danger"  onclick="resetMaterialData()" style="display:none">  Initialdaten neu laden</button>
         <!-- Logout sperrt die komplette Liste wieder -->
-        <button class="btn" onclick="logout()">Logout</button>
-        <button class="btn" onclick="exportAllData()">EXPORT DATEN</button>
+        <button class="btn" onclick="logout()">🔒Logout</button>
+        <button class="btnExport" onclick="exportAllData()">EXPORT DATEN</button>
         
         <input
           type="file"
@@ -58,18 +58,20 @@
           hidden
           onchange="importAllData()"
         >
-        <button onclick="document.getElementById('importFile').click()">
+        <button class="btnImport" onclick="document.getElementById('importFile').click()">
           IMPORT DATEN!
         </button>
         
-        
-        <button id="themeToggleBtn" class="btn" onclick="toggleTheme()">🌙 Dark Mode</button>
-
         <!-- Key-Freischaltung -->
         <input class="inputs" id="keyInput" type="password" placeholder="Key eingeben">
         <button id="unlockBtn" class="btn" onclick="unlockEditing()">🔓 Freischalten</button>
         <button class="btn" onclick="lockEditing()">🔒 Sperren</button>
         <span id="status"></span>
+
+        <header class="header">
+          <button id="themeToggleBtn" class="btn-primary" onclick="toggleTheme()">🌙 Dark Mode</button>
+        </header>
+
 
         <hr>
 
@@ -79,9 +81,6 @@
           <button class="tab-btn" data-tab="fm">FM-Schleifbänder</button>
           <button class="tab-btn" data-tab="inv">Inventur Liste</button>
           <button class="tab-btn" data-tab="historySectionIExport">Historie</button>
-
-          <!--<button class="tab-btn" data-tab="inv">Inventar - Liste</button>
-          <button class="tab-btn" data-tab="history">Historie</button>-->
         </div>
         <hr>
         
@@ -213,7 +212,7 @@
               <!-- Tabelle -->
               <div class="table-fullwidth">
                 <div class="table-scroll">
-                  <table class="fmTable">
+                  <table class="lager-table fmTable">
                     <thead>
                       <tr>
                         <th data-col="pos1">Pos. #1</th>
