@@ -218,6 +218,7 @@ tr.category .row-lock {
   border-bottom: 2px solid var(--border);
 }
 
+
 /* Dark Mode Überschrift Tabelle */
 [data-theme="dark"] .lager-table thead th {
   background: #1e293b;
@@ -254,14 +255,6 @@ tr.category .row-lock {
   background: rgba(0, 0, 0, 0.04);
 }
 [data-theme="dark"] .lager-table tbody tr:hover {
-  background: #554f02;
-}
-
-.fmTable tbody tr:hover{
-  background: rgba(0, 0, 0, 0.04);
-}
-
-[data-theme="dark"] .fmTable tbody tr:hover {
   background: #554f02;
 }
 
@@ -396,6 +389,14 @@ td:hover .edit-icon {
   color: var(--text);
 }
 
+.fmTable {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--bg-card);
+  font-size: 14px;
+}
+
+
 /* =========================
    FM – CHECKBOX LAYOUT
 ========================= */
@@ -421,6 +422,40 @@ td:hover .edit-icon {
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 8px 12px;
 }
+
+
+/* fmSection */
+.lager-table tbody tr:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+/* FM überschreibt bewusst */
+#fmSection .lager-table tbody tr:hover {
+  background: rgba(0, 0, 0, 0.08);
+  color: #086803;
+   /*font-weight: 600;        fett */
+  /* font-style: italic;     kursiv */
+  /*font-size: 2.05em;       leicht größer */  
+}
+
+[data-theme="dark"] #fmSection .lager-table tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  color: #0d7a05;
+  /*font-weight: 600;        fett */
+  /* font-style: italic;     kursiv */
+  /*font-size: 2.05em;       leicht größer */  
+}
+
+#fmSection tr {
+  font-size: 1.5em;
+}
+
+
+#fmSection .lager-table tbody tr:hover td[data-col="artikel"],
+#fmSection .lager-table tbody tr:hover td[data-col="bestand"] {
+  font-weight: 900;
+}
+
 
 
 .cell-input {
@@ -546,6 +581,50 @@ mark.search-hit {
 [data-theme="dark"] .btn:hover {
     background: #3b82f6;
     color: #ffffff;
+}
+
+[data-theme="dark"] .btnImport {
+    background: #03891ee0;
+    color: #ffffff;
+}
+
+[data-theme="dark"] .btnImport:hover {
+    background: #3b82f6;
+    color: #ffffff;
+}
+
+[data-theme="dark"] .btnExport {
+    background: #890303e0;
+    color: #ffffff;
+}
+
+[data-theme="dark"] .btnExport:hover {
+    background: #3b82f6;
+    color: #ffffff;
+}
+
+[data-theme="dark"] .btn-primary {
+    background: #2a2a2a;
+    color: #ffffff;
+}
+
+[data-theme="dark"] .btn-primary:hover {
+    background: #3b82f6;
+    color: #ffffff;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+}
+
+.btn-primary {
+  position: fixed; /* oder absolute */
+  top: 16px;
+  right: 16px;
+  z-index: 1000;
 }
 
 /* =========================
@@ -753,3 +832,5 @@ mark.search-hit {
     justify-content: flex-start;
   }
 }
+
+
