@@ -32,7 +32,7 @@ const HISTORY_KEY = "materialHistory";
 const LOGIN_USER = "DiloUsta58";
 const LOGIN_PASS = "64579";
 const EDIT_KEY = "64579";
-const AUTO_LOCK_MINUTES = 10;
+const AUTO_LOCK_MINUTES = 1;
 const PROTECTED_FIELDS = ["material", "e"];
 
 /* =====================================================
@@ -44,7 +44,7 @@ let loggedIn = sessionStorage.getItem("loggedIn") === "true";
 let isAdmin = loggedIn;
 let globalSearchTerm = "";
 let historyData = [];
-
+let useEdit = false;
 
 /* =====================================================
    COLUMN MAPS
@@ -133,10 +133,13 @@ function login(e) {
 
     loginBox.style.display = "none";
     app.style.display = "block";
-    document.getElementById("historySection").style.display = "block";
+    document.getElementById("historySection").style.display = "none";
+    document.getElementById("lastUpdate").style.display = "block";
+    
+    document.getElementById("fmSection").style.display = "block";
 
     initCategories();
-    syncUI();
+    
     syncAdminUI();
     TabController.init();
   } else {
@@ -151,7 +154,10 @@ function logout() {
 
   loggedIn = false;
   editEnabled = false;
- document.getElementById("historySection").style.display = "none";
+  document.getElementById("historySection").style.display = "none";
+  document.getElementById("lastUpdate").style.display = "none";
+
+
 
   // 🔍 Suche & Highlight zurücksetzen
   globalSearchTerm = "";
@@ -176,6 +182,29 @@ function logout() {
   app.style.display = "none";
   loginBox.style.display = "block";
 }
+
+/* ZENTRALE ADMIN-PRÜFUNG */
+function requireAdminUnlock() {
+  if (editEnabled) return true;
+
+  const key = prompt("Admin-Key erforderlich:");
+  if (!key) return false;
+
+  if (key === EDIT_KEY) {
+    editEnabled = true;
+    useEdit = true;
+    localStorage.setItem("editEnabled", "true");
+    unlockEditing();
+    startAutoLock();
+    syncAdminUI();
+    syncEditToggleButton();    
+    return true;
+  }
+
+  alert("Falscher Admin-Key");
+  return false;
+}
+
 
 
 /*Die Scroll-Funktion */
@@ -227,11 +256,15 @@ window.TabController = (() => {
       render: () => {
         renderKE();
         reapplyKEColumns();
+        document.getElementById("fmSection").style.display = "none";
+        document.getElementById("historySection").style.display = "block";
       }
     },
     fs: {
       section: "fsSection",
       render: () => {
+      document.getElementById("fmSection").style.display = "none";
+      document.getElementById("historySection").style.display = "none";
     if (window.renderFS) {
       window.renderFS();
     } else {
@@ -245,23 +278,31 @@ window.TabController = (() => {
     render: () => {
     loadFMData();
     renderFM();
+    document.getElementById("fmSection").style.display = "block";
+    document.getElementById("historySection").style.display = "none";
     }
   },
     inv: {
     section: "inventarSection",
     render: () => {
       renderInventur();
+      document.getElementById("fmSection").style.display = "none";
+      document.getElementById("historySection").style.display = "none";
     }
   },
     history: {
       section: "historySection",
       render: () => {
+        document.getElementById("fmSection").style.display = "none";
+
         if (editEnabled) renderHistoryKE();
       },
         },
     historySectionIExport: {
       section: "historySectionIExport",
       render: () => {
+      document.getElementById("fmSection").style.display = "none";  
+      document.getElementById("historySection").style.display = "none";      
       renderHistory();
       }
     }
@@ -683,15 +724,6 @@ function loadHistoryData() {
 /* =====================================================
    UI
 ===================================================== */
-function syncUI() {
-  unlockBtn.disabled = editEnabled;
-  status.textContent = editEnabled
-    ? "🔓 Bearbeitung aktiv"
-    : "🔒 Gesperrt!";
-
-
-}
-
 function syncAdminUI() {
   const btn = document.getElementById("resetMaterialDataBtn");
   if (btn) btn.style.display = editEnabled ? "inline-block" : "none";
@@ -708,7 +740,6 @@ document.addEventListener("DOMContentLoaded", () => {
       
 
     initCategories(); 
-    syncUI();
     syncAdminUI();
     loadHistoryData();
     renderHistory();
@@ -717,8 +748,24 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 /* =====================================================
    EDIT-LOCK / AUTO-LOCK
-===================================================== */
+   ===================================================== */
+/* ENTER soll Freischalten / Sperren auslösen */
+keyInput.addEventListener("keydown", e => {
+  if (e.key === "Enter") {
+    toggleEditing();
+  }
+});
+
+function toggleEditing() {
+  if (editEnabled) {
+    lockEditing();
+  } else {
+    unlockEditing();
+  }
+}
+
 function unlockEditing() {
+  if (useEdit) return false;  
   if (keyInput.value !== EDIT_KEY) {
     alert("Falscher Key");
     return;
@@ -726,18 +773,33 @@ function unlockEditing() {
 
   editEnabled = true;
   localStorage.setItem("editEnabled", "true");
+
   startAutoLock();
-  syncUI();
   syncAdminUI();
+  syncEditToggleButton();   // 🔑 HINZUFÜGEN
 }
 
 function lockEditing() {
   editEnabled = false;
+  useEdit = false;
   localStorage.removeItem("editEnabled");
+
   clearTimeout(lockTimer);
-  syncUI();
   syncAdminUI();
+  syncEditToggleButton();   // 🔑 HINZUFÜGEN
 }
+
+function syncEditToggleButton() {
+  const btn = document.getElementById("editToggleBtn");
+  if (!btn) return;
+
+  if (editEnabled) {
+    btn.textContent = "🔒 Sperren";
+  } else {
+    btn.textContent = "🔓 Freischalten";
+  }
+}
+
 
 function startAutoLock() {
   clearTimeout(lockTimer);
@@ -1035,9 +1097,23 @@ function cell(value, index, field) {
     </td>
   `;
 }
+
+/* Überprüfung ob eintrag vorhanden ist */
+function findDuplicateKE({ charge, palette }) {
+  return data.findIndex((row, i) =>
+    i !== index && // wichtig: nicht mit sich selbst vergleichen
+    String(row.charge).trim() === String(charge).trim() &&
+    String(row.palette).trim() === String(palette).trim()
+  );
+}
+
+
+
+
 function editCell(icon, index, field) {
   if (PROTECTED_FIELDS.includes(field) && !editEnabled) return;
-
+  if (!requireAdminUnlock()) return;
+  
   const td = icon.closest("td");
   if (!td) return;
 
@@ -1054,21 +1130,48 @@ function editCell(icon, index, field) {
   const btn = td.querySelector(".edit-apply");
   input.focus();
 
-  const commit = () => {
-    const newValue = input.value;
-    if (newValue !== oldValue) {
-      data[index][field] = newValue;
-      save();
-      saveHistory({
-        time: new Date().toISOString(),
-        field,
-        oldValue,
-        newValue
-      });
+const commit = () => {
+  const newValue = input.value;
+
+  if (newValue !== oldValue) {
+
+    // 🔍 NUR prüfen, wenn Charge oder Palette geändert wird
+    if (field === "charge" || field === "palette") {
+
+      const testCharge =
+        field === "charge" ? newValue : data[index].charge;
+      const testPalette =
+        field === "palette" ? newValue : data[index].palette;
+
+      const dupIndex = data.findIndex((row, i) =>
+        i !== index &&
+        String(row.charge).trim() === String(testCharge).trim() &&
+        String(row.palette).trim() === String(testPalette).trim()
+      );
+
+      if (dupIndex !== -1) {
+        alert(`Eintrag bereits vorhanden (Zeile ${dupIndex + 1})`);
+        scrollToKERow(dupIndex);
+        renderKE();
+        reapplyKEColumns();
+        return;
+      }
     }
-    renderKE();
-    reapplyKEColumns();
-  };
+
+    // ✅ kein Duplikat → speichern
+    data[index][field] = newValue;
+    save();
+    saveHistory({
+      time: new Date().toISOString(),
+      field,
+      oldValue,
+      newValue
+    });
+  }
+
+  renderKE();
+  reapplyKEColumns();
+};
 
   input.addEventListener("keydown", e => {
     if (e.key === "Enter") {
@@ -1203,7 +1306,7 @@ function $$(sel, root = document) {
    INITIAL UI STATE
 ===================================================== */
 document.addEventListener("DOMContentLoaded", () => {
-  syncUI();
+  
   syncAdminUI();
 
   if (search) search.value = "";
@@ -1529,6 +1632,26 @@ function saveFMData() {
 function saveHistoryData() {
   localStorage.setItem("historyData", JSON.stringify(historyData));
 }
+
+
+window.addEventListener("DOMContentLoaded", () => {
+
+  syncEditToggleButton();
+  if (editEnabled) {
+    startAutoLock();
+  }
+
+
+  const el = document.getElementById("lastUpdate");
+  const lastModified = new Date(document.lastModified);
+  const dd = String(lastModified.getDate()).padStart(2, "0");
+  const mm = String(lastModified.getMonth() + 1).padStart(2, "0");
+  const yyyy = lastModified.getFullYear();
+  const hh = String(lastModified.getHours()).padStart(2, "0");
+  const min = String(lastModified.getMinutes()).padStart(2, "0");
+  const formatted = `${dd}.${mm}.${yyyy} ( ${hh}:${min} )`;
+  el.textContent = formatted;
+});
 
 /* =====================================================
    EOF – daten.js vollständig

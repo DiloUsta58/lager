@@ -213,7 +213,6 @@ tr.category .row-lock {
   background: #e5e7eb;
   color: #111827;
   font-weight: 600;
-  text-align: left;
   padding: 10px 12px;
   border-bottom: 2px solid var(--border);
 }
@@ -655,6 +654,17 @@ mark.search-hit {
     color: #ffffff;
 }
 
+[data-theme="dark"] .no-print {
+    background: #2a2a2a;
+    color: #ffffff;
+}
+[data-theme="dark"] .no-print:hover {
+    background: #3b82f6;
+    color: #ffffff;
+}
+
+
+
 .header {
   display: flex;
   align-items: center;
@@ -850,6 +860,68 @@ mark.search-hit {
 }
 */
 
+/* ======================
+   KE / FS INHALT ZENTRIEREN (ECHT)
+====================== */
+
+#keSection td,
+#fsSection td {
+  text-align: center !important;
+}
+
+/* + */
+#keSection th:nth-child(1),
+#keSection td:nth-child(1) {
+  width: 30px;
+}
+
+/* Material */
+#keSection th:nth-child(2),
+#keSection td:nth-child(2) {
+  text-align: left !important;
+  width: 50px;
+}
+
+/* E-Nummer */
+#keSection th:nth-child(3),
+#keSection td:nth-child(3) {
+  width: 90px;
+}
+/* Charge-Nr.	 */
+#keSection th:nth-child(4),
+#keSection td:nth-child(4) {
+  width: 50px;
+}
+/* Paletten-Nr. */
+#keSection th:nth-child(5),
+#keSection td:nth-child(5) {
+  width: 90px;
+}
+/* Regal */
+#keSection th:nth-child(6),
+#keSection td:nth-child(6) {
+  width: 90px;
+}
+
+/* Bestand */
+#keSection th:nth-child(7),
+#keSection td:nth-child(7) {
+  width: 100px;
+}
+
+/* Bestand */
+#keSection th:nth-child(8),
+#keSection td:nth-child(8) {
+  width: 30px;
+}
+
+/* Material */
+#fsSection th:nth-child(2),
+#fsSection td:nth-child(2) {
+  text-align: left !important;
+  width: 50px;
+}
+
 /* =====================================================
    MOBILE / TABLET OPTIMIZATION
 ===================================================== */
@@ -1033,7 +1105,33 @@ mark.search-hit {
     padding-left: 4px;
   }
 
+/* ======================
+   MOBILE: CHECKBOXEN 2-ZEILIG (SPALTENFLUSS)
+====================== */
+@media (max-width: 768px) {
 
+  .inputs {
+    display: flex !important;
+    flex-direction: column !important;
+    flex-wrap: wrap !important;
+
+    /* exakt 2 Zeilen Höhe */
+    max-height: calc(2 * 36px);
+    
+    column-gap: 18px;
+    row-gap: 8px;
+  }
+
+  .inputs label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    font-size: 14px;
+    line-height: 1.2;
+  }
+
+}
 
 
   /* =====================

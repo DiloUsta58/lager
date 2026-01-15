@@ -542,20 +542,10 @@ function fmCell(value, rowIndex, field) {
 }
 
 
-
-
 function editFM(icon, rowIndex, field) {
-  /* 
-    ➡️ Die Funktion beendet sich sofort
-    ➡️ Kein Input
-    ➡️ Kein Fehler
-    ➡️ „Es passiert nichts“
-    */
-  
-    const canEdit = editEnabled && FM_EDITABLE_FIELDS.includes(field);
-  if (!editEnabled) return;
-
-
+ 
+  const canEdit = editEnabled && FM_EDITABLE_FIELDS.includes(field);
+  if (!requireAdminUnlock()) return;
 
   const td = icon.closest("td");
   const span = td.querySelector("span");
@@ -594,7 +584,6 @@ function editFM(icon, rowIndex, field) {
 
 function renderFM() {
   if (!loggedIn) return;
-
   const tbody = document.getElementById("fmTableBody");
   tbody.innerHTML = "";
 

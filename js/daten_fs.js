@@ -23,7 +23,7 @@ const DEFAULT_FS_DATA = [
     bezeichnung: "30# Melting Liner F4XADG0560",
     material: "F4X",
     stueck: 144,
-    eNummer: "32346800",
+    eNummer: "E32346800",
     kuerzel: "560",
     bestand: "",
     dpc: ""
@@ -33,7 +33,7 @@ const DEFAULT_FS_DATA = [
     bezeichnung: "50# Melting Liner F4XADG0561",
     material: "F4X",
     stueck: 144,
-    eNummer: "32347200",
+    eNummer: "E32347200",
     kuerzel: "561",
     bestand: "",
     dpc: ""
@@ -43,7 +43,7 @@ const DEFAULT_FS_DATA = [
     bezeichnung: "60# Melting Liner F4X 758",
     material: "F4X",
     stueck: 144,
-    eNummer: "32347400",
+    eNummer: "E32347400",
     kuerzel: "758",
     bestand: "",
     dpc: ""
@@ -53,7 +53,7 @@ const DEFAULT_FS_DATA = [
     bezeichnung: "75# Melting Liner F4AXADG0759",
     material: "F4X",
     stueck: 100,
-    eNummer: "32347600",
+    eNummer: "E32347600",
     kuerzel: "759",
     bestand: "",
     dpc: ""
@@ -63,7 +63,7 @@ const DEFAULT_FS_DATA = [
     bezeichnung: "110# Melting Liner F4XADG0926",
     material: "F4X",
     stueck: 100,
-    eNummer: "32347800",
+    eNummer: "E32347800",
     kuerzel: "926",
     bestand: "",
     dpc: ""
@@ -73,7 +73,7 @@ const DEFAULT_FS_DATA = [
     bezeichnung: "110# Melting Liner F4XADG0926",
     material: "A4A",
     stueck: 100,
-    eNummer: "32346200",
+    eNummer: "E32346200",
     kuerzel: "926",
     bestand: "",
     dpc: ""
@@ -199,6 +199,10 @@ const DEFAULT_FS_DATA = [
     dpc: ""
   }
 ];
+
+
+
+
 
 /* =========================
    AKTIVE DATEN (STORAGE ODER DEFAULT)
@@ -340,16 +344,31 @@ function highlightText(text, term) {
 
 
 function editFS(icon, index, field) {
+  if (!requireAdminUnlock()) return;
+  
   const td = icon.closest("td");
   const old = fsData[index][field];
   td.innerHTML = `<input class="edit-input" value="${old || ""}">`;
   const input = td.querySelector("input");
   input.focus();
+
+  // ✅ ENTER / ESC Handling
+  input.addEventListener("keydown", e => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      input.blur(); // triggert onblur → speichern
+    }
+    if (e.key === "Escape") {
+      e.preventDefault();
+      if (typeof renderFS === "function") renderFS(); // Abbrechen
+    }
+  });
+
   input.onblur = () => {
     fsData[index][field] = input.value;
     saveFS();
 
-    // 🔴 NEU: Änderungshistorie
+    // 🔴 Änderungshistorie
     saveHistory({
       time: new Date().toISOString(),
       table: "FS",
@@ -359,8 +378,8 @@ function editFS(icon, index, field) {
       row: fsData[index].bezeichnung
     });
 
-    if (typeof renderFS === 'function') { renderFS(); }
-    if (typeof reapplyFsColumns === 'function') { reapplyFsColumns(); }
+    if (typeof renderFS === 'function') renderFS();
+    if (typeof reapplyFsColumns === 'function') reapplyFsColumns();
   };
 }
 
