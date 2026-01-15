@@ -1033,18 +1033,21 @@ mark.search-hit {
     padding-left: 4px;
   }
 
-  /* ======================
-   MOBILE CHECKBOX LAYOUT
+/* ======================
+   MOBILE: FILTER CHECKBOXEN
 ====================== */
 @media (max-width: 768px) {
 
-  .checkbox-group {
-    display: grid;
+  /* Container der Checkboxen */
+  .inputs {
+    display: grid !important;
     grid-template-columns: repeat(2, 1fr);
-    gap: 8px 14px;
+    gap: 10px 14px;
+    align-items: start;
   }
 
-  .checkbox-group label {
+  /* Jedes Label */
+  .inputs label {
     display: flex;
     align-items: center;
     gap: 6px;
@@ -1053,15 +1056,13 @@ mark.search-hit {
     white-space: nowrap;
   }
 
-  /* gesperrte Checkbox (optional klarer darstellen) */
-  .checkbox-group label.locked {
-    opacity: 0.7;
+  /* Gesperrte Checkbox (Material) */
+  .inputs label.locked {
+    opacity: 0.6;
   }
 
-    .checkbox-group label {
-    white-space: normal;
-  }
 }
+
 
 @media (max-width: 1024px) {
   .checkbox-group {
