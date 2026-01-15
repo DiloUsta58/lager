@@ -1033,6 +1033,41 @@ mark.search-hit {
     padding-left: 4px;
   }
 
+  /* ======================
+   MOBILE CHECKBOX LAYOUT
+====================== */
+@media (max-width: 768px) {
+
+  .checkbox-group {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px 14px;
+  }
+
+  .checkbox-group label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+
+  /* gesperrte Checkbox (optional klarer darstellen) */
+  .checkbox-group label.locked {
+    opacity: 0.7;
+  }
+
+    .checkbox-group label {
+    white-space: normal;
+  }
+}
+
+@media (max-width: 1024px) {
+  .checkbox-group {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
 
 
   /* =====================
