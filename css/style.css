@@ -310,12 +310,23 @@ td:hover .edit-icon {
    COLUMN CONTROLS
 ===================================================== */
 .ke-column-controls,
-.fs-column-controls {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: left;
-  gap: 14px;
-  margin: 12px 0;
+.fs-column-controls,
+.fm-column-toggle {
+    display: flex !important;
+    flex-direction: column !important;
+    flex-wrap: wrap !important;
+
+    /* exakt 2 Zeilen Höhe */
+    max-height: calc(2 * 36px);
+    
+    column-gap: 18px;
+    row-gap: 8px;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    font-size: 14px;
+    line-height: 1.2;
+
 }
 
 /* =========================
@@ -403,25 +414,20 @@ td:hover .edit-icon {
 ========================= */
 
 #fmSection .fm-column-toggle {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px 20px;
-  margin-bottom: 10px;
-}
+    display: flex !important;
+    flex-direction: column !important;
+    flex-wrap: wrap !important;
 
-#fmSection .fm-column-toggle{
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-#fmSection .fm-column-toggle {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 8px 12px;
+    /* exakt 2 Zeilen Höhe */
+    max-height: calc(2 * 36px);
+    
+    column-gap: 18px;
+    row-gap: 8px;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    font-size: 14px;
+    line-height: 1.2;    
 }
 
 
@@ -861,12 +867,6 @@ mark.search-hit {
   button {
     width: 100%;
   }
-
-  .ke-column-controls,
-  .fs-column-controls,
-  .fm-column-toggle {
-    justify-content: flex-start;
-  }
 }
 /* ======================
    DRUCKLAYOUT (A4)
@@ -1033,36 +1033,6 @@ mark.search-hit {
     padding-left: 4px;
   }
 
-/* ======================
-   MOBILE: CHECKBOX-FILTER FIX
-====================== */
-@media (max-width: 768px) {
-
-  /* Erzwinge Umbruch */
-  .inputs {
-    display: flex !important;
-    flex-wrap: wrap !important;
-    gap: 10px 0;
-  }
-
-  /* Jede Checkbox = 50% Breite */
-  .inputs label {
-    width: 50% !important;
-    box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 14px;
-    line-height: 1.2;
-    white-space: normal !important;
-  }
-
-  /* optional: gesperrt */
-  .inputs label.locked {
-    opacity: 0.6;
-  }
-
-}
 
 
 
