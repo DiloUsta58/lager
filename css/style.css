@@ -313,7 +313,7 @@ td:hover .edit-icon {
 .fs-column-controls {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
+  justify-content: left;
   gap: 14px;
   margin: 12px 0;
 }
@@ -1034,41 +1034,36 @@ mark.search-hit {
   }
 
 /* ======================
-   MOBILE: FILTER CHECKBOXEN
+   MOBILE: CHECKBOX-FILTER FIX
 ====================== */
 @media (max-width: 768px) {
 
-  /* Container der Checkboxen */
+  /* Erzwinge Umbruch */
   .inputs {
-    display: grid !important;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px 14px;
-    align-items: start;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 10px 0;
   }
 
-  /* Jedes Label */
+  /* Jede Checkbox = 50% Breite */
   .inputs label {
+    width: 50% !important;
+    box-sizing: border-box;
     display: flex;
     align-items: center;
     gap: 6px;
     font-size: 14px;
     line-height: 1.2;
-    white-space: nowrap;
+    white-space: normal !important;
   }
 
-  /* Gesperrte Checkbox (Material) */
+  /* optional: gesperrt */
   .inputs label.locked {
     opacity: 0.6;
   }
 
 }
 
-
-@media (max-width: 1024px) {
-  .checkbox-group {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
 
 
   /* =====================
