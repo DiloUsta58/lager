@@ -664,6 +664,20 @@ mark.search-hit {
 }
 
 
+/* ======================
+   KE – Bemerkung Statusfarben
+====================== */
+.ke-bemerkung-frei {
+  background-color: #03891ee0 !important;
+  color: #ffffff !important;
+}
+
+.ke-bemerkung-ungeprueft {
+  background-color: #890303e0 !important;
+  color: #ffffff !important;
+}
+
+
 
 .header {
   display: flex;

@@ -1083,8 +1083,19 @@ function cell(value, index, field) {
   const protectedField = PROTECTED_FIELDS.includes(field);
   const canEdit = !protectedField || editEnabled;
 
+  // 🔹 Bemerkung-Farblogik
+  let extraClass = "";
+  if (field === "bemerkung" && typeof value === "string") {
+    const v = value.trim().toLowerCase();
+    if (v === "frei") {
+      extraClass = "ke-bemerkung-frei";
+    } else if (v === "ungeprüft" || v === "ungeprueft") {
+      extraClass = "ke-bemerkung-ungeprueft";
+    }
+  }
+
   return `
-    <td class="${protectedField ? "protected" : ""}">
+    <td class="${protectedField ? "protected" : ""} ${extraClass}">
       <div class="edit-wrapper">
         <span>${highlightText(value ?? "", globalSearchTerm)}</span>
         ${
