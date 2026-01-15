@@ -705,16 +705,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (loggedIn) {
     loginBox.style.display = "none";
     app.style.display = "block";
-
-    document.getElementById("content").style.display = "none";
-    document.getElementById("keSection").style.display = "none";
-    document.getElementById("fsSection").style.display = "none";
-    document.getElementById("fmSection").style.display = "none";
-    document.getElementById("inventarSection").style.display = "none";
-    document.getElementById("historySection").style.display = "none";
-
-
-    
+      
 
     initCategories(); 
     syncUI();
