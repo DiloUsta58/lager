@@ -38,6 +38,7 @@ const PROTECTED_FIELDS = ["material", "e"];
 /* =====================================================
    STATUS
 ===================================================== */
+
 let editEnabled = localStorage.getItem("editEnabled") === "true";
 let lockTimer = null;
 let loggedIn = sessionStorage.getItem("loggedIn") === "true";
@@ -94,7 +95,8 @@ function clearAllTables() {
   const bodies = [
     "tableBody",     // KE
     "fsTableBody",
-    "fmTableBody"
+    "fmTableBody",
+    "historyBodyIExport"
   ];
 
   bodies.forEach(id => {
@@ -102,6 +104,58 @@ function clearAllTables() {
     if (el) el.innerHTML = "";
   });
 }
+
+/* =====================================================
+   ZENTRALE SUCH-UPDATE-FUNKTION
+===================================================== */
+function setTabCount(tab, count) {
+  const btn = document.querySelector(`.tab-btn[data-tab="${tab}"]`);
+  if (!btn) return;
+
+  const label = btn.dataset.label;
+
+  if (globalSearchTerm && count > 0) {
+    btn.textContent = `${label} (${count})`;
+  } else {
+    btn.textContent = label;
+  }
+}
+
+function updateSearchCounts() {
+  const term = globalSearchTerm;
+
+  // KE
+  const keCount = term
+    ? kedata.filter(r =>
+        Object.values(r).some(v =>
+          String(v).toLowerCase().includes(term)
+        )
+      ).length
+    : kedata.length;
+  setTabCount("ke", keCount);
+
+  // FS
+  const fsCount = term
+    ? fsData.filter(r =>
+        Object.values(r).some(v =>
+          String(v).toLowerCase().includes(term)
+        )
+      ).length
+    : fsData.length;
+  setTabCount("fs", fsCount);
+
+  // FM
+  const fmCount = term
+    ? fmData.filter(r =>
+        Object.values(r).some(v =>
+          String(v).toLowerCase().includes(term)
+        )
+      ).length
+    : fmData.length;
+  setTabCount("fm", fmCount);
+}
+
+
 
 /* =====================================================
    RESET KE SECTION
@@ -135,12 +189,11 @@ function login(e) {
     app.style.display = "block";
     document.getElementById("historySection").style.display = "none";
     document.getElementById("lastUpdate").style.display = "block";
-    
     document.getElementById("fmSection").style.display = "block";
 
     initCategories();
-    
     syncAdminUI();
+    loadInventurDate();
     TabController.init();
   } else {
     alert("Login fehlgeschlagen");
@@ -156,7 +209,7 @@ function logout() {
   editEnabled = false;
   document.getElementById("historySection").style.display = "none";
   document.getElementById("lastUpdate").style.display = "none";
-
+  document.getElementById("fmSection").style.display = "none";
 
 
   // 🔍 Suche & Highlight zurücksetzen
@@ -543,6 +596,7 @@ function renderInventur() {
 
   setTabCount("inv", rows.length);
 
+  
   /* =========================
      RENDER
   ========================= */
@@ -991,17 +1045,28 @@ const debouncedRender = (() => {
   };
 })();
 
+
 safeOn(search, "input", () => {
-  if (TabController?.show && TabController) {
-    renderKE();
+  globalSearchTerm = search.value.trim().toLowerCase();
+
+  if (!TabController) return;
+
+  switch (TabController.active) {
+    case "ke":
+      renderKE();
+      break;
+
+    case "fs":
+      if (typeof renderFS === "function") {
+        renderFS();
+      }
+      break;
+
+    case "fm":
+      renderFM();
+      break;
   }
-});
 
-safeOn(categoryFilter, "change", () => {
-  renderKE();
-});
-
-safeOn(search, "input", () => {
   globalSearchTerm = search.value.trim().toLowerCase();
 
   const current = TabController.getActive();
@@ -1010,7 +1075,13 @@ safeOn(search, "input", () => {
   }
     // ✅ NACH dem Rendern zum ersten Treffer springen
   requestAnimationFrame(scrollToFirstHighlight);
+
 });
+
+safeOn(categoryFilter, "change", () => {
+  renderKE();
+});
+
 
 /* =====================================================
    KE – SPALTEN CHECKBOXEN
@@ -1091,6 +1162,8 @@ function cell(value, index, field) {
       extraClass = "ke-bemerkung-frei";
     } else if (v === "ungeprüft" || v === "ungeprueft") {
       extraClass = "ke-bemerkung-ungeprueft";
+    } else if (v === "gesperrt" || v === "gesperrt") {
+      extraClass = "ke-bemerkung-gesperrt";
     }
   }
 
@@ -1240,6 +1313,7 @@ renderKE = function () {
 
   const filtered = getFilteredData();
   setTabCount("ke", filtered.length);
+  
   let lastCat = null;
 
   filtered.forEach(row => {

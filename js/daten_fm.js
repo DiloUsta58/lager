@@ -490,19 +490,6 @@ function saveFMData() {
   localStorage.setItem(FM_STORAGE_KEY, JSON.stringify(fmData));
 }
 
-function setTabCount(tab, count) {
-  const btn = document.querySelector(`.tab-btn[data-tab="${tab}"]`);
-  if (!btn) return;
-
-  const base = btn.textContent.replace(/\s*\(\d+\)$/, "");
-
-  if (count > 0 && globalSearchTerm) {
-    btn.textContent = `${base} (${count})`;
-  } else {
-    btn.textContent = base;
-  }
-}
-
 /* Edit funktion */
 function fmCell(value, rowIndex, field) {
   const canEdit = FM_EDITABLE_FIELDS.includes(field);
