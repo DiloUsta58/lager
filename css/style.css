@@ -1192,4 +1192,36 @@ mark.search-hit {
   z-index: 2;
 }
 
+/* =========================
+   SEARCH RESPONSIVE
+========================= */
+
+@media (max-width: 900px) {
+  .search-wrapper {
+    width: 90%;
+  }
+
+  .inputs {
+    display: flex !important;
+    flex-direction: column !important;
+    flex-wrap: wrap !important;
+
+    /* exakt 2 Zeilen Höhe */
+    max-height: calc(2 * 15px);
+    
+    column-gap: 18px;
+    row-gap: 8px;
+  }
+
+  .inputs label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    font-size: 14px;
+    line-height: 1.2;
+  }
+    
+}
+
 

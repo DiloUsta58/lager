@@ -239,6 +239,22 @@ function logout() {
   // UI wechseln
   MyApp.style.display = "none";
   loginBox.style.display = "block";
+
+
+/* =========================
+    SEARCH STATE RESET
+============================ */
+    App.search = "";
+
+    if (search) {
+      search.value = "";
+    }
+
+    const searchClear = document.getElementById("searchClear");
+    if (searchClear) {
+      searchClear.style.display = "none";
+    }
+
 }
 
 /* ZENTRALE ADMIN-PRÜFUNG */
@@ -1112,6 +1128,29 @@ safeOn(search, "input", () => {
 safeOn(categoryFilter, "change", () => {
   renderKE();
 });
+
+/* =========================
+   ESC löscht Suche
+ ========================= */
+safeOn(document, "keydown", (e) => {
+  if (e.key !== "Escape") return;
+  if (!search || !search.value) return;
+
+  search.value = "";
+  App.search = "";
+
+  const searchClear = document.getElementById("searchClear");
+  if (searchClear) {
+    searchClear.style.display = "none";
+  }
+
+  if (TabController?.show && TabController?.getActive) {
+    TabController.show(TabController.getActive());
+  }
+});
+
+
+
 
 
 /* =====================================================
