@@ -1,3 +1,6 @@
+
+
+
 /* =====================================================
    GLOBALE DOM-REFERENZEN (ROBUSTE FALLBACKS)
 ===================================================== */
@@ -13,6 +16,8 @@ const tableBody = document.getElementById("tableBody");
 const search = document.getElementById("search");
 const categoryFilter = document.getElementById("categoryFilter");
 
+
+
 /* =====================================================
    SAFE EVENT BINDING
 ===================================================== */
@@ -25,9 +30,6 @@ function safeOn(el, evt, fn) {
 ===================================================== */
 const STORAGE_KEY = "materialData";
 const HISTORY_KEY = "materialHistory";
-
-
-
 
 const LOGIN_USER = "DiloUsta58";
 const LOGIN_PASS = "64579";
@@ -43,7 +45,6 @@ let editEnabled = localStorage.getItem("editEnabled") === "true";
 let lockTimer = null;
 let loggedIn = sessionStorage.getItem("loggedIn") === "true";
 let isAdmin = loggedIn;
-let globalSearchTerm = "";
 let historyData = [];
 let useEdit = false;
 
@@ -70,6 +71,7 @@ const FS_COLUMN_MAP = {
   bestand: 6,
   dpc: 7
 };
+
 
 /* =====================================================
    DATEN LADEN
@@ -112,17 +114,19 @@ function setTabCount(tab, count) {
   const btn = document.querySelector(`.tab-btn[data-tab="${tab}"]`);
   if (!btn) return;
 
-  const label = btn.dataset.label;
+  const base = btn.dataset.label; // ← stabile Quelle
 
-  if (globalSearchTerm && count > 0) {
-    btn.textContent = `${label} (${count})`;
+  if (App.search && count > 0) {
+    btn.textContent = `${base} (${count})`;
   } else {
-    btn.textContent = label;
+    btn.textContent = base;
   }
 }
 
+
+
 function updateSearchCounts() {
-  const term = globalSearchTerm;
+  const term = App.search;
 
   // KE
   const keCount = term
@@ -174,19 +178,18 @@ function resetKE() {
 ===================================================== */
 function login(e) {
   if (e) e.preventDefault();
-
   const user = userInput.value.trim();
   const pass = passInput.value.trim();
-
   if (user === LOGIN_USER && pass === LOGIN_PASS) {
-    loggedIn = true;
-    isAdmin = true;
-    editEnabled = false;
-    localStorage.setItem("editEnabled", "false");
+    App.loggedIn = true;
+    App.isAdmin = true;
     sessionStorage.setItem("loggedIn", "true");
 
+    App.editEnabled = false;
+    localStorage.setItem("editEnabled", "false");
+
     loginBox.style.display = "none";
-    app.style.display = "block";
+    MyApp.style.display = "block";
     document.getElementById("historySection").style.display = "none";
     document.getElementById("lastUpdate").style.display = "block";
     document.getElementById("fmSection").style.display = "block";
@@ -201,19 +204,21 @@ function login(e) {
 }
 
 function logout() {
+
+  App.loggedIn = false;
+  App.editEnabled = false;
+  App.search = "";
   sessionStorage.removeItem("loggedIn");
   localStorage.removeItem("editEnabled");
   localStorage.removeItem("activeTab");
 
-  loggedIn = false;
-  editEnabled = false;
   document.getElementById("historySection").style.display = "none";
   document.getElementById("lastUpdate").style.display = "none";
   document.getElementById("fmSection").style.display = "none";
 
 
   // 🔍 Suche & Highlight zurücksetzen
-  globalSearchTerm = "";
+  App.search = "";
   if (search) search.value = "";
 
   // 🧹 Tabellen leeren
@@ -232,7 +237,7 @@ function logout() {
   });
 
   // UI wechseln
-  app.style.display = "none";
+  MyApp.style.display = "none";
   loginBox.style.display = "block";
 }
 
@@ -262,7 +267,7 @@ function requireAdminUnlock() {
 
 /*Die Scroll-Funktion */
 function scrollToFirstHighlight() {
-  if (!globalSearchTerm) return;
+  if (!App.search) return;
 
   const activeSection = document.querySelector(".tab-section.active");
   if (!activeSection) return;
@@ -395,7 +400,7 @@ window.TabController = (() => {
    KE RENDERING
 ===================================================== */
 function renderKE() {
-  if (!loggedIn) return;
+  if (!App.loggedIn) return;
   tableBody.innerHTML = "";
 
   let lastCat = null;
@@ -592,9 +597,25 @@ function renderInventur() {
   /* =========================
      GESAMTE INVENTUR (OHNE GLOBALSUMMEN)
   ========================= */
- const rows = [...keRows, ...fsRows, ...fmRows];
+const rows = [...keRows, ...fsRows, ...fmRows];
 
-  setTabCount("inv", rows.length);
+/* ===== INVENTUR FILTER (wie KE / FS / FM) ===== */
+let invFiltered = rows;
+
+if (App.search) {
+  const q = App.search.toLowerCase();
+  invFiltered = rows.filter(row =>
+    Object.values(row).some(v =>
+      String(v).toLowerCase().includes(q)
+    )
+  );
+}
+
+/* ===== TAB-ZÄHLER ===== 
+setTabCount("inv", invFiltered.length);*/
+/* ===== TREFFERZAHL KORRIGIEREN (Summenzeile) ===== */
+const invCount = invFiltered.filter(r => !r._isSum).length;
+setTabCount("inv", invCount);
 
   
   /* =========================
@@ -603,11 +624,11 @@ function renderInventur() {
   rows.forEach(r => {
     body.innerHTML += `
       <tr class="${r.gesamt ? 'inventory-sum' : ''}">
-        <td>${highlightText(r.source, globalSearchTerm)}</td>
-        <td>${highlightText(r.beschreibung, globalSearchTerm)}</td>
-        <td>${highlightText(r.eNummer, globalSearchTerm)}</td>
-        <td>${highlightText(r.charge, globalSearchTerm)}</td>
-        <td>${highlightText(r.palette, globalSearchTerm)}</td>
+        <td>${highlightText(r.source, App.search)}</td>
+        <td>${highlightText(r.beschreibung, App.search)}</td>
+        <td>${highlightText(r.eNummer, App.search)}</td>
+        <td>${highlightText(r.charge, App.search)}</td>
+        <td>${highlightText(r.palette, App.search)}</td>
         <td>${r.bestand}</td>
         <td>${r.gesamt}</td>
       </tr>
@@ -616,8 +637,7 @@ function renderInventur() {
 }
 
 
-/*Neue KE-Inventur-Aufbereitung (ersetzt alte Gruppierung)*/
-
+/* Neue KE-Inventur-Aufbereitung (ersetzt alte Gruppierung) */
 function buildKEInventurRows() {
   const map = new Map();
 
@@ -640,6 +660,7 @@ function buildKEInventurRows() {
       });
     }
 
+    /* ===== DETAILZEILE ===== */
     if (hasDetail) {
       map.get(material).rows.push({
         source: "KE",
@@ -648,7 +669,8 @@ function buildKEInventurRows() {
         charge,
         palette,
         bestand: !isNaN(bestand) ? bestand : "",
-        gesamt: ""
+        gesamt: "",
+        _isSum: false           // ✅ explizit KEINE Summenzeile
       });
     }
 
@@ -660,10 +682,10 @@ function buildKEInventurRows() {
   const result = [];
 
   map.forEach((entry, material) => {
-    // Detailzeilen
+    /* ===== DETAILZEILEN ===== */
     entry.rows.forEach(r => result.push(r));
 
-    // GENAU EINE Summenzeile pro Material
+    /* ===== GENAU EINE SUMMENZEILE ===== */
     result.push({
       source: "KE",
       beschreibung: material,
@@ -671,12 +693,14 @@ function buildKEInventurRows() {
       charge: "",
       palette: "",
       bestand: "",
-      gesamt: entry.total > 0 ? entry.total + " kg" : ""
+      gesamt: entry.total > 0 ? entry.total + " kg" : "",
+      _isSum: true            // ✅ DAS IST DIE SUMMENZEILE
     });
   });
 
   return result;
 }
+
 
   /* =========================
      Print-Funktion
@@ -700,13 +724,14 @@ function printTable() {
 
 
 function highlightText(text, term) {
-  if (!term) return text;
+  if (!term || !text) return text ?? "";
 
   const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const regex = new RegExp(`(${escaped})`, "gi");
 
-  return String(text).replace(regex, '<mark class="search-hit">$1</mark>');
+  return String(text).replace(regex, "<mark>$1</mark>");
 }
+
 
 
 /* =====================================================
@@ -790,7 +815,7 @@ function syncAdminUI() {
 document.addEventListener("DOMContentLoaded", () => {
   if (loggedIn) {
     loginBox.style.display = "none";
-    app.style.display = "block";
+    MyApp.style.display = "block";
       
 
     initCategories(); 
@@ -877,7 +902,7 @@ function initCategories() {
   if (!categoryFilter || !Array.isArray(data)) return;
 
   categoryFilter.innerHTML =
-    '<option value="">Alle Kategorien</option>';
+    '<option value="ALL">Alle Kategorien</option>';
 
   const cats = [
     ...new Set(
@@ -982,7 +1007,7 @@ function resetMaterialData() {
         data   = structuredClone(defaultData);
 
         // UI Reset
-        globalSearchTerm = "";
+        App.search = "";
         if (search) search.value = "";
 
         renderFM();
@@ -1037,6 +1062,31 @@ document.addEventListener("DOMContentLoaded", () => {
 /* =====================================================
    KE – SUCH & FILTER EVENTS
 ===================================================== */
+
+const searchInput = document.getElementById("search");
+const searchClear = document.getElementById("searchClear");
+
+/* X ein-/ausblenden */
+safeOn(search, "input", () => {
+  if (searchClear) {
+    searchClear.style.display = search.value ? "block" : "none";
+  }
+});
+
+/* Klick auf X */
+safeOn(searchClear, "click", () => {
+  search.value = "";
+  App.search = "";
+
+  searchClear.style.display = "none";
+
+  if (TabController?.show && TabController?.getActive) {
+    TabController.show(TabController.getActive());
+  }
+});
+
+
+
 const debouncedRender = (() => {
   let t;
   return () => {
@@ -1047,36 +1097,17 @@ const debouncedRender = (() => {
 
 
 safeOn(search, "input", () => {
-  globalSearchTerm = search.value.trim().toLowerCase();
+  App.search = search.value.trim().toLowerCase();
 
-  if (!TabController) return;
-
-  switch (TabController.active) {
-    case "ke":
-      renderKE();
-      break;
-
-    case "fs":
-      if (typeof renderFS === "function") {
-        renderFS();
-      }
-      break;
-
-    case "fm":
-      renderFM();
-      break;
+  // 🔁 AKTIVEN TAB sofort neu rendern
+  if (TabController?.show && TabController?.getActive) {
+    TabController.show(TabController.getActive());
   }
 
-  globalSearchTerm = search.value.trim().toLowerCase();
-
-  const current = TabController.getActive();
-  if (current) {
-    TabController.show(current);
-  }
-    // ✅ NACH dem Rendern zum ersten Treffer springen
+  // ✅ NACH dem Rendern zum ersten Treffer springen
   requestAnimationFrame(scrollToFirstHighlight);
-
 });
+
 
 safeOn(categoryFilter, "change", () => {
   renderKE();
@@ -1170,7 +1201,7 @@ function cell(value, index, field) {
   return `
     <td class="${protectedField ? "protected" : ""} ${extraClass}">
       <div class="edit-wrapper">
-        <span>${highlightText(value ?? "", globalSearchTerm)}</span>
+        <span>${highlightText(value ?? "", App.search)}</span>
         ${
           canEdit
             ? `<span class="edit-icon"
@@ -1285,12 +1316,14 @@ function highlight(text, q) {
 function getFilteredData() {
   let result = [...data];
 
+  // 🔹 Kategorie aus Select
   const cat = categoryFilter?.value;
-  if (cat) {
+  if (cat && cat !== "ALL") {
     result = result.filter(r => r.cat === cat);
   }
 
-  const q = search?.value?.toLowerCase().trim();
+  // 🔹 Suche aus App-State (NICHT direkt aus Input!)
+  const q = App.search;
   if (q) {
     result = result.filter(r =>
       Object.values(r).some(v =>
@@ -1302,12 +1335,13 @@ function getFilteredData() {
   return result;
 }
 
+
 /* =====================================================
    KE – RENDER OVERRIDE MIT FILTER
 ===================================================== */
 const _renderOriginal = renderKE;
 renderKE = function () {
-  if (!loggedIn) return;
+  if (!App.loggedIn) return;
 
   tableBody.innerHTML = "";
 
@@ -1404,7 +1438,7 @@ document.addEventListener("DOMContentLoaded", () => {
 ===================================================== */
 (function sanityCheck() {
   const required = [
-    app,
+    MyApp,
     loginBox,
     userInput,
     passInput,

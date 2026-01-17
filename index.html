@@ -46,7 +46,7 @@
 <!-- =========================
      GESCHÜTZTE APP
 ========================= -->
-<div id="app" style="display:none">
+<div id="MyApp" style="display:none">
   <h2>Lagerverwaltung</h2>
         <button  id="resetMaterialDataBtn"  class="admin-btn danger"  onclick="resetMaterialData()" style="display:none">  Initialdaten neu laden</button>
         <!-- Logout sperrt die komplette Liste wieder -->
@@ -60,9 +60,7 @@
           hidden
           onchange="importAllData()"
         >
-        <button class="btnImport" onclick="document.getElementById('importFile').click()">
-          IMPORT DATEN!
-        </button>
+        <button class="btnImport" onclick="document.getElementById('importFile').click()">IMPORT DATEN!</button>
         
         <!-- Key-Freischaltung -->
         <input class="inputs" id="keyInput" type="password" placeholder="Key eingeben">
@@ -88,7 +86,18 @@
 
         <hr>
         
-        <input class="sSearch" id="search" placeholder="Suche (Material, E-Nummer, Regal)">
+<div class="search-wrapper">
+  <input
+    class="sSearch"
+    id="search"
+    placeholder="Suche (Material, E-Nummer, Regal)"
+    autocomplete="off"
+  >
+  <span id="searchClear" class="search-clear">❌</span>
+</div>
+
+
+
     <div class="content">
             <!-- =========================
                 KE SECTION
@@ -300,7 +309,7 @@
 
 
 <script src="js/daten_fm.js"></script>
-<script src="js/data_store.js"></script>
+<script src="js/data_ke.js"></script>
 <script src="js/daten_fs.js"></script>
 <script src="js/daten.js"></script>
 

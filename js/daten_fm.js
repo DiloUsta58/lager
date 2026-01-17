@@ -516,7 +516,7 @@ function fmCell(value, rowIndex, field) {
       title="${tooltip}"
     >
       <div class="edit-wrapper">
-        <span>${value ?? ""}</span>
+        <span>${highlightText(value ?? "", App.search)}</span>
         ${
           canEdit
             ? `<span class="edit-icon"
@@ -570,17 +570,17 @@ function editFM(icon, rowIndex, field) {
 
 
 function renderFM() {
-  if (!loggedIn) return;
+  if (!App.loggedIn) return;
   const tbody = document.getElementById("fmTableBody");
   tbody.innerHTML = "";
 
   /* ===== FILTER ===== */
   let fmFiltered = fmData;
 
-  if (globalSearchTerm) {
+  if (App.search) {
     fmFiltered = fmFiltered.filter(row =>
       Object.values(row).some(v =>
-        String(v).toLowerCase().includes(globalSearchTerm)
+        String(v).toLowerCase().includes(App.search)
       )
     );
   }
@@ -594,14 +594,14 @@ fmFiltered.forEach((row, i) => {
 
   tbody.innerHTML += `
     <tr title="Lagerbestand: ${bestandText}">
-        <td data-col="pos1">${highlightText(row.pos1 ?? "", globalSearchTerm)}</td>
-        <td data-col="artikel1">${highlightText(row.artikel1 ?? "", globalSearchTerm)}</td>
-        <td data-col="artikel2">${highlightText(row.artikel2 ?? "", globalSearchTerm)}</td>
-        <td data-col="artikel">${highlightText(row.artikel ?? "", globalSearchTerm)}</td>
-        <td data-col="koernung">${highlightText(row.koernung ?? "", globalSearchTerm)}</td>
-        <td data-col="abmessung">${highlightText(row.abmessung ?? "", globalSearchTerm)}</td>
-        <td data-col="verpackung">${highlightText(row.verpackung ?? "", globalSearchTerm)}</td>
-        <td data-col="verpackung">${highlightText(row.pos_Nr ?? "", globalSearchTerm)}</td>
+        <td data-col="pos1">${highlightText(row.pos1 ?? "", App.search)}</td>
+        <td data-col="artikel1">${highlightText(row.artikel1 ?? "", App.search)}</td>
+        <td data-col="artikel2">${highlightText(row.artikel2 ?? "", App.search)}</td>
+        <td data-col="artikel">${highlightText(row.artikel ?? "", App.search)}</td>
+        <td data-col="koernung">${highlightText(row.koernung ?? "", App.search)}</td>
+        <td data-col="abmessung">${highlightText(row.abmessung ?? "", App.search)}</td>
+        <td data-col="verpackung">${highlightText(row.verpackung ?? "", App.search)}</td>
+        <td data-col="pos_Nr">${highlightText(row.pos_Nr ?? "", App.search)}</td>
         ${fmCell(row.bestand, i, "bestand")}
         ${fmCell(row.bemerkung, i, "bemerkung")}
       </tr>

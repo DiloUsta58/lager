@@ -249,16 +249,17 @@ function saveFS() {
    RENDERING
 ========================= */
 function renderFS() {
+   if (!App.loggedIn) return;
   const body = document.getElementById("fsTableBody");
   body.innerHTML = "";
 
   /* ===== FILTER: GENAU HIER ===== */
   let fsFiltered = fsData;
 
-  if (globalSearchTerm) {
+  if (App.search) {
     fsFiltered = fsFiltered.filter(row =>
       Object.values(row).some(v =>
-        String(v).toLowerCase().includes(globalSearchTerm)
+        String(v).toLowerCase().includes(App.search)
       )
     );
   }
@@ -269,41 +270,41 @@ function renderFS() {
     body.innerHTML += `
       <tr>
         <td data-label="Kurz Bezeichnung">
-          ${highlightText(r.kurz || "", globalSearchTerm)}
+          ${highlightText(r.kurz || "", App.search)}
         </td>
 
         <td data-label="Bezeichnung">
-          ${highlightText(r.bezeichnung || "", globalSearchTerm)}
+          ${highlightText(r.bezeichnung || "", App.search)}
         </td>
 
         <td data-label="Material">
-          ${highlightText(r.material || "", globalSearchTerm)}
+          ${highlightText(r.material || "", App.search)}
         </td>
 
         <td data-label="Stückzahl">
-          ${highlightText(r.stueck || "", globalSearchTerm)}
+          ${highlightText(r.stueck || "", App.search)}
         </td>
 
         ${fsCell(
-          highlightText(r.eNummer || "", globalSearchTerm),
+          highlightText(r.eNummer || "", App.search),
           i,
           "eNummer",
           "E-Nummer"
         )}
 
         <td data-label="Kürzel">
-          ${highlightText(r.kuerzel || "", globalSearchTerm)}
+          ${highlightText(r.kuerzel || "", App.search)}
         </td>
 
         ${fsCell(
-          highlightText(r.bestand || "", globalSearchTerm),
+          highlightText(r.bestand || "", App.search),
           i,
           "bestand",
           "Bestand Konsilager"
         )}
 
         ${fsCell(
-          highlightText(r.dpc || "", globalSearchTerm),
+          highlightText(r.dpc || "", App.search),
           i,
           "dpc",
           "DPC"
