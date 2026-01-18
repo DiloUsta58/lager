@@ -312,6 +312,7 @@ function renderFS() {
       </tr>
     `;
   });
+   requestAnimationFrame(collectSearchHits);
 }
 
 
@@ -328,19 +329,6 @@ function fsCell(value, index, field, label, colClass) {
       </div>
     </td>
   `;
-}
-
-function highlightText(text, term) {
-  if (!term) return text;
-
-  const source = String(text);
-  const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-
-  const regex = new RegExp(escaped, "gi");
-
-  return source.replace(regex, match =>
-    `<span class="search-hit">${match}</span>`
-  );
 }
 
 

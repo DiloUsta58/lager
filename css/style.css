@@ -1124,6 +1124,14 @@ mark.search-hit {
     padding-left: 4px;
   }
 
+/* Aktiver Treffer (Navigation) */
+.active-hit {
+  outline: 2px solid #ff9800;
+  background: #ffe0b2;
+}
+
+
+
 
 /* ======================
    MOBILE: CHECKBOXEN 2-ZEILIG (SPALTENFLUSS)
@@ -1167,23 +1175,25 @@ mark.search-hit {
 /* =========================
    SEARCH WRAPPER – ZENTRAL
 ========================= */
-
 .search-wrapper {
   position: relative;
   width: 35%;
-  margin: 10px auto;   /* 🔑 HIER ist die Zentrierung */
-  display: block;
+  margin: 10px auto;
 }
 
+/* Suchfeld */
 .sSearch {
   width: 100%;
   box-sizing: border-box;
-  padding-right: 34px;
+  padding-right: 90px; /* Platz für X + ↑ ↓ */
 }
 
+/* =========================
+   CLEAR (X)
+========================= */
 .search-clear {
   position: absolute;
-  right: 10px;
+  right: 100px;              /* 🔑 direkt im Input */
   top: 50%;
   transform: translateY(-50%);
   font-size: 18px;
@@ -1193,6 +1203,28 @@ mark.search-hit {
 }
 
 /* =========================
+   TREFFER NAVIGATION ↑ ↓
+========================= */
+.search-nav {
+  position: absolute;
+  right: 10px;              /* 🔑 FIX am Input */
+  top: 50%;
+  transform: translateY(-50%);
+  display: none;
+  gap: 4px;
+}
+
+.search-nav button {
+  width: 26px;
+  height: 26px;
+  cursor: pointer;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: #f5f5f5;
+}
+
+
+/* =========================
    SEARCH RESPONSIVE
 ========================= */
 
@@ -1200,28 +1232,8 @@ mark.search-hit {
   .search-wrapper {
     width: 90%;
   }
-
-  .inputs {
-    display: flex !important;
-    flex-direction: column !important;
-    flex-wrap: wrap !important;
-
-    /* exakt 2 Zeilen Höhe */
-    max-height: calc(2 * 15px);
-    
-    column-gap: 18px;
-    row-gap: 8px;
-  }
-
-  .inputs label {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    white-space: nowrap;
-    font-size: 14px;
-    line-height: 1.2;
-  }
     
 }
+
 
 

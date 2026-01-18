@@ -607,6 +607,7 @@ fmFiltered.forEach((row, i) => {
       </tr>
     `;
   });
+   requestAnimationFrame(collectSearchHits);
 }
 
 document

@@ -1,6 +1,4 @@
 
-
-
 /* =====================================================
    GLOBALE DOM-REFERENZEN (ROBUSTE FALLBACKS)
 ===================================================== */
@@ -36,6 +34,10 @@ const LOGIN_PASS = "64579";
 const EDIT_KEY = "64579";
 const AUTO_LOCK_MINUTES = 1;
 const PROTECTED_FIELDS = ["material", "e"];
+const SearchNav = {
+  hits: [],
+  index: -1
+};
 
 /* =====================================================
    STATUS
@@ -47,6 +49,11 @@ let loggedIn = sessionStorage.getItem("loggedIn") === "true";
 let isAdmin = loggedIn;
 let historyData = [];
 let useEdit = false;
+/* =========================
+   TREFFER NAVIGATION
+========================= */
+let highlightIndex = -1;
+
 
 /* =====================================================
    COLUMN MAPS
@@ -160,6 +167,18 @@ function updateSearchCounts() {
 }
 
 
+let searchHits = [];
+let searchIndex = -1;
+
+function collectSearchHits() {
+  searchHits = Array.from(document.querySelectorAll("mark.hit"));
+  searchIndex = searchHits.length ? 0 : -1;
+
+  updateSearchNav();
+}
+
+
+
 
 /* =====================================================
    RESET KE SECTION
@@ -239,7 +258,7 @@ function logout() {
   // UI wechseln
   MyApp.style.display = "none";
   loginBox.style.display = "block";
-
+  if (searchNav) searchNav.style.display = "none";
 
 /* =========================
     SEARCH STATE RESET
@@ -308,6 +327,34 @@ function scrollToFirstHighlight() {
     behavior: "smooth"
   });
 }
+/* Treffer sammeln */
+function getHighlights() {
+  return Array.from(
+    document.querySelectorAll(".highlight")
+  );
+}
+
+/* Zum Treffer scrollen*/
+function scrollToHighlight(index) {
+  if (!searchHits.length) return;
+
+  if (index < 0) index = searchHits.length - 1;
+  if (index >= searchHits.length) index = 0;
+
+  highlightIndex = index;
+
+  searchHits.forEach(el => el.classList.remove("active-hit"));
+
+  const el = searchHits[highlightIndex];
+  el.classList.add("active-hit");
+
+  el.scrollIntoView({
+    behavior: "smooth",
+    block: "center"
+  });
+}
+
+
 
 
 /* Button schaltet Edit-Modus*/
@@ -740,12 +787,13 @@ function printTable() {
 
 
 function highlightText(text, term) {
-  if (!term || !text) return text ?? "";
+  if (!term) return text;
 
-  const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const regex = new RegExp(`(${escaped})`, "gi");
+  const safeText = String(text);
+  const safeTerm = term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const regex = new RegExp(`(${safeTerm})`, "gi");
 
-  return String(text).replace(regex, "<mark>$1</mark>");
+  return safeText.replace(regex, `<mark class="hit">$1</mark>`);
 }
 
 
@@ -1103,6 +1151,7 @@ safeOn(searchClear, "click", () => {
 
 
 
+
 const debouncedRender = (() => {
   let t;
   return () => {
@@ -1114,15 +1163,20 @@ const debouncedRender = (() => {
 
 safeOn(search, "input", () => {
   App.search = search.value.trim().toLowerCase();
+  highlightIndex = -1; // 🔑 WICHTIG
 
-  // 🔁 AKTIVEN TAB sofort neu rendern
   if (TabController?.show && TabController?.getActive) {
     TabController.show(TabController.getActive());
   }
 
-  // ✅ NACH dem Rendern zum ersten Treffer springen
-  requestAnimationFrame(scrollToFirstHighlight);
+  requestAnimationFrame(() => {
+    scrollToFirstHighlight();
+    updateSearchNav(); // 🔑 Buttons sichtbar machen
+  });
 });
+
+
+
 
 
 safeOn(categoryFilter, "change", () => {
@@ -1150,7 +1204,55 @@ safeOn(document, "keydown", (e) => {
 });
 
 
+/* =========================
+   TREFFER NAVIGATION ↑ ↓
+========================= */
+safeOn(document, "keydown", (e) => {
+  if (!App.search) return;
 
+  if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+    e.preventDefault();      // 🔑 Browser-Default unterdrücken
+    e.stopPropagation();     // 🔑 wichtig bei Input-Fokus
+
+    if (e.key === "ArrowDown") {
+      scrollToHighlight(highlightIndex + 1);
+    }
+
+    if (e.key === "ArrowUp") {
+      scrollToHighlight(highlightIndex - 1);
+    }
+  }
+});
+
+function updateSearchNav() {
+  const nav = document.getElementById("searchNav");
+  if (!nav) return;
+
+  if (searchHits.length > 0) {
+    nav.style.display = "flex";
+  } else {
+    nav.style.display = "none";
+  }
+}
+
+
+
+
+/* =========================
+   TREFFER BUTTONS
+========================= */
+
+const searchNav = document.getElementById("searchNav");
+const btnNext = document.getElementById("searchNext");
+const btnPrev = document.getElementById("searchPrev");
+
+safeOn(btnNext, "click", () => {
+  scrollToHighlight(highlightIndex + 1);
+});
+
+safeOn(btnPrev, "click", () => {
+  scrollToHighlight(highlightIndex - 1);
+});
 
 
 /* =====================================================
@@ -1423,6 +1525,7 @@ renderKE = function () {
       </tr>
     `;
   });
+   requestAnimationFrame(collectSearchHits);
 };
 
 /* =====================================================
@@ -1810,6 +1913,22 @@ window.addEventListener("DOMContentLoaded", () => {
   const formatted = `${dd}.${mm}.${yyyy} ( ${hh}:${min} )`;
   el.textContent = formatted;
 });
+
+
+/* =========================
+   SEARCH NAV – EVENT BINDING (FINAL)
+========================= */
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("searchNext")?.addEventListener("click", () => {
+    scrollToHighlight(highlightIndex + 1);
+  });
+
+  document.getElementById("searchPrev")?.addEventListener("click", () => {
+    scrollToHighlight(highlightIndex - 1);
+  });
+});
+
+
 
 /* =====================================================
    EOF – daten.js vollständig
