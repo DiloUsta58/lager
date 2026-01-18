@@ -44,7 +44,7 @@ const PROTECTED_FIELDS = ["material", "e"];
 let editEnabled = localStorage.getItem("editEnabled") === "true";
 let lockTimer = null;
 let loggedIn = sessionStorage.getItem("loggedIn") === "true";
-let isAdmin = App.loggedIn;
+let isAdmin = loggedIn;
 let historyData = [];
 let useEdit = false;
 
@@ -1006,7 +1006,7 @@ function saveHistory(entry) {
    ADMIN: RESET DATEN
 ===================================================== */
 function resetMaterialData() {
-  if (!loggedIn || !isAdmin) return;
+  if (!App.loggedIn || !isAdmin) return;
 
   const ok = confirm(
     "ACHTUNG!\n\nAlle Daten werden zurückgesetzt."
@@ -1508,7 +1508,7 @@ function hide(el) {
    LOGIN STATE RESTORE
 ===================================================== */
 document.addEventListener("DOMContentLoaded", () => {
-  if (!App.loggedIn) {
+  if (App.loggedIn) {
     hide(loginBox);
     show(app);
   } else {
