@@ -44,7 +44,7 @@ const PROTECTED_FIELDS = ["material", "e"];
 let editEnabled = localStorage.getItem("editEnabled") === "true";
 let lockTimer = null;
 let loggedIn = sessionStorage.getItem("loggedIn") === "true";
-let isAdmin = loggedIn;
+let isAdmin = App.loggedIn;
 let historyData = [];
 let useEdit = false;
 
@@ -829,7 +829,7 @@ function syncAdminUI() {
    START
 ===================================================== */
 document.addEventListener("DOMContentLoaded", () => {
-  if (loggedIn) {
+  if (App.loggedIn) {
     loginBox.style.display = "none";
     MyApp.style.display = "block";
       
@@ -1172,7 +1172,7 @@ document
    KE – ZEILE HINZUFÜGEN
 ===================================================== */
 function addRowAfter(index) {
-  if (!loggedIn) return;
+  if (!App.loggedIn) return;
 
   const base = data[index];
 
@@ -1199,7 +1199,7 @@ function addRowAfter(index) {
    KE – ZEILE LÖSCHEN
 ===================================================== */
 function removeRow(index) {
-  if (!loggedIn) return;
+  if (!App.loggedIn) return;
   
   // ❌ Default-Zeilen niemals löschen
   const row = data[index];
@@ -1429,7 +1429,7 @@ renderKE = function () {
    KEYBOARD SHORTCUTS
 ===================================================== */
 document.addEventListener("keydown", e => {
-  if (!loggedIn) return;
+  if (!App.loggedIn) return;
 
   /* ESC = Sperren */
   if (e.key === "Escape" && editEnabled) {
@@ -1508,7 +1508,7 @@ function hide(el) {
    LOGIN STATE RESTORE
 ===================================================== */
 document.addEventListener("DOMContentLoaded", () => {
-  if (loggedIn) {
+  if (!App.loggedIn) {
     hide(loginBox);
     show(app);
   } else {
