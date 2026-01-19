@@ -626,11 +626,26 @@ document
 
 
 
+/* =====================================================
+   RESET FM SECTION (ADMIN)
+===================================================== */
 function resetFM() {
+  /* =========================
+     ADMIN-PRÜFUNG
+  ========================= */
+  if (!requireAdminUnlock()) return;
+
+  /* =========================
+     BESTÄTIGUNG
+  ========================= */
   if (!confirm("FM-Daten wirklich zurücksetzen?")) return;
 
+  /* =========================
+     RESET
+  ========================= */
   localStorage.removeItem("fmData");
 
   fmData = structuredClone(DEFAULT_FM_DATA);
   renderFM();
 }
+

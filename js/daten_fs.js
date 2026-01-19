@@ -386,3 +386,26 @@ document.addEventListener("DOMContentLoaded", () => {
   if (typeof renderFS === 'function') { renderFS(); }
   if (typeof reapplyFsColumns === 'function') { reapplyFsColumns(); }
 });
+
+/* =====================================================
+   RESET FM SECTION (ADMIN)
+===================================================== */
+function resetFS() {
+  /* =========================
+     ADMIN-PRÜFUNG
+  ========================= */
+  if (!requireAdminUnlock()) return;
+
+  /* =========================
+     BESTÄTIGUNG
+  ========================= */
+  if (!confirm("FS-Daten wirklich zurücksetzen?")) return;
+
+  /* =========================
+     RESET
+  ========================= */
+  localStorage.removeItem("fs_lager_data_v1");
+
+  fsData = structuredClone(DEFAULT_FS_DATA);
+  renderFS();
+}

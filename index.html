@@ -64,9 +64,9 @@
           IMPORT DATEN!
         </button>
         
-        <!-- Key-Freischaltung -->
+        <!-- Key-Freischaltung 
         <input class="inputs" id="keyInput" type="password" placeholder="Key eingeben">
-        <button id="editToggleBtn" class="btn" onclick="toggleEditing()">🔓 Freischalten</button>
+        <button id="editToggleBtn" class="btn" onclick="toggleEditing()">🔓 Freischalten</button>-->
         <button id="themeToggleBtn" class="btn-primary" onclick="toggleTheme()">🌙 Dark Mode</button>
 
 
@@ -193,6 +193,9 @@
                 <label><input type="checkbox" data-col="kuerzel" checked>Kürzel</label>
                 <label><input type="checkbox" data-col="bestand" checked>Bestand K.</label>
                 <label><input type="checkbox" data-col="dpc" checked>Bestand D</label>
+                  <div style="display: flex; justify-content: flex-end;">
+                      <button id="ResetFSToggleBtn" class="ResetFSBtn" onclick="resetFS()">Tabelle zurücksetzen</button>
+                  </div>                
               </div>
 
               <div class="table-fullwidth">
@@ -317,7 +320,8 @@
         <div id="lastUpdate" style="display:none;"></div>
     </footer>
 
-
+<script src="js/auth_config.js"></script>
+<script src="js/auth.js"></script>
 <script src="js/daten_fm.js"></script>
 <script src="js/data_ke.js"></script>
 <script src="js/daten_fs.js"></script>

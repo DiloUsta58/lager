@@ -23,10 +23,6 @@ function safeOn(el, evt, fn) {
 ===================================================== */
 const STORAGE_KEY = "materialData";
 const HISTORY_KEY = "materialHistory";
-
-const LOGIN_USER = "DiloUsta58";
-const LOGIN_PASS = "64579";
-const EDIT_KEY = "64579";
 const AUTO_LOCK_MINUTES = 1;
 const PROTECTED_FIELDS = ["material", "e"];
 
@@ -153,105 +149,54 @@ function updateSearchCounts() {
 
 
 /* =====================================================
-   RESET KE SECTION
+   RESET KE SECTION (ADMIN)
 ===================================================== */
 function resetKE() {
+  /* =========================
+     ADMIN-PRÜFUNG
+  ========================= */
+  if (!requireAdminUnlock()) return;
+
+  /* =========================
+     BESTÄTIGUNG
+  ========================= */
   if (!confirm("KE-Daten wirklich zurücksetzen?")) return;
 
+  /* =========================
+     RESET
+  ========================= */
   localStorage.removeItem("materialData");
-  data   = structuredClone(defaultData);
+  data = structuredClone(defaultData);
 
   renderKE();
 }
 
-/* =====================================================
-   LOGIN / LOGOUT
-===================================================== */
-function login(e) {
-  if (e) e.preventDefault();
 
-  const user = userInput.value.trim();
-  const pass = passInput.value.trim();
-
-  if (user === LOGIN_USER && pass === LOGIN_PASS) {
-    loggedIn = true;
-    isAdmin = true;
-    editEnabled = false;
-    localStorage.setItem("editEnabled", "false");
-    sessionStorage.setItem("loggedIn", "true");
-
-    loginBox.style.display = "none";
-    app.style.display = "block";
-    document.getElementById("historySection").style.display = "none";
-    document.getElementById("lastUpdate").style.display = "block";
-    document.getElementById("fmSection").style.display = "block";
-
-    initCategories();
-    syncAdminUI();
-    loadInventurDate();
-    TabController.init();
-  } else {
-    alert("Login fehlgeschlagen");
-  }
-}
-
-function logout() {
-  sessionStorage.removeItem("loggedIn");
-  localStorage.removeItem("editEnabled");
-  localStorage.removeItem("activeTab");
-
-  loggedIn = false;
-  editEnabled = false;
-  document.getElementById("historySection").style.display = "none";
-  document.getElementById("lastUpdate").style.display = "none";
-  document.getElementById("fmSection").style.display = "none";
-
-
-  // 🔍 Suche & Highlight zurücksetzen
-  globalSearchTerm = "";
-  if (search) search.value = "";
-
-  // 🧹 Tabellen leeren
-  ["tableBody", "fsTableBody", "fmTableBody"].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.innerHTML = "";
-  });
-
-  // 🧭 Tabs & Sections deaktivieren
-  document.querySelectorAll(".tab-btn").forEach(btn => {
-    btn.classList.remove("active");
-  });
-
-  document.querySelectorAll(".tab-section").forEach(sec => {
-    sec.classList.remove("active");
-  });
-
-  // UI wechseln
-  app.style.display = "none";
-  loginBox.style.display = "block";
-}
-
-/* ZENTRALE ADMIN-PRÜFUNG */
+/* ZENTRALE ADMIN-PRÜFUNG (ROLLENBASIERT) */
 function requireAdminUnlock() {
+  /* bereits freigeschaltet */
   if (editEnabled) return true;
 
-  const key = prompt("Admin-Key erforderlich:");
-  if (!key) return false;
-
-  if (key === EDIT_KEY) {
-    editEnabled = true;
-    useEdit = true;
-    localStorage.setItem("editEnabled", "true");
-    unlockEditing();
-    startAutoLock();
-    syncAdminUI();
-    syncEditToggleButton();    
-    return true;
+  /* Rollenprüfung */
+  if (!isAdmin && sessionStorage.getItem("role") !== "admin") {
+    alert("Admin-Berechtigung erforderlich");
+    return false;
   }
 
-  alert("Falscher Admin-Key");
-  return false;
+  /* Edit freischalten */
+  editEnabled = true;
+  useEdit = true;
+
+  localStorage.setItem("editEnabled", "true");
+
+  unlockEditing();
+  startAutoLock();
+  syncAdminUI();
+  syncEditToggleButton();
+
+  return true;
 }
+
 
 /* =========================
    SEARCH STATE (GLOBAL)
@@ -853,9 +798,9 @@ function loadHistoryData() {
 ===================================================== */
 function syncAdminUI() {
   const btn = document.getElementById("resetMaterialDataBtn");
-  if (btn) btn.style.display = editEnabled ? "inline-block" : "none";
-
+  if (btn) btn.style.display = isAdmin ? "inline-block" : "none";
 }
+
 
 /* =====================================================
    START
@@ -873,17 +818,14 @@ document.addEventListener("DOMContentLoaded", () => {
     TabController.init();
   }
 });
-/* =====================================================
-   EDIT-LOCK / AUTO-LOCK
-   ===================================================== */
-/* ENTER soll Freischalten / Sperren auslösen */
-keyInput.addEventListener("keydown", e => {
-  if (e.key === "Enter") {
-    toggleEditing();
-  }
-});
 
 function toggleEditing() {
+
+  if (!window.EDIT_ENABLED) {
+    alert("Keine Berechtigung");
+    return;
+  }
+
   if (editEnabled) {
     lockEditing();
   } else {
@@ -1682,10 +1624,17 @@ function loadHistoryData() {
 
 
 /* =============
-   EXPORT
+   EXPORT (ADMIN)
 ============ */
 function exportAllData() {
-  // 🔹 Historie erweitern (Snapshot)
+  /* =========================
+     ADMIN-PRÜFUNG
+  ========================= */
+  if (!requireAdminUnlock()) return;
+
+  /* =========================
+     HISTORIE (SNAPSHOT)
+  ========================= */
   const historyEntry = {
     timestamp: new Date().toISOString(),
     keCount: data.length,
@@ -1699,6 +1648,9 @@ function exportAllData() {
   saveHistoryData();
   renderHistory();
 
+  /* =========================
+     PAYLOAD
+  ========================= */
   const payload = {
     version: 1,
     exportedAt: new Date().toISOString(),
@@ -1710,6 +1662,9 @@ function exportAllData() {
     history: historyData
   };
 
+  /* =========================
+     DOWNLOAD
+  ========================= */
   const blob = new Blob(
     [JSON.stringify(payload, null, 2)],
     { type: "application/json" }
@@ -1721,10 +1676,16 @@ function exportAllData() {
   a.click();
 }
 
+
 /* =============
-   IMPORT
+   IMPORT (ADMIN)
 ============ */
 function importAllData() {
+  /* =========================
+     ADMIN-PRÜFUNG
+  ========================= */
+  if (!requireAdminUnlock()) return;
+
   const input = document.getElementById("importFile");
   if (!input || !input.files || !input.files.length) return;
 
@@ -1734,7 +1695,7 @@ function importAllData() {
   reader.onload = () => {
     let jsonText = reader.result;
 
-    // BOM / Whitespaces entfernen
+    /* BOM / Whitespaces entfernen */
     if (typeof jsonText === "string") {
       jsonText = jsonText.trim().replace(/^\uFEFF/, "");
     }
@@ -1750,10 +1711,9 @@ function importAllData() {
 
     /* ===== AB HIER KEIN try/catch MEHR ===== */
 
-    data   = Array.isArray(json.ke) ? json.ke : [];
-    fsData = Array.isArray(json.fs) ? json.fs : [];
-    fmData = Array.isArray(json.fm) ? json.fm : [];
-
+    data        = Array.isArray(json.ke)      ? json.ke      : [];
+    fsData      = Array.isArray(json.fs)      ? json.fs      : [];
+    fmData      = Array.isArray(json.fm)      ? json.fm      : [];
     historyData = Array.isArray(json.history) ? json.history : [];
 
     saveData();
@@ -1773,6 +1733,7 @@ function importAllData() {
   reader.readAsText(file);
   input.value = "";
 }
+
 
 
 function saveData() {
