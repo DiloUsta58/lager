@@ -46,8 +46,8 @@
 <!-- =========================
      GESCHÜTZTE APP
 ========================= -->
-<div id="MyApp" style="display:none">
-  <h2>Lagerverwaltung</h2>
+<div id="app" style="display:none">
+  <h2>Lagerverwaltung v1.0</h2>
         <button  id="resetMaterialDataBtn"  class="admin-btn danger"  onclick="resetMaterialData()" style="display:none">  Initialdaten neu laden</button>
         <!-- Logout sperrt die komplette Liste wieder -->
         <button class="btn" onclick="logout()">🔒Logout</button>
@@ -60,17 +60,14 @@
           hidden
           onchange="importAllData()"
         >
-        <button class="btnImport" onclick="document.getElementById('importFile').click()">IMPORT DATEN!</button>
+        <button class="btnImport" onclick="document.getElementById('importFile').click()">
+          IMPORT DATEN!
+        </button>
         
         <!-- Key-Freischaltung -->
         <input class="inputs" id="keyInput" type="password" placeholder="Key eingeben">
         <button id="editToggleBtn" class="btn" onclick="toggleEditing()">🔓 Freischalten</button>
-
-        <span id="status" class="info"></span>
-
-        <header class="header">
-          <button id="themeToggleBtn" class="btn-primary" onclick="toggleTheme()">🌙 Dark Mode</button>
-        </header>
+        <button id="themeToggleBtn" class="btn-primary" onclick="toggleTheme()">🌙 Dark Mode</button>
 
 
         <hr>
@@ -86,26 +83,30 @@
 
         <hr>
         
-<div class="search-wrapper">
-  <input
-    class="sSearch"
-    id="search"
-    placeholder="Suche (Material, E-Nummer, Regal)"
-    autocomplete="off"
-  />
+            <!-- =========================
+                SEARCH WRAPPER
+            ========================== -->
+            <div class="search-wrapper">
 
-  <!-- ❌ X-Button -->
-  <span id="searchClear" class="search-clear">❌</span>
+              <!-- Suchfeld -->
+              <input
+                class="sSearch"
+                id="search"
+                type="text"
+                placeholder="Suche (Material, E-Nummer, Regal)"
+                autocomplete="off"
+              />
 
-  <!-- ✅ TREFFER-NAVIGATION -->
-  <div id="searchNav" class="search-nav">
-    <button id="searchPrev" type="button" title="Vorheriger Treffer">↑</button>
-    <button id="searchNext" type="button" title="Nächster Treffer">↓</button>
-  </div>
-</div>
+              <!-- ❌ Clear-Button -->
+              <span id="searchClear" class="search-clear">❌</span>
 
+              <!-- ↑ ↓ Treffer-Navigation -->
+              <div id="searchNav" class="search-nav">
+                <button id="searchPrev" type="button" title="Vorheriger Treffer">↑</button>
+                <button id="searchNext" type="button" title="Nächster Treffer">↓</button>
+              </div>
 
-
+            </div>
 
     <div class="content">
             <!-- =========================
@@ -321,6 +322,7 @@
 <script src="js/data_ke.js"></script>
 <script src="js/daten_fs.js"></script>
 <script src="js/daten.js"></script>
+<script src="js/search.js"></script>
 
 </body>
 </html>
