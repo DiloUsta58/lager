@@ -48,29 +48,45 @@
 ========================= -->
 <div id="app" style="display:none">
   <h2>Lagerverwaltung v1.0</h2>
-        <button  id="resetMaterialDataBtn"  class="admin-btn danger"  onclick="resetMaterialData()" style="display:none">  Initialdaten neu laden</button>
-        <!-- Logout sperrt die komplette Liste wieder -->
-        <button class="btn" onclick="logout()">🔒Logout</button>
-        <button class="btnExport" onclick="exportAllData()">EXPORT DATEN</button>
-        
-        <input
-          type="file"
-          id="importFile"
-          accept="application/json"
-          hidden
-          onchange="importAllData()"
-        >
-        <button class="btnImport" onclick="document.getElementById('importFile').click()">
-          IMPORT DATEN!
-        </button>
-        
-        <!-- Key-Freischaltung 
-        <input class="inputs" id="keyInput" type="password" placeholder="Key eingeben">
-        <button id="editToggleBtn" class="btn" onclick="toggleEditing()">🔓 Freischalten</button>-->
-        <button id="themeToggleBtn" class="btn-primary" onclick="toggleTheme()">🌙 Dark Mode</button>
 
+      <div class="top-bar">
+            <!-- Logout sperrt die komplette Liste wieder -->
+            <button class="btn" onclick="logout()">🔒Logout</button>
+            <button class="btnExport" onclick="exportAllData()">EXPORT DATEN</button>
+            
+            <input
+              type="file"
+              id="importFile"
+              accept="application/json"
+              hidden
+              onchange="importAllData()"
+            >
+            <button class="btnImport" onclick="document.getElementById('importFile').click()">
+              IMPORT DATEN!
+            </button>
+            
+            <!-- Key-Freischaltung 
+            <input class="inputs" id="keyInput" type="password" placeholder="Key eingeben">
+            <button id="editToggleBtn" class="btn" onclick="toggleEditing()">🔓 Freischalten</button>-->
+            <button id="themeToggleBtn" class="btn-primary" onclick="toggleTheme()">🌙 Dark Mode</button>
+    </div>
 
-        <hr>
+      <div class="top-bar-right">
+          <button  id="resetMaterialDataBtn"  class="admin-btn danger"  onclick="resetMaterialData()" style="display:none">  Initialdaten neu laden</button>
+            <br>
+          <div id="editTimer" class="edit-timer hidden" title="Edit-Modus endet bei Inaktivität">
+            <span class="label">Edit aktiv</span><span class="icon">⏳</span>
+            <span class="time">05:00</span>
+          </div>
+          
+          <div id="logoutTimer" class="logout-timer hidden">
+          <span class="label">Automatischer Logout</span>
+          <span class="time">00:30</span>
+        </div>
+
+      </div>
+
+      <hr>
 
         <div class="tab-bar">
           <button class="tab-btn" data-tab="ke" data-label="Rohstoff Liste">Rohstoff Liste</button>
@@ -80,6 +96,8 @@
           <button class="tab-btn" data-tab="historySectionIExport" data-label="Historie">Historie</button>
           <button class="no-print" onclick="printTable()">Drucken</button>
         </div>
+
+
 
         <hr>
         

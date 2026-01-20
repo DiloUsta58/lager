@@ -11,6 +11,12 @@ window.AUTH_CONFIG = {
     {
       username: "DB58",
       passwordHash: "c21c1a4d4f1e71a2f371d4431b92639129dedb0d4674c6c9ef97605bd321040c",
+      role: "edit"
+    },
+
+    {
+      username: "editor",
+      passwordHash: "c21c1a4d4f1e71a2f371d4431b92639129dedb0d4674c6c9ef97605bd321040c",
       role: "user"
     }
 

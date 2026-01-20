@@ -329,45 +329,61 @@ function fsCell(value, index, field, label, colClass) {
   `;
 }
 
-function editFS(icon, index, field) {
-  if (!requireAdminUnlock()) return;
-  
+async function editFS(icon, index, field) {
+
+  /* 🔐 Zentrale Edit-Freigabe */
+  if (!await requireEditSaveUnlock()) return;
+
   const td = icon.closest("td");
-  const old = fsData[index][field];
-  td.innerHTML = `<input class="edit-input" value="${old || ""}">`;
+  if (!td) return;
+
+  const oldValue = fsData[index][field] ?? "";
+
+  td.innerHTML = `<input class="edit-input" value="${oldValue}">`;
   const input = td.querySelector("input");
   input.focus();
 
-  // ✅ ENTER / ESC Handling
+  /* ✨ Edit startet → Aktivität */
+  registerEditActivity();
+
+  /* ⌨️ Tippen hält Edit aktiv */
+  input.addEventListener("input", registerEditActivity);
+
+  /* ENTER / ESC */
   input.addEventListener("keydown", e => {
     if (e.key === "Enter") {
       e.preventDefault();
-      input.blur(); // triggert onblur → speichern
+      input.blur();
     }
     if (e.key === "Escape") {
       e.preventDefault();
-      if (typeof renderFS === "function") renderFS(); // Abbrechen
+      if (typeof renderFS === "function") renderFS();
     }
   });
 
   input.onblur = () => {
-    fsData[index][field] = input.value;
+    const newValue = input.value;
+
+    /* Speichern = Aktivität */
+    registerEditActivity();
+
+    fsData[index][field] = newValue;
     saveFS();
 
-    // 🔴 Änderungshistorie
     saveHistory({
       time: new Date().toISOString(),
       table: "FS",
       field,
-      oldValue: old,
-      newValue: input.value,
+      oldValue,
+      newValue,
       row: fsData[index].bezeichnung
     });
 
-    if (typeof renderFS === 'function') renderFS();
-    if (typeof reapplyFsColumns === 'function') reapplyFsColumns();
+    if (typeof renderFS === "function") renderFS();
+    if (typeof reapplyFsColumns === "function") reapplyFsColumns();
   };
 }
+
 
 
 document.addEventListener("DOMContentLoaded", () => {

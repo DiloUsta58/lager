@@ -56,6 +56,10 @@ async function login(e) {
   syncAdminUI();          // reagiert jetzt auf isAdmin
   loadInventurDate();
   TabController.init();
+
+  /* Logout-Watcher starten & stoppen */
+  lastUserActivity = Date.now();
+  startLogoutWatcher();
 }
 
 
@@ -63,6 +67,9 @@ function logout() {
   /* =========================
      SESSION / STATUS
   ========================= */
+  hideLogoutTimer();
+  stopLogoutWatcher();
+
   sessionStorage.removeItem("loggedIn");
   sessionStorage.removeItem("role");
 
@@ -72,7 +79,7 @@ function logout() {
   loggedIn = false;
   isAdmin = false;
   editEnabled = false;
-
+  
   /* =========================
      UI – SECTIONS AUS
   ========================= */
@@ -123,4 +130,6 @@ function logout() {
   ========================= */
   app.style.display = "none";
   loginBox.style.display = "block";
+  disableEditMode();
 }
+

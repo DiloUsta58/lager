@@ -5,9 +5,7 @@ const app = document.getElementById("app");
 const loginBox = document.getElementById("loginBox");
 const userInput = document.getElementById("userInput");
 const passInput = document.getElementById("passInput");
-const keyInput = document.getElementById("keyInput");
 const unlockBtn = document.getElementById("unlockBtn");
-
 const tableBody = document.getElementById("tableBody");
 const categoryFilter = document.getElementById("categoryFilter");
 
@@ -30,13 +28,27 @@ const PROTECTED_FIELDS = ["material", "e"];
    STATUS
 ===================================================== */
 
-let editEnabled = localStorage.getItem("editEnabled") === "true";
 let lockTimer = null;
 let loggedIn = sessionStorage.getItem("loggedIn") === "true";
 let isAdmin = loggedIn;
 let globalSearchTerm = "";
 let historyData = [];
 let useEdit = false;
+
+/* =========================
+   EDIT-KONFIGURATION
+========================= */
+const LOGOUT_TIMEOUT_MS = 2 * 60 * 1000; // 2 Minute
+const EDIT_TIMEOUT_MS = 1 * 60 * 1000; // 1 Minute
+const EDIT_KEY_HASH =
+  "c21c1a4d4f1e71a2f371d4431b92639129dedb0d4674c6c9ef97605bd321040c"; // "password: 5858"
+const LOGOUT_WARNING_MS = 30 * 1000; // 30 Sekunden
+
+let editEnabled = false;
+let editTimer = null;
+let lastEditActivity = 0;
+let logoutTimer = null;
+let lastUserActivity = Date.now();
 
 /* =====================================================
    COLUMN MAPS
@@ -170,7 +182,218 @@ function resetKE() {
 
   renderKE();
 }
+/* ===============================
+   ZENTRALE Logout-Status ANFANG
+================================ */
+function registerUserActivity() {
+  lastUserActivity = Date.now();
+  hideLogoutTimer(); // ⭐ wichtig
+}
 
+
+/* Logout-Inaktivitäts-Überwachung */
+function startLogoutWatcher() {
+  stopLogoutWatcher();
+
+  logoutTimer = setInterval(() => {
+    const idle = Date.now() - lastUserActivity;
+    const remaining = LOGOUT_TIMEOUT_MS - idle;
+
+    if (remaining <= 0) {
+      autoLogout();
+      return;
+    }
+
+    if (remaining <= LOGOUT_WARNING_MS) {
+      showLogoutTimer();
+      updateLogoutTimerUI(remaining);
+    } else {
+      hideLogoutTimer();
+    }
+  }, 1000);
+}
+
+
+function stopLogoutWatcher() {
+  if (logoutTimer) {
+    clearInterval(logoutTimer);
+    logoutTimer = null;
+  }
+}
+
+/* Automatischer Logout */
+function autoLogout() {
+  stopLogoutWatcher();
+  /* Edit still beenden (KEIN Alert) */
+  disableEditMode("", true);
+  alert("Wegen Inaktivität automatisch abgemeldet!");
+  logout();
+}
+
+
+/* UI-Hilfsfunktionen LOGOUT*/
+function showLogoutTimer() {
+  const el = document.getElementById("logoutTimer");
+  if (!el) return;
+  el.classList.remove("hidden");
+}
+
+function hideLogoutTimer() {
+  const el = document.getElementById("logoutTimer");
+  if (!el) return;
+  el.classList.add("hidden");
+}
+
+/* Countdown aktualisieren*/
+function updateLogoutTimerUI(remainingMs) {
+  const el = document.getElementById("logoutTimer");
+  if (!el) return;
+
+  const sec = Math.max(0, Math.floor(remainingMs / 1000));
+  const m = String(Math.floor(sec / 60)).padStart(2, "0");
+  const s = String(sec % 60).padStart(2, "0");
+
+  el.querySelector(".time").textContent = `${m}:${s}`;
+}
+
+
+
+/* ===============================
+   ZENTRALE Logout-Status ENDE
+================================ */
+
+
+/* ======================================
+     Zentrale Edit-Freischaltung ANFANG
+  =================================== */
+
+async function requireEditSaveUnlock() {
+  const role = sessionStorage.getItem("role");
+
+  /* ADMIN: kein Key */
+  if (role === "admin") {
+    enableEditMode();
+    return true;
+  }
+
+  /* EDIT-USER: Key nötig */
+  if (role !== "edit") {
+    alert("Keine Berechtigung!");
+    return false;
+  }
+
+  if (editEnabled) {
+    resetEditTimer();
+    return true;
+  }
+
+  const key = prompt("Edit-Key eingeben:");
+  if (!key) return false;
+
+  const hash = await sha256(key);
+  if (hash !== EDIT_KEY_HASH) {
+    alert("Falscher Edit-Key");
+    return false;
+  }
+
+  enableEditMode();
+  return true;
+}
+
+/* Edit-Modus steuern */
+function enableEditMode() {
+  editEnabled = true;
+  lastEditActivity = Date.now();
+
+  unlockEditing();
+  syncEditToggleButton();
+
+  showEditTimer();
+  startEditInactivityWatcher();
+}
+
+function disableEditMode(reason = "", silent = false) {
+  editEnabled = false;
+
+  stopEditInactivityWatcher();
+  hideEditTimer();
+
+  lockEditing();
+  syncEditToggleButton();
+
+  if (!silent && reason) {
+    alert(`Edit-Modus beendet (${reason})`);
+  }
+}
+
+
+/* Inaktivitäts-Überwachung */
+function startEditInactivityWatcher() {
+  stopEditInactivityWatcher();
+
+  editTimer = setInterval(() => {
+    if (!editEnabled) return;
+
+    updateEditTimerUI();
+
+    if (Date.now() - lastEditActivity >= EDIT_TIMEOUT_MS) {
+      disableEditMode("Inaktivität");
+    }
+  }, 1000);
+}
+
+function stopEditInactivityWatcher() {
+  if (editTimer) {
+    clearInterval(editTimer);
+    editTimer = null;
+  }
+}
+
+function registerEditActivity() {
+  if (editEnabled) {
+    lastEditActivity = Date.now();
+    registerUserActivity(); // ⭐ WICHTIG
+  }
+}
+
+function resetEditTimer() {
+  lastEditActivity = Date.now();
+}
+
+/* Countdown-Anzeige */
+function showEditTimer() {
+  const el = document.getElementById("editTimer");
+  if (!el) return;
+  el.classList.remove("hidden");
+}
+
+function hideEditTimer() {
+  const el = document.getElementById("editTimer");
+  if (!el) return;
+  el.classList.add("hidden");
+}
+
+
+function updateEditTimerUI() {
+  const el = document.getElementById("editTimer");
+  if (!el) return;
+
+  const rest = Math.max(
+    0,
+    EDIT_TIMEOUT_MS - (Date.now() - lastEditActivity)
+  );
+
+  const sec = Math.floor(rest / 1000);
+  const m = String(Math.floor(sec / 60)).padStart(2, "0");
+  const s = String(sec % 60).padStart(2, "0");
+
+  el.querySelector(".time").textContent = `${m}:${s}`;
+  el.classList.toggle("warning", sec <= 30);
+}
+
+/* ======================================
+     Zentrale Edit-Freischaltung ENDE
+  =================================== */
 
 /* ZENTRALE ADMIN-PRÜFUNG (ROLLENBASIERT) */
 function requireAdminUnlock() {
@@ -834,19 +1057,22 @@ function toggleEditing() {
 }
 
 function unlockEditing() {
-  if (useEdit) return false;  
-  if (keyInput.value !== EDIT_KEY) {
-    alert("Falscher Key");
-    return;
-  }
-
   editEnabled = true;
+  useEdit = true;
+
   localStorage.setItem("editEnabled", "true");
 
-  startAutoLock();
-  syncAdminUI();
-  syncEditToggleButton();   // 🔑 HINZUFÜGEN
+  /* Defensive UI-Synchronisation */
+  if (typeof syncAdminUI === "function") {
+    syncAdminUI();
+  }
+
+  if (typeof syncEditToggleButton === "function") {
+    syncEditToggleButton();
+  }
 }
+
+
 
 function lockEditing() {
   editEnabled = false;
@@ -1209,10 +1435,13 @@ function findDuplicateKE({ charge, palette }) {
 
 
 
-function editCell(icon, index, field) {
+async function editCell(icon, index, field) {
+  /* Geschützte Felder nur im Edit-Modus */
   if (PROTECTED_FIELDS.includes(field) && !editEnabled) return;
-  if (!requireAdminUnlock()) return;
-  
+
+  /* 🔐 Zentrale Edit-Freigabe */
+  if (!await requireEditSaveUnlock()) return;
+
   const td = icon.closest("td");
   if (!td) return;
 
@@ -1229,48 +1458,58 @@ function editCell(icon, index, field) {
   const btn = td.querySelector(".edit-apply");
   input.focus();
 
-const commit = () => {
-  const newValue = input.value;
+  /* ✨ Edit startet → Aktivität registrieren */
+  registerEditActivity();
 
-  if (newValue !== oldValue) {
+  const commit = () => {
+    const newValue = input.value;
 
-    // 🔍 NUR prüfen, wenn Charge oder Palette geändert wird
-    if (field === "charge" || field === "palette") {
+    /* Jede Aktion = Aktivität */
+    registerEditActivity();
 
-      const testCharge =
-        field === "charge" ? newValue : data[index].charge;
-      const testPalette =
-        field === "palette" ? newValue : data[index].palette;
+    if (newValue !== oldValue) {
 
-      const dupIndex = data.findIndex((row, i) =>
-        i !== index &&
-        String(row.charge).trim() === String(testCharge).trim() &&
-        String(row.palette).trim() === String(testPalette).trim()
-      );
+      /* 🔍 Duplikatprüfung */
+      if (field === "charge" || field === "palette") {
 
-      if (dupIndex !== -1) {
-        alert(`Eintrag bereits vorhanden (Zeile ${dupIndex + 1})`);
-        scrollToKERow(dupIndex);
-        renderKE();
-        reapplyKEColumns();
-        return;
+        const testCharge =
+          field === "charge" ? newValue : data[index].charge;
+        const testPalette =
+          field === "palette" ? newValue : data[index].palette;
+
+        const dupIndex = data.findIndex((row, i) =>
+          i !== index &&
+          String(row.charge).trim() === String(testCharge).trim() &&
+          String(row.palette).trim() === String(testPalette).trim()
+        );
+
+        if (dupIndex !== -1) {
+          alert(`Eintrag bereits vorhanden (Zeile ${dupIndex + 1})`);
+          scrollToKERow(dupIndex);
+          renderKE();
+          reapplyKEColumns();
+          return;
+        }
       }
+
+      /* ✅ Speichern */
+      data[index][field] = newValue;
+      save();
+
+      saveHistory({
+        time: new Date().toISOString(),
+        field,
+        oldValue,
+        newValue
+      });
     }
 
-    // ✅ kein Duplikat → speichern
-    data[index][field] = newValue;
-    save();
-    saveHistory({
-      time: new Date().toISOString(),
-      field,
-      oldValue,
-      newValue
-    });
-  }
+    renderKE();
+    reapplyKEColumns();
+  };
 
-  renderKE();
-  reapplyKEColumns();
-};
+  /* ⌨️ Tippen hält Edit aktiv */
+  input.addEventListener("input", registerEditActivity);
 
   input.addEventListener("keydown", e => {
     if (e.key === "Enter") {
@@ -1282,6 +1521,7 @@ const commit = () => {
   input.addEventListener("blur", commit);
   btn.addEventListener("click", commit);
 }
+
 
 /* =====================================================
    KE – HILFSFUNKTION HIGHLIGHT
@@ -1770,6 +2010,11 @@ window.addEventListener("DOMContentLoaded", () => {
   const min = String(lastModified.getMinutes()).padStart(2, "0");
   const formatted = `${dd}.${mm}.${yyyy} ( ${hh}:${min} )`;
   el.textContent = formatted;
+});
+
+/* Aktivität richtig registrieren */
+["click", "keydown", "mousemove", "scroll"].forEach(evt => {
+  document.addEventListener(evt, registerUserActivity, true);
 });
 
 /* =====================================================

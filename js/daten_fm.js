@@ -529,44 +529,60 @@ function fmCell(value, rowIndex, field) {
 }
 
 
-function editFM(icon, rowIndex, field) {
- 
-  const canEdit = editEnabled && FM_EDITABLE_FIELDS.includes(field);
-  if (!requireAdminUnlock()) return;
+async function editFM(icon, rowIndex, field) {
+
+  /* Feld darf überhaupt editiert werden */
+  if (!FM_EDITABLE_FIELDS.includes(field)) return;
+
+  /* 🔐 Zentrale Edit-Freigabe (Admin ohne Key, Edit mit Key) */
+  if (!await requireEditSaveUnlock()) return;
 
   const td = icon.closest("td");
-  const span = td.querySelector("span");
+  if (!td) return;
 
+  const span = td.querySelector("span");
   if (!span) return;
 
-  const oldValue = span.textContent;
+  const oldValue = span.textContent ?? "";
 
-  // Input erzeugen
+  /* ✨ Edit startet → Aktivität */
+  registerEditActivity();
+
+  /* Input erzeugen */
   const input = document.createElement("input");
   input.type = "text";
   input.value = oldValue;
   input.className = "cell-input";
 
-  // Span ersetzen
+  /* Span ersetzen */
   span.replaceWith(input);
   input.focus();
 
   function save() {
     const newValue = input.value.trim();
 
-    // Daten aktualisieren
-    fmData[rowIndex][field] = newValue;
-    saveFMData();
-    // Re-Render
+    /* Speichern zählt als Aktivität */
+    registerEditActivity();
+
+    if (newValue !== oldValue) {
+      fmData[rowIndex][field] = newValue;
+      saveFMData();
+    }
+
     renderFM();
   }
 
+  /* ⌨️ Tippen hält Edit aktiv */
+  input.addEventListener("input", registerEditActivity);
+
   input.addEventListener("blur", save);
+
   input.addEventListener("keydown", e => {
     if (e.key === "Enter") input.blur();
     if (e.key === "Escape") renderFM();
   });
 }
+
 
 
 function renderFM() {
