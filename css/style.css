@@ -11,6 +11,8 @@
   --row-even: #03fcb1;
   --row-odd: #131208;
   --border: #d0d7e2;
+  --textColorSum: #077517;
+
 }
 
 [data-theme="dark"] {
@@ -22,7 +24,7 @@
   --Drow-even: #ffffff;
   --Drow-odd: #334155;
   --border: #334155;
-
+  --textColorSum: #00a8f0dc;
   --row-hover: rgba(255, 255, 255, 0.06);
   
 }
@@ -84,12 +86,17 @@ input, select {
   max-width: 180px;
 }
 
+
+
 .admin-btn.danger {
+  position: absolute;
   background: #c62828;
   color: #fff;
   border-radius: 8px;
   padding: 8px 14px;
   border: none;
+  top: 10px;
+  right: 10px;
 }
 
 .admin-btn.danger:hover {
@@ -634,6 +641,17 @@ mark.search-hit {
     color: #ffffff;
 }
 
+
+[data-theme="dark"] .ResetFSBtn {
+    background: #2a2a2a;
+    color: #ffffff;
+}
+
+[data-theme="dark"] .ResetFSBtn:hover {
+    background: #870606;
+    color: #ffffff;
+}
+
 [data-theme="dark"] .ResetFMBtn {
     background: #2a2a2a;
     color: #ffffff;
@@ -691,10 +709,9 @@ mark.search-hit {
 }
 
 .btn-primary {
-  position: absolute; /* oder absolute */
+
   top: 5px;
-  right:5px;
-  left: 5px;
+
   width: 150px;
 }
 
@@ -829,7 +846,6 @@ mark.search-hit {
   .inv-table th:nth-child(6),
   .inv-table td:nth-child(6) {
     width: 10%;
-    text-align: right;
   }
 /*Summenzeilen hervorheben*/
   .inventory-total {
@@ -837,10 +853,64 @@ mark.search-hit {
     background: #ddd;
   }
 }
-.inventory-sum {
-  font-weight: 700;
-  background: #f3f4f6;
+
+ tr.inventory-sum {
+  background: transparent;
+  color: inherit;
+  font-weight: normal;
 }
+
+ tr.inventory-sum td:last-child {
+  color: var(--textColorSum);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+   text-align: right;
+}
+
+
+[data-theme="dark"] tr.inventory-sum {
+  background: transparent;
+  color: inherit;
+  font-weight: normal;
+}
+
+[data-theme="dark"] tr.inventory-sum td:last-child {
+  color: var(--textColorSum);
+  font-weight: 700;
+}
+
+/* Inventur – bestimmte Spalten zentrieren */
+td:nth-child(1),
+th:nth-child(1),   /* Quelle */
+
+td:nth-child(3),
+th:nth-child(3),   /* E-Nummer */
+
+td:nth-child(4),
+th:nth-child(4),   /* Charge-Nr. */
+
+td:nth-child(5),
+th:nth-child(5),   /* Paletten-Nr. */
+
+td:nth-child(6),
+th:nth-child(6),   /* Bestand */
+
+td:nth-child(7),
+th:nth-child(7) {   /* Summe */
+  text-align: center;
+}
+
+[data-theme="dark"] tr.inventory-sum td:nth-last-child(2) {
+  color: var(--textColorSum);
+
+}
+
+[data-theme="dark"] tr.inventory-sum td:last-child {
+  text-shadow: 0 0 6px rgba(96,165,250,0.35);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
 
 /* ======================
    KE / FS INHALT ZENTRIEREN (ECHT)
@@ -1011,7 +1081,6 @@ mark.search-hit {
   .tabs,
   .inputs,
   .status,
-  .info,
   .filter,
   form,
   label,
@@ -1226,4 +1295,82 @@ mark.hit.active-hit {
   color: #f0f0f0;
 }
 
+/* TIMER ANFANG */
+.edit-timer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 
+  padding: 6px 12px;
+  border-radius: 999px;
+
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+
+  background: rgba(0, 0, 0, 0.06);
+  color: #333;
+
+  transition: 
+    background 0.3s ease,
+    color 0.3s ease,
+    opacity 0.3s ease;
+
+  user-select: none;
+}
+
+.edit-timer .label {
+  opacity: 0.7;
+  font-weight: 500;
+}
+
+.edit-timer .time {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Sichtbarkeit */
+.edit-timer.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Warnstufe (< 30s) */
+.edit-timer.warning {
+  background: rgba(192, 57, 43, 0.12);
+  color: #c0392b;
+}
+
+/* EDIT TIMER ENDE*/
+/* LOGOUT TIMER ANFANG*/
+.logout-timer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  padding: 6px 12px;
+  border-radius: 999px;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  background: rgba(192, 57, 43, 0.12);
+  color: #c0392b;
+
+  transition: opacity 0.3s ease;
+  user-select: none;
+}
+
+.logout-timer .label {
+  opacity: 0.75;
+  font-weight: 500;
+}
+
+.logout-timer .time {
+  font-variant-numeric: tabular-nums;
+}
+
+.logout-timer.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+/* LOGOUT TIMER ENDE*/
