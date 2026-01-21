@@ -84,17 +84,12 @@ input, select {
   max-width: 180px;
 }
 
-
-
 .admin-btn.danger {
-  position: absolute;
   background: #c62828;
   color: #fff;
   border-radius: 8px;
   padding: 8px 14px;
   border: none;
-  top: 10px;
-  right: 10px;
 }
 
 .admin-btn.danger:hover {
@@ -639,17 +634,6 @@ mark.search-hit {
     color: #ffffff;
 }
 
-
-[data-theme="dark"] .ResetFSBtn {
-    background: #2a2a2a;
-    color: #ffffff;
-}
-
-[data-theme="dark"] .ResetFSBtn:hover {
-    background: #870606;
-    color: #ffffff;
-}
-
 [data-theme="dark"] .ResetFMBtn {
     background: #2a2a2a;
     color: #ffffff;
@@ -707,9 +691,10 @@ mark.search-hit {
 }
 
 .btn-primary {
-
+  position: absolute; /* oder absolute */
   top: 5px;
-
+  right:5px;
+  left: 5px;
   width: 150px;
 }
 
@@ -1026,6 +1011,7 @@ mark.search-hit {
   .tabs,
   .inputs,
   .status,
+  .info,
   .filter,
   form,
   label,
@@ -1240,82 +1226,4 @@ mark.hit.active-hit {
   color: #f0f0f0;
 }
 
-/* TIMER ANFANG */
-.edit-timer {
-  display: flex;
-  align-items: center;
-  gap: 8px;
 
-  padding: 6px 12px;
-  border-radius: 999px;
-
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.2px;
-
-  background: rgba(0, 0, 0, 0.06);
-  color: #333;
-
-  transition: 
-    background 0.3s ease,
-    color 0.3s ease,
-    opacity 0.3s ease;
-
-  user-select: none;
-}
-
-.edit-timer .label {
-  opacity: 0.7;
-  font-weight: 500;
-}
-
-.edit-timer .time {
-  font-variant-numeric: tabular-nums;
-}
-
-/* Sichtbarkeit */
-.edit-timer.hidden {
-  opacity: 0;
-  pointer-events: none;
-}
-
-/* Warnstufe (< 30s) */
-.edit-timer.warning {
-  background: rgba(192, 57, 43, 0.12);
-  color: #c0392b;
-}
-
-/* EDIT TIMER ENDE*/
-/* LOGOUT TIMER ANFANG*/
-.logout-timer {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-
-  padding: 6px 12px;
-  border-radius: 999px;
-
-  font-size: 12px;
-  font-weight: 600;
-
-  background: rgba(192, 57, 43, 0.12);
-  color: #c0392b;
-
-  transition: opacity 0.3s ease;
-  user-select: none;
-}
-
-.logout-timer .label {
-  opacity: 0.75;
-  font-weight: 500;
-}
-
-.logout-timer .time {
-  font-variant-numeric: tabular-nums;
-}
-
-.logout-timer.hidden {
-  opacity: 0;
-  pointer-events: none;
-}
-/* LOGOUT TIMER ENDE*/

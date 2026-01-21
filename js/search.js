@@ -1,57 +1,62 @@
-/* =====================================================
-   SEARCH UI CONTROLLER
-   - nur UI + Events
-   - keine Logik
-===================================================== */
-document.addEventListener("DOMContentLoaded", () => {
-  if (!window.App || typeof App.performSearch !== "function") {
-    console.error("Search API nicht verfügbar");
-    return;
+(function initSearch() {
+  function waitForAPI() {
+    if (window.top?.App?.performSearch) start();
+    else setTimeout(waitForAPI, 50);
   }
 
-  const search    = document.getElementById("search");
-  const clear     = document.getElementById("searchClear");
-  const next      = document.getElementById("searchNext");
-  const prev      = document.getElementById("searchPrev");
-  const searchNav = document.getElementById("searchNav");
+  function start() {
+    const App = window.top.App;
 
-  if (!search || !clear || !searchNav) return;
+    const search = document.getElementById("search");
+    const clear = document.getElementById("searchClear");
+    const next = document.getElementById("searchNext");
+    const prev = document.getElementById("searchPrev");
 
-  function updateNav() {
-    searchNav.style.display = hasSearchHits() ? "flex" : "none";
-  }
+    if (!search || !clear) return;
 
-  /* INPUT */
-  search.addEventListener("input", () => {
-    clear.style.display = search.value ? "inline" : "none";
-    App.performSearch(search.value);
-    requestAnimationFrame(updateNav);
-  });
+    search.addEventListener("input", () => {
+      clear.style.display = search.value ? "inline" : "none";
+      App.performSearch(search.value);
+    });
 
-  /* CLEAR */
-  clear.addEventListener("click", () => {
-    search.value = "";
-    clear.style.display = "none";
-    App.clearSearch();
-    updateNav();
-  });
-
-  /* BUTTONS */
-  next?.addEventListener("click", App.searchNext);
-  prev?.addEventListener("click", App.searchPrev);
-
-  /* KEYBOARD */
-  document.addEventListener("keydown", e => {
-    if (e.key === "Escape") {
+    clear.addEventListener("click", () => {
       search.value = "";
       clear.style.display = "none";
-      App.clearSearch();
-      updateNav();
-    }
-    if (e.key === "ArrowDown") App.searchNext();
-    if (e.key === "ArrowUp") App.searchPrev();
-    if (e.key === "Enter") App.searchNext();
-  });
+      App.clearSearch?.();
+    });
 
-  updateNav();
-});
+    next?.addEventListener("click", () => App.searchNext?.());
+    prev?.addEventListener("click", () => App.searchPrev?.());
+
+    /* Tastatur-Navigation im Suchfeld */
+    search.addEventListener("keydown", e => {
+      if (!window.top.hasSearchHits?.()) return;
+
+      switch (e.key) {
+        case "ArrowDown":
+          e.preventDefault();
+          App.searchNext?.();
+          break;
+        case "ArrowUp":
+          e.preventDefault();
+          App.searchPrev?.();
+          break;
+        case "Enter":
+          e.preventDefault();
+          e.shiftKey ? App.searchPrev?.() : App.searchNext?.();
+          break;
+      }
+    });
+
+    /* ESC global */
+    document.addEventListener("keydown", e => {
+      if (e.key === "Escape") {
+        search.value = "";
+        clear.style.display = "none";
+        App.clearSearch?.();
+      }
+    });
+  }
+
+  waitForAPI();
+})();

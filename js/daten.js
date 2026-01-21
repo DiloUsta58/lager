@@ -1,13 +1,20 @@
+
 /* =====================================================
    GLOBALE DOM-REFERENZEN (ROBUSTE FALLBACKS)
 ===================================================== */
 const app = document.getElementById("app");
-const loginBox = document.getElementById("loginBox");
 const userInput = document.getElementById("userInput");
 const passInput = document.getElementById("passInput");
+const keyInput = document.getElementById("keyInput");
 const unlockBtn = document.getElementById("unlockBtn");
+const status = document.getElementById("status");
+const btnNext = document.getElementById("searchNext");
+const btnPrev = document.getElementById("searchPrev");
+
 const tableBody = document.getElementById("tableBody");
 const categoryFilter = document.getElementById("categoryFilter");
+
+
 
 /* =====================================================
    SAFE EVENT BINDING
@@ -21,34 +28,33 @@ function safeOn(el, evt, fn) {
 ===================================================== */
 const STORAGE_KEY = "materialData";
 const HISTORY_KEY = "materialHistory";
+
+const EDIT_KEY = "64579";
 const AUTO_LOCK_MINUTES = 1;
 const PROTECTED_FIELDS = ["material", "e"];
+const SearchNav = {
+  hits: [],
+  index: -1
+};
+window.top.App = window.top.App || {};
+const App = window.top.App;
+
 
 /* =====================================================
    STATUS
 ===================================================== */
 
+let editEnabled = localStorage.getItem("editEnabled") === "true";
 let lockTimer = null;
 let loggedIn = sessionStorage.getItem("loggedIn") === "true";
 let isAdmin = loggedIn;
-let globalSearchTerm = "";
 let historyData = [];
 let useEdit = false;
-
 /* =========================
-   EDIT-KONFIGURATION
+   TREFFER NAVIGATION
 ========================= */
-const LOGOUT_TIMEOUT_MS = 2 * 60 * 1000; // 2 Minute
-const EDIT_TIMEOUT_MS = 1 * 60 * 1000; // 1 Minute
-const EDIT_KEY_HASH =
-  "c21c1a4d4f1e71a2f371d4431b92639129dedb0d4674c6c9ef97605bd321040c"; // "password: 5858"
-const LOGOUT_WARNING_MS = 30 * 1000; // 30 Sekunden
+let highlightIndex = -1;
 
-let editEnabled = false;
-let editTimer = null;
-let lastEditActivity = 0;
-let logoutTimer = null;
-let lastUserActivity = Date.now();
 
 /* =====================================================
    COLUMN MAPS
@@ -73,6 +79,7 @@ const FS_COLUMN_MAP = {
   bestand: 6,
   dpc: 7
 };
+
 
 /* =====================================================
    DATEN LADEN
@@ -111,21 +118,61 @@ function clearAllTables() {
 /* =====================================================
    ZENTRALE SUCH-UPDATE-FUNKTION
 ===================================================== */
+App.performSearch = function (query) {
+  App.search = query.toLowerCase();
+  highlightSearchResults();
+};
+
+App.searchNext = function () {
+  navigateSearchResult(1);
+};
+
+App.searchPrev = function () {
+  navigateSearchResult(-1);
+};
+
+function navigateSearchResult(direction) {
+  if (!Array.isArray(searchHits) || searchHits.length === 0) return;
+
+  // Index berechnen (mit Wrap-Around)
+  searchIndex += direction;
+
+  if (searchIndex < 0) {
+    searchIndex = searchHits.length - 1;
+  } else if (searchIndex >= searchHits.length) {
+    searchIndex = 0;
+  }
+
+  // Alle Treffer deaktivieren
+  searchHits.forEach(hit => hit.classList.remove("active-hit"));
+
+  // Aktiven Treffer setzen
+  const active = searchHits[searchIndex];
+  active.classList.add("active-hit");
+
+  // Scrollen
+  active.scrollIntoView({
+    behavior: "smooth",
+    block: "center"
+  });
+}
+
+
 function setTabCount(tab, count) {
   const btn = document.querySelector(`.tab-btn[data-tab="${tab}"]`);
   if (!btn) return;
 
-  const label = btn.dataset.label;
+  const base = btn.dataset.label; // ← stabile Quelle
 
-  if (globalSearchTerm && count > 0) {
-    btn.textContent = `${label} (${count})`;
+  if (App.search && count > 0) {
+    btn.textContent = `${base} (${count})`;
   } else {
-    btn.textContent = label;
+    btn.textContent = base;
   }
 }
 
 function updateSearchCounts() {
-  const term = globalSearchTerm;
+  const term = App.search;
 
   // KE
   const keCount = term
@@ -159,353 +206,148 @@ function updateSearchCounts() {
 }
 
 
+let searchHits = [];
+let searchIndex = -1;
+
+function collectSearchHits() {
+  searchHits = Array.from(document.querySelectorAll("mark.hit"));
+  searchIndex = searchHits.length ? 0 : -1;
+
+  window.top.updateSearchNavVisibility();
+}
+
+
+function notifySearchNav() {
+  if (window.top && typeof window.top.updateSearchNavVisibility === "function") {
+    window.top.updateSearchNavVisibility();
+  }
+}
+
+window.top.updateSearchNavVisibility = function () {
+  // Frame finden, der search.html lädt
+  const searchFrame =
+    window.top.frames["search"] ||
+    window.top.frames[1]; // Fallback, falls kein Name
+
+  if (!searchFrame) return;
+
+  const nav = searchFrame.document.getElementById("searchNav");
+  if (!nav) return;
+
+  nav.style.display =
+    Array.isArray(searchHits) && searchHits.length > 0
+      ? "flex"
+      : "none";
+};
+
+
+
 
 /* =====================================================
-   RESET KE SECTION (ADMIN)
+   RESET KE SECTION
 ===================================================== */
 function resetKE() {
-  /* =========================
-     ADMIN-PRÜFUNG
-  ========================= */
-  if (!requireAdminUnlock()) return;
-
-  /* =========================
-     BESTÄTIGUNG
-  ========================= */
   if (!confirm("KE-Daten wirklich zurücksetzen?")) return;
 
-  /* =========================
-     RESET
-  ========================= */
   localStorage.removeItem("materialData");
-  data = structuredClone(defaultData);
+  data   = structuredClone(defaultData);
 
   renderKE();
 }
-/* ===============================
-   ZENTRALE Logout-Status ANFANG
-================================ */
-function registerUserActivity() {
-  lastUserActivity = Date.now();
-  hideLogoutTimer(); // ⭐ wichtig
-}
 
+/* =====================================================
+   APP START (nach erfolgreichem Login)
+===================================================== */
+document.addEventListener("DOMContentLoaded", () => {
 
-/* Logout-Inaktivitäts-Überwachung */
-function startLogoutWatcher() {
-  stopLogoutWatcher();
-
-  logoutTimer = setInterval(() => {
-    const idle = Date.now() - lastUserActivity;
-    const remaining = LOGOUT_TIMEOUT_MS - idle;
-
-    if (remaining <= 0) {
-      autoLogout();
-      return;
-    }
-
-    if (remaining <= LOGOUT_WARNING_MS) {
-      showLogoutTimer();
-      updateLogoutTimerUI(remaining);
-    } else {
-      hideLogoutTimer();
-    }
-  }, 1000);
-}
-
-
-function stopLogoutWatcher() {
-  if (logoutTimer) {
-    clearInterval(logoutTimer);
-    logoutTimer = null;
-  }
-}
-
-/* Automatischer Logout */
-function autoLogout() {
-  stopLogoutWatcher();
-  /* Edit still beenden (KEIN Alert) */
-  disableEditMode("", true);
-  alert("Wegen Inaktivität automatisch abgemeldet!");
-  logout();
-}
-
-
-/* UI-Hilfsfunktionen LOGOUT*/
-function showLogoutTimer() {
-  const el = document.getElementById("logoutTimer");
-  if (!el) return;
-  el.classList.remove("hidden");
-}
-
-function hideLogoutTimer() {
-  const el = document.getElementById("logoutTimer");
-  if (!el) return;
-  el.classList.add("hidden");
-}
-
-/* Countdown aktualisieren*/
-function updateLogoutTimerUI(remainingMs) {
-  const el = document.getElementById("logoutTimer");
-  if (!el) return;
-
-  const sec = Math.max(0, Math.floor(remainingMs / 1000));
-  const m = String(Math.floor(sec / 60)).padStart(2, "0");
-  const s = String(sec % 60).padStart(2, "0");
-
-  el.querySelector(".time").textContent = `${m}:${s}`;
-}
-
-
-
-/* ===============================
-   ZENTRALE Logout-Status ENDE
-================================ */
-
-
-/* ======================================
-     Zentrale Edit-Freischaltung ANFANG
-  =================================== */
-
-async function requireEditSaveUnlock() {
-  const role = sessionStorage.getItem("role");
-
-  /* ADMIN: kein Key */
-  if (role === "admin") {
-    enableEditMode();
-    return true;
+  if (sessionStorage.getItem("loggedIn") !== "true") {
+    top.location.replace("index.html");
+    return;
   }
 
-  /* EDIT-USER: Key nötig */
-  if (role !== "edit") {
-    alert("Keine Berechtigung!");
-    return false;
-  }
+  App.loggedIn = true;
+  App.isAdmin = true;
 
-  if (editEnabled) {
-    resetEditTimer();
-    return true;
-  }
+  App.editEnabled = false;
+  localStorage.setItem("editEnabled", "false");
 
-  const key = prompt("Edit-Key eingeben:");
-  if (!key) return false;
+    MyApp.style.display = "block";
 
-  const hash = await sha256(key);
-  if (hash !== EDIT_KEY_HASH) {
-    alert("Falscher Edit-Key");
-    return false;
-  }
+  document.getElementById("historySection").style.display = "none";
+  document.getElementById("lastUpdate").style.display = "block";
+  document.getElementById("fmSection").style.display = "block";
 
-  enableEditMode();
-  return true;
-}
-
-/* Edit-Modus steuern */
-function enableEditMode() {
-  editEnabled = true;
-  lastEditActivity = Date.now();
-
-  unlockEditing();
-  syncEditToggleButton();
-
-  showEditTimer();
-  startEditInactivityWatcher();
-}
-
-function disableEditMode(reason = "", silent = false) {
-  editEnabled = false;
-
-  stopEditInactivityWatcher();
-  hideEditTimer();
-
-  lockEditing();
-  syncEditToggleButton();
-
-  if (!silent && reason) {
-    alert(`Edit-Modus beendet (${reason})`);
-  }
-}
+  initCategories();
+  syncAdminUI();
+  loadInventurDate();
+  TabController.init();
+});
 
 
-/* Inaktivitäts-Überwachung */
-function startEditInactivityWatcher() {
-  stopEditInactivityWatcher();
+function logout() {
 
-  editTimer = setInterval(() => {
-    if (!editEnabled) return;
+  App.loggedIn = false;
+  App.editEnabled = false;
+  App.search = "";
 
-    updateEditTimerUI();
+  sessionStorage.removeItem("loggedIn");
+  localStorage.removeItem("editEnabled");
+  localStorage.removeItem("activeTab");
 
-    if (Date.now() - lastEditActivity >= EDIT_TIMEOUT_MS) {
-      disableEditMode("Inaktivität");
-    }
-  }, 1000);
-}
+  document.getElementById("historySection").style.display = "none";
+  document.getElementById("lastUpdate").style.display = "none";
+  document.getElementById("fmSection").style.display = "none";
 
-function stopEditInactivityWatcher() {
-  if (editTimer) {
-    clearInterval(editTimer);
-    editTimer = null;
-  }
-}
+  App.search = "";
+  if (search) search.value = "";
 
-function registerEditActivity() {
-  if (editEnabled) {
-    lastEditActivity = Date.now();
-    registerUserActivity(); // ⭐ WICHTIG
-  }
-}
+  ["tableBody", "fsTableBody", "fmTableBody"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = "";
+  });
 
-function resetEditTimer() {
-  lastEditActivity = Date.now();
-}
+  document.querySelectorAll(".tab-btn").forEach(btn => {
+    btn.classList.remove("active");
+  });
 
-/* Countdown-Anzeige */
-function showEditTimer() {
-  const el = document.getElementById("editTimer");
-  if (!el) return;
-  el.classList.remove("hidden");
-}
+  document.querySelectorAll(".tab-section").forEach(sec => {
+    sec.classList.remove("active");
+  });
 
-function hideEditTimer() {
-  const el = document.getElementById("editTimer");
-  if (!el) return;
-  el.classList.add("hidden");
+  MyApp.style.display = "none";
+  if (searchNav) searchNav.style.display = "none";
+
+  top.location.replace("index.html");
 }
 
 
-function updateEditTimerUI() {
-  const el = document.getElementById("editTimer");
-  if (!el) return;
-
-  const rest = Math.max(
-    0,
-    EDIT_TIMEOUT_MS - (Date.now() - lastEditActivity)
-  );
-
-  const sec = Math.floor(rest / 1000);
-  const m = String(Math.floor(sec / 60)).padStart(2, "0");
-  const s = String(sec % 60).padStart(2, "0");
-
-  el.querySelector(".time").textContent = `${m}:${s}`;
-  el.classList.toggle("warning", sec <= 30);
-}
-
-/* ======================================
-     Zentrale Edit-Freischaltung ENDE
-  =================================== */
-
-/* ZENTRALE ADMIN-PRÜFUNG (ROLLENBASIERT) */
+/* ZENTRALE ADMIN-PRÜFUNG */
 function requireAdminUnlock() {
-  /* bereits freigeschaltet */
   if (editEnabled) return true;
 
-  /* Rollenprüfung */
-  if (!isAdmin && sessionStorage.getItem("role") !== "admin") {
-    alert("Admin-Berechtigung erforderlich");
-    return false;
+  const key = prompt("Admin-Key erforderlich:");
+  if (!key) return false;
+
+  if (key === EDIT_KEY) {
+    editEnabled = true;
+    useEdit = true;
+    localStorage.setItem("editEnabled", "true");
+    unlockEditing();
+    startAutoLock();
+    syncAdminUI();
+    syncEditToggleButton();    
+    return true;
   }
 
-  /* Edit freischalten */
-  editEnabled = true;
-  useEdit = true;
-
-  localStorage.setItem("editEnabled", "true");
-
-  unlockEditing();
-  startAutoLock();
-  syncAdminUI();
-  syncEditToggleButton();
-
-  return true;
+  alert("Falscher Admin-Key");
+  return false;
 }
-
-
-/* =========================
-   SEARCH STATE (GLOBAL)
-========================= */
-window.App = window.App || {};
-
-let searchHits = [];
-let activeSearchIndex = -1;
-
-/* =========================
-   SEARCH CORE
-========================= */
-App.performSearch = function (query) {
-  window.globalSearchTerm = (query || "").toLowerCase();
-
-  // aktiven Tab neu rendern
-  if (window.TabController?.getActive) {
-    TabController.show(TabController.getActive());
-  }
-
-  requestAnimationFrame(collectSearchHits);
-};
-
-App.clearSearch = function () {
-  globalSearchTerm = "";
-  searchHits = [];
-  activeSearchIndex = -1;
-
-  if (window.TabController?.getActive) {
-    TabController.show(TabController.getActive());
-  }
-};
-
-App.searchNext = function () {
-  if (!searchHits.length) return;
-  activeSearchIndex = (activeSearchIndex + 1) % searchHits.length;
-  updateActiveHit();
-};
-
-App.searchPrev = function () {
-  if (!searchHits.length) return;
-  activeSearchIndex =
-    (activeSearchIndex - 1 + searchHits.length) % searchHits.length;
-  updateActiveHit();
-};
-
-/* =========================
-   INTERNAL HELPERS
-========================= */
-function collectSearchHits() {
-  searchHits = Array.from(document.querySelectorAll("mark.hit, mark.search-hit"));
-  activeSearchIndex = searchHits.length ? 0 : -1;
-  updateActiveHit();
-}
-
-function updateActiveHit() {
-  searchHits.forEach((el, i) =>
-    el.classList.toggle("active-hit", i === activeSearchIndex)
-  );
-
-  if (searchHits[activeSearchIndex]) {
-    searchHits[activeSearchIndex].scrollIntoView({
-      behavior: "smooth",
-      block: "center"
-    });
-  }
-}
-
-/* =========================
-   API FÜR search.js
-========================= */
-window.hasSearchHits = function () {
-  return Array.isArray(searchHits) && searchHits.length > 0;
-};
-
-
-
-
-
-
 
 
 
 /*Die Scroll-Funktion */
 function scrollToFirstHighlight() {
-  if (!globalSearchTerm) return;
+  if (!App.search) return;
 
   const activeSection = document.querySelector(".tab-section.active");
   if (!activeSection) return;
@@ -530,6 +372,38 @@ function scrollToFirstHighlight() {
     behavior: "smooth"
   });
 }
+/* Treffer sammeln */
+function getHighlights() {
+  return Array.from(
+    document.querySelectorAll(".highlight")
+  );
+}
+
+/* Zum Treffer scrollen*/
+function scrollToHighlight(index) {
+  if (!searchHits.length) return;
+
+  if (index < 0) index = searchHits.length - 1;
+  if (index >= searchHits.length) index = 0;
+
+  highlightIndex = index;
+
+  searchHits.forEach(el => el.classList.remove("active-hit"));
+
+  const el = searchHits[highlightIndex];
+  el.classList.add("active-hit");
+
+  el.scrollIntoView({
+    behavior: "smooth",
+    block: "center"
+  });
+
+  searchHits = Array.from(document.querySelectorAll("mark.hit"));
+  notifySearchNav();
+
+}
+
+
 
 
 /* Button schaltet Edit-Modus*/
@@ -638,7 +512,7 @@ window.TabController = (() => {
    KE RENDERING
 ===================================================== */
 function renderKE() {
-  if (!loggedIn) return;
+  if (!App.loggedIn) return;
   tableBody.innerHTML = "";
 
   let lastCat = null;
@@ -835,9 +709,25 @@ function renderInventur() {
   /* =========================
      GESAMTE INVENTUR (OHNE GLOBALSUMMEN)
   ========================= */
- const rows = [...keRows, ...fsRows, ...fmRows];
+const rows = [...keRows, ...fsRows, ...fmRows];
 
-  setTabCount("inv", rows.length);
+/* ===== INVENTUR FILTER (wie KE / FS / FM) ===== */
+let invFiltered = rows;
+
+if (App.search) {
+  const q = App.search.toLowerCase();
+  invFiltered = rows.filter(row =>
+    Object.values(row).some(v =>
+      String(v).toLowerCase().includes(q)
+    )
+  );
+}
+
+/* ===== TAB-ZÄHLER ===== 
+setTabCount("inv", invFiltered.length);*/
+/* ===== TREFFERZAHL KORRIGIEREN (Summenzeile) ===== */
+const invCount = invFiltered.filter(r => !r._isSum).length;
+setTabCount("inv", invCount);
 
   
   /* =========================
@@ -846,11 +736,11 @@ function renderInventur() {
   rows.forEach(r => {
     body.innerHTML += `
       <tr class="${r.gesamt ? 'inventory-sum' : ''}">
-        <td>${highlightText(r.source, globalSearchTerm)}</td>
-        <td>${highlightText(r.beschreibung, globalSearchTerm)}</td>
-        <td>${highlightText(r.eNummer, globalSearchTerm)}</td>
-        <td>${highlightText(r.charge, globalSearchTerm)}</td>
-        <td>${highlightText(r.palette, globalSearchTerm)}</td>
+        <td>${highlightText(r.source, App.search)}</td>
+        <td>${highlightText(r.beschreibung, App.search)}</td>
+        <td>${highlightText(r.eNummer, App.search)}</td>
+        <td>${highlightText(r.charge, App.search)}</td>
+        <td>${highlightText(r.palette, App.search)}</td>
         <td>${r.bestand}</td>
         <td>${r.gesamt}</td>
       </tr>
@@ -859,8 +749,7 @@ function renderInventur() {
 }
 
 
-/*Neue KE-Inventur-Aufbereitung (ersetzt alte Gruppierung)*/
-
+/* Neue KE-Inventur-Aufbereitung (ersetzt alte Gruppierung) */
 function buildKEInventurRows() {
   const map = new Map();
 
@@ -883,6 +772,7 @@ function buildKEInventurRows() {
       });
     }
 
+    /* ===== DETAILZEILE ===== */
     if (hasDetail) {
       map.get(material).rows.push({
         source: "KE",
@@ -891,7 +781,8 @@ function buildKEInventurRows() {
         charge,
         palette,
         bestand: !isNaN(bestand) ? bestand : "",
-        gesamt: ""
+        gesamt: "",
+        _isSum: false           // ✅ explizit KEINE Summenzeile
       });
     }
 
@@ -903,10 +794,10 @@ function buildKEInventurRows() {
   const result = [];
 
   map.forEach((entry, material) => {
-    // Detailzeilen
+    /* ===== DETAILZEILEN ===== */
     entry.rows.forEach(r => result.push(r));
 
-    // GENAU EINE Summenzeile pro Material
+    /* ===== GENAU EINE SUMMENZEILE ===== */
     result.push({
       source: "KE",
       beschreibung: material,
@@ -914,12 +805,14 @@ function buildKEInventurRows() {
       charge: "",
       palette: "",
       bestand: "",
-      gesamt: entry.total > 0 ? entry.total + " kg" : ""
+      gesamt: entry.total > 0 ? entry.total + " kg" : "",
+      _isSum: true            // ✅ DAS IST DIE SUMMENZEILE
     });
   });
 
   return result;
 }
+
 
   /* =========================
      Print-Funktion
@@ -944,8 +837,12 @@ function printTable() {
 
 function highlightText(text, term) {
   if (!term) return text;
-  const r = new RegExp(`(${term})`, "gi");
-  return String(text).replace(r, `<mark class="hit">$1</mark>`);
+
+  const safeText = String(text);
+  const safeTerm = term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const regex = new RegExp(`(${safeTerm})`, "gi");
+
+  return safeText.replace(regex, `<mark class="hit">$1</mark>`);
 }
 
 
@@ -1021,17 +918,16 @@ function loadHistoryData() {
 ===================================================== */
 function syncAdminUI() {
   const btn = document.getElementById("resetMaterialDataBtn");
-  if (btn) btn.style.display = isAdmin ? "inline-block" : "none";
-}
+  if (btn) btn.style.display = editEnabled ? "inline-block" : "none";
 
+}
 
 /* =====================================================
    START
 ===================================================== */
 document.addEventListener("DOMContentLoaded", () => {
-  if (loggedIn) {
-    loginBox.style.display = "none";
-    app.style.display = "block";
+  if (App.loggedIn) {
+    MyApp.style.display = "block";
       
 
     initCategories(); 
@@ -1041,14 +937,17 @@ document.addEventListener("DOMContentLoaded", () => {
     TabController.init();
   }
 });
+/* =====================================================
+   EDIT-LOCK / AUTO-LOCK
+   ===================================================== */
+/* ENTER soll Freischalten / Sperren auslösen */
+keyInput.addEventListener("keydown", e => {
+  if (e.key === "Enter") {
+    toggleEditing();
+  }
+});
 
 function toggleEditing() {
-
-  if (!window.EDIT_ENABLED) {
-    alert("Keine Berechtigung");
-    return;
-  }
-
   if (editEnabled) {
     lockEditing();
   } else {
@@ -1057,22 +956,19 @@ function toggleEditing() {
 }
 
 function unlockEditing() {
-  editEnabled = true;
-  useEdit = true;
+  if (useEdit) return false;  
+  if (keyInput.value !== EDIT_KEY) {
+    alert("Falscher Key");
+    return;
+  }
 
+  editEnabled = true;
   localStorage.setItem("editEnabled", "true");
 
-  /* Defensive UI-Synchronisation */
-  if (typeof syncAdminUI === "function") {
-    syncAdminUI();
-  }
-
-  if (typeof syncEditToggleButton === "function") {
-    syncEditToggleButton();
-  }
+  startAutoLock();
+  syncAdminUI();
+  syncEditToggleButton();   // 🔑 HINZUFÜGEN
 }
-
-
 
 function lockEditing() {
   editEnabled = false;
@@ -1118,7 +1014,7 @@ function initCategories() {
   if (!categoryFilter || !Array.isArray(data)) return;
 
   categoryFilter.innerHTML =
-    '<option value="">Alle Kategorien</option>';
+    '<option value="ALL">Alle Kategorien</option>';
 
   const cats = [
     ...new Set(
@@ -1206,7 +1102,7 @@ function saveHistory(entry) {
    ADMIN: RESET DATEN
 ===================================================== */
 function resetMaterialData() {
-  if (!loggedIn || !isAdmin) return;
+  if (!App.loggedIn || !isAdmin) return;
 
   const ok = confirm(
     "ACHTUNG!\n\nAlle Daten werden zurückgesetzt."
@@ -1223,7 +1119,7 @@ function resetMaterialData() {
         data   = structuredClone(defaultData);
 
         // UI Reset
-        globalSearchTerm = "";
+        App.search = "";
         if (search) search.value = "";
 
         renderFM();
@@ -1275,9 +1171,7 @@ document.addEventListener("DOMContentLoaded", () => {
   updateThemeButton();
 });
 
-/* =====================================================
-   KE – SUCH & FILTER EVENTS
-===================================================== */
+
 const debouncedRender = (() => {
   let t;
   return () => {
@@ -1287,40 +1181,56 @@ const debouncedRender = (() => {
 })();
 
 
-safeOn(search, "input", () => {
-  globalSearchTerm = search.value.trim().toLowerCase();
 
-  if (!TabController) return;
-
-  switch (TabController.active) {
-    case "ke":
-      renderKE();
-      break;
-
-    case "fs":
-      if (typeof renderFS === "function") {
-        renderFS();
-      }
-      break;
-
-    case "fm":
-      renderFM();
-      break;
-  }
-
-  globalSearchTerm = search.value.trim().toLowerCase();
-
-  const current = TabController.getActive();
-  if (current) {
-    TabController.show(current);
-  }
-    // ✅ NACH dem Rendern zum ersten Treffer springen
-  requestAnimationFrame(scrollToFirstHighlight);
-
-});
 
 safeOn(categoryFilter, "change", () => {
   renderKE();
+});
+
+/* =========================
+   TREFFER NAVIGATION ↑ ↓
+========================= */
+safeOn(document, "keydown", (e) => {
+  if (!App.search) return;
+
+  if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+    e.preventDefault();      // 🔑 Browser-Default unterdrücken
+    e.stopPropagation();     // 🔑 wichtig bei Input-Fokus
+
+    if (e.key === "ArrowDown") {
+      scrollToHighlight(highlightIndex + 1);
+    }
+
+    if (e.key === "ArrowUp") {
+      scrollToHighlight(highlightIndex - 1);
+    }
+  }
+});
+
+function updateSearchNav() {
+  // ❗ KEIN DOM-ZUGRIFF HIER
+  // ❗ NUR STATE BERECHNEN
+
+  const nav = document.getElementById("searchNav");
+  if (!nav) return;
+
+  nav.style.display = searchHits.length > 0 ? "flex" : "none";
+}
+
+
+
+
+
+/* =========================
+   TREFFER BUTTONS
+========================= */
+
+safeOn(btnNext, "click", () => {
+  scrollToHighlight(highlightIndex + 1);
+});
+
+safeOn(btnPrev, "click", () => {
+  scrollToHighlight(highlightIndex - 1);
 });
 
 
@@ -1343,7 +1253,7 @@ document
    KE – ZEILE HINZUFÜGEN
 ===================================================== */
 function addRowAfter(index) {
-  if (!loggedIn) return;
+  if (!App.loggedIn) return;
 
   const base = data[index];
 
@@ -1370,7 +1280,7 @@ function addRowAfter(index) {
    KE – ZEILE LÖSCHEN
 ===================================================== */
 function removeRow(index) {
-  if (!loggedIn) return;
+  if (!App.loggedIn) return;
   
   // ❌ Default-Zeilen niemals löschen
   const row = data[index];
@@ -1411,7 +1321,7 @@ function cell(value, index, field) {
   return `
     <td class="${protectedField ? "protected" : ""} ${extraClass}">
       <div class="edit-wrapper">
-        <span>${highlightText(value ?? "", globalSearchTerm)}</span>
+        <span>${highlightText(value ?? "", App.search)}</span>
         ${
           canEdit
             ? `<span class="edit-icon"
@@ -1435,13 +1345,10 @@ function findDuplicateKE({ charge, palette }) {
 
 
 
-async function editCell(icon, index, field) {
-  /* Geschützte Felder nur im Edit-Modus */
+function editCell(icon, index, field) {
   if (PROTECTED_FIELDS.includes(field) && !editEnabled) return;
-
-  /* 🔐 Zentrale Edit-Freigabe */
-  if (!await requireEditSaveUnlock()) return;
-
+  if (!requireAdminUnlock()) return;
+  
   const td = icon.closest("td");
   if (!td) return;
 
@@ -1458,58 +1365,48 @@ async function editCell(icon, index, field) {
   const btn = td.querySelector(".edit-apply");
   input.focus();
 
-  /* ✨ Edit startet → Aktivität registrieren */
-  registerEditActivity();
+const commit = () => {
+  const newValue = input.value;
 
-  const commit = () => {
-    const newValue = input.value;
+  if (newValue !== oldValue) {
 
-    /* Jede Aktion = Aktivität */
-    registerEditActivity();
+    // 🔍 NUR prüfen, wenn Charge oder Palette geändert wird
+    if (field === "charge" || field === "palette") {
 
-    if (newValue !== oldValue) {
+      const testCharge =
+        field === "charge" ? newValue : data[index].charge;
+      const testPalette =
+        field === "palette" ? newValue : data[index].palette;
 
-      /* 🔍 Duplikatprüfung */
-      if (field === "charge" || field === "palette") {
+      const dupIndex = data.findIndex((row, i) =>
+        i !== index &&
+        String(row.charge).trim() === String(testCharge).trim() &&
+        String(row.palette).trim() === String(testPalette).trim()
+      );
 
-        const testCharge =
-          field === "charge" ? newValue : data[index].charge;
-        const testPalette =
-          field === "palette" ? newValue : data[index].palette;
-
-        const dupIndex = data.findIndex((row, i) =>
-          i !== index &&
-          String(row.charge).trim() === String(testCharge).trim() &&
-          String(row.palette).trim() === String(testPalette).trim()
-        );
-
-        if (dupIndex !== -1) {
-          alert(`Eintrag bereits vorhanden (Zeile ${dupIndex + 1})`);
-          scrollToKERow(dupIndex);
-          renderKE();
-          reapplyKEColumns();
-          return;
-        }
+      if (dupIndex !== -1) {
+        alert(`Eintrag bereits vorhanden (Zeile ${dupIndex + 1})`);
+        scrollToKERow(dupIndex);
+        renderKE();
+        reapplyKEColumns();
+        return;
       }
-
-      /* ✅ Speichern */
-      data[index][field] = newValue;
-      save();
-
-      saveHistory({
-        time: new Date().toISOString(),
-        field,
-        oldValue,
-        newValue
-      });
     }
 
-    renderKE();
-    reapplyKEColumns();
-  };
+    // ✅ kein Duplikat → speichern
+    data[index][field] = newValue;
+    save();
+    saveHistory({
+      time: new Date().toISOString(),
+      field,
+      oldValue,
+      newValue
+    });
+  }
 
-  /* ⌨️ Tippen hält Edit aktiv */
-  input.addEventListener("input", registerEditActivity);
+  renderKE();
+  reapplyKEColumns();
+};
 
   input.addEventListener("keydown", e => {
     if (e.key === "Enter") {
@@ -1521,7 +1418,6 @@ async function editCell(icon, index, field) {
   input.addEventListener("blur", commit);
   btn.addEventListener("click", commit);
 }
-
 
 /* =====================================================
    KE – HILFSFUNKTION HIGHLIGHT
@@ -1540,12 +1436,14 @@ function highlight(text, q) {
 function getFilteredData() {
   let result = [...data];
 
+  // 🔹 Kategorie aus Select
   const cat = categoryFilter?.value;
-  if (cat) {
+  if (cat && cat !== "ALL") {
     result = result.filter(r => r.cat === cat);
   }
 
-  const q = search?.value?.toLowerCase().trim();
+  // 🔹 Suche aus App-State (NICHT direkt aus Input!)
+  const q = App.search;
   if (q) {
     result = result.filter(r =>
       Object.values(r).some(v =>
@@ -1557,12 +1455,13 @@ function getFilteredData() {
   return result;
 }
 
+
 /* =====================================================
    KE – RENDER OVERRIDE MIT FILTER
 ===================================================== */
 const _renderOriginal = renderKE;
 renderKE = function () {
-  if (!loggedIn) return;
+  if (!App.loggedIn) return;
 
   tableBody.innerHTML = "";
 
@@ -1605,23 +1504,18 @@ renderKE = function () {
       </tr>
     `;
   });
+   requestAnimationFrame(collectSearchHits);
 };
 
 /* =====================================================
    KEYBOARD SHORTCUTS
 ===================================================== */
 document.addEventListener("keydown", e => {
-  if (!loggedIn) return;
+  if (!App.loggedIn) return;
 
   /* ESC = Sperren */
   if (e.key === "Escape" && editEnabled) {
     lockEditing();
-  }
-
-  /* CTRL + F = Fokus Suche */
-  if (e.ctrlKey && e.key.toLowerCase() === "f") {
-    e.preventDefault();
-    search?.focus();
   }
 
   /* CTRL + L = Logout */
@@ -1649,7 +1543,6 @@ document.addEventListener("DOMContentLoaded", () => {
   
   syncAdminUI();
 
-  if (search) search.value = "";
   if (categoryFilter) categoryFilter.value = "";
 });
 
@@ -1659,21 +1552,17 @@ document.addEventListener("DOMContentLoaded", () => {
 ===================================================== */
 (function sanityCheck() {
   const required = [
-    app,
-    loginBox,
-    userInput,
-    passInput,
+    MyApp,
     tableBody
   ];
 
   const missing = required.filter(el => !el);
   if (missing.length) {
-    console.error(
-      "Initialisierung fehlgeschlagen – DOM-Elemente fehlen:",
-      missing
-    );
+    console.error("Initialisierung fehlgeschlagen:", missing);
   }
 })();
+
+
 
 /* =====================================================
    VISIBILITY HELPERS
@@ -1685,19 +1574,6 @@ function show(el) {
 function hide(el) {
   if (el) el.style.display = "none";
 }
-
-/* =====================================================
-   LOGIN STATE RESTORE
-===================================================== */
-document.addEventListener("DOMContentLoaded", () => {
-  if (loggedIn) {
-    hide(loginBox);
-    show(app);
-  } else {
-    hide(app);
-    show(loginBox);
-  }
-});
 
 /* =====================================================
    STORAGE MIGRATION (FUTURE-SAFE)
@@ -1864,17 +1740,10 @@ function loadHistoryData() {
 
 
 /* =============
-   EXPORT (ADMIN)
+   EXPORT
 ============ */
 function exportAllData() {
-  /* =========================
-     ADMIN-PRÜFUNG
-  ========================= */
-  if (!requireAdminUnlock()) return;
-
-  /* =========================
-     HISTORIE (SNAPSHOT)
-  ========================= */
+  // 🔹 Historie erweitern (Snapshot)
   const historyEntry = {
     timestamp: new Date().toISOString(),
     keCount: data.length,
@@ -1888,9 +1757,6 @@ function exportAllData() {
   saveHistoryData();
   renderHistory();
 
-  /* =========================
-     PAYLOAD
-  ========================= */
   const payload = {
     version: 1,
     exportedAt: new Date().toISOString(),
@@ -1902,9 +1768,6 @@ function exportAllData() {
     history: historyData
   };
 
-  /* =========================
-     DOWNLOAD
-  ========================= */
   const blob = new Blob(
     [JSON.stringify(payload, null, 2)],
     { type: "application/json" }
@@ -1916,16 +1779,10 @@ function exportAllData() {
   a.click();
 }
 
-
 /* =============
-   IMPORT (ADMIN)
+   IMPORT
 ============ */
 function importAllData() {
-  /* =========================
-     ADMIN-PRÜFUNG
-  ========================= */
-  if (!requireAdminUnlock()) return;
-
   const input = document.getElementById("importFile");
   if (!input || !input.files || !input.files.length) return;
 
@@ -1935,7 +1792,7 @@ function importAllData() {
   reader.onload = () => {
     let jsonText = reader.result;
 
-    /* BOM / Whitespaces entfernen */
+    // BOM / Whitespaces entfernen
     if (typeof jsonText === "string") {
       jsonText = jsonText.trim().replace(/^\uFEFF/, "");
     }
@@ -1951,9 +1808,10 @@ function importAllData() {
 
     /* ===== AB HIER KEIN try/catch MEHR ===== */
 
-    data        = Array.isArray(json.ke)      ? json.ke      : [];
-    fsData      = Array.isArray(json.fs)      ? json.fs      : [];
-    fmData      = Array.isArray(json.fm)      ? json.fm      : [];
+    data   = Array.isArray(json.ke) ? json.ke : [];
+    fsData = Array.isArray(json.fs) ? json.fs : [];
+    fmData = Array.isArray(json.fm) ? json.fm : [];
+
     historyData = Array.isArray(json.history) ? json.history : [];
 
     saveData();
@@ -1973,7 +1831,6 @@ function importAllData() {
   reader.readAsText(file);
   input.value = "";
 }
-
 
 
 function saveData() {
@@ -2012,10 +1869,31 @@ window.addEventListener("DOMContentLoaded", () => {
   el.textContent = formatted;
 });
 
-/* Aktivität richtig registrieren */
-["click", "keydown", "mousemove", "scroll"].forEach(evt => {
-  document.addEventListener(evt, registerUserActivity, true);
-});
+
+App.performSearch = function (query) {
+  App.search = (query || "").toLowerCase();
+
+  if (TabController?.show && TabController?.getActive) {
+    TabController.show(TabController.getActive());
+  }
+
+  requestAnimationFrame(() => {
+    collectSearchHits();
+    updateSearchNav();
+  });
+};
+
+window.top.hasSearchHits = function () {
+  return Array.isArray(searchHits) && searchHits.length > 0;
+};
+
+App.clearSearch = function () {
+  App.search = "";
+  if (TabController?.show && TabController?.getActive) {
+    TabController.show(TabController.getActive());
+  }
+};
+
 
 /* =====================================================
    EOF – daten.js vollständig

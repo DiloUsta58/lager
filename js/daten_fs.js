@@ -3,7 +3,7 @@
 ========================= */
 const FS_KEY = "fs_lager_data_v1";
 
-
+window.renderFS = renderFS;
 /* =========================
    INITIALDATEN – FS (NICHT DIREKT ÄNDERN)
 ========================= */
@@ -249,16 +249,17 @@ function saveFS() {
    RENDERING
 ========================= */
 function renderFS() {
+  /* if (!App.loggedIn) return; */
   const body = document.getElementById("fsTableBody");
   body.innerHTML = "";
 
   /* ===== FILTER: GENAU HIER ===== */
   let fsFiltered = fsData;
 
-  if (globalSearchTerm) {
+  if (App.search) {
     fsFiltered = fsFiltered.filter(row =>
       Object.values(row).some(v =>
-        String(v).toLowerCase().includes(globalSearchTerm)
+        String(v).toLowerCase().includes(App.search)
       )
     );
   }
@@ -269,41 +270,41 @@ function renderFS() {
     body.innerHTML += `
       <tr>
         <td data-label="Kurz Bezeichnung">
-          ${highlightText(r.kurz || "", globalSearchTerm)}
+          ${highlightText(r.kurz || "", App.search)}
         </td>
 
         <td data-label="Bezeichnung">
-          ${highlightText(r.bezeichnung || "", globalSearchTerm)}
+          ${highlightText(r.bezeichnung || "", App.search)}
         </td>
 
         <td data-label="Material">
-          ${highlightText(r.material || "", globalSearchTerm)}
+          ${highlightText(r.material || "", App.search)}
         </td>
 
         <td data-label="Stückzahl">
-          ${highlightText(r.stueck || "", globalSearchTerm)}
+          ${highlightText(r.stueck || "", App.search)}
         </td>
 
         ${fsCell(
-          highlightText(r.eNummer || "", globalSearchTerm),
+          highlightText(r.eNummer || "", App.search),
           i,
           "eNummer",
           "E-Nummer"
         )}
 
         <td data-label="Kürzel">
-          ${highlightText(r.kuerzel || "", globalSearchTerm)}
+          ${highlightText(r.kuerzel || "", App.search)}
         </td>
 
         ${fsCell(
-          highlightText(r.bestand || "", globalSearchTerm),
+          highlightText(r.bestand || "", App.search),
           i,
           "bestand",
           "Bestand Konsilager"
         )}
 
         ${fsCell(
-          highlightText(r.dpc || "", globalSearchTerm),
+          highlightText(r.dpc || "", App.search),
           i,
           "dpc",
           "DPC"
@@ -311,6 +312,7 @@ function renderFS() {
       </tr>
     `;
   });
+   requestAnimationFrame(collectSearchHits);
 }
 
 
@@ -329,61 +331,46 @@ function fsCell(value, index, field, label, colClass) {
   `;
 }
 
-async function editFS(icon, index, field) {
 
-  /* 🔐 Zentrale Edit-Freigabe */
-  if (!await requireEditSaveUnlock()) return;
-
+function editFS(icon, index, field) {
+  if (!requireAdminUnlock()) return;
+  
   const td = icon.closest("td");
-  if (!td) return;
-
-  const oldValue = fsData[index][field] ?? "";
-
-  td.innerHTML = `<input class="edit-input" value="${oldValue}">`;
+  const old = fsData[index][field];
+  td.innerHTML = `<input class="edit-input" value="${old || ""}">`;
   const input = td.querySelector("input");
   input.focus();
 
-  /* ✨ Edit startet → Aktivität */
-  registerEditActivity();
-
-  /* ⌨️ Tippen hält Edit aktiv */
-  input.addEventListener("input", registerEditActivity);
-
-  /* ENTER / ESC */
+  // ✅ ENTER / ESC Handling
   input.addEventListener("keydown", e => {
     if (e.key === "Enter") {
       e.preventDefault();
-      input.blur();
+      input.blur(); // triggert onblur → speichern
     }
     if (e.key === "Escape") {
       e.preventDefault();
-      if (typeof renderFS === "function") renderFS();
+      if (typeof renderFS === "function") renderFS(); // Abbrechen
     }
   });
 
   input.onblur = () => {
-    const newValue = input.value;
-
-    /* Speichern = Aktivität */
-    registerEditActivity();
-
-    fsData[index][field] = newValue;
+    fsData[index][field] = input.value;
     saveFS();
 
+    // 🔴 Änderungshistorie
     saveHistory({
       time: new Date().toISOString(),
       table: "FS",
       field,
-      oldValue,
-      newValue,
+      oldValue: old,
+      newValue: input.value,
       row: fsData[index].bezeichnung
     });
 
-    if (typeof renderFS === "function") renderFS();
-    if (typeof reapplyFsColumns === "function") reapplyFsColumns();
+    if (typeof renderFS === 'function') renderFS();
+    if (typeof reapplyFsColumns === 'function') reapplyFsColumns();
   };
 }
-
 
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -403,25 +390,4 @@ document.addEventListener("DOMContentLoaded", () => {
   if (typeof reapplyFsColumns === 'function') { reapplyFsColumns(); }
 });
 
-/* =====================================================
-   RESET FM SECTION (ADMIN)
-===================================================== */
-function resetFS() {
-  /* =========================
-     ADMIN-PRÜFUNG
-  ========================= */
-  if (!requireAdminUnlock()) return;
 
-  /* =========================
-     BESTÄTIGUNG
-  ========================= */
-  if (!confirm("FS-Daten wirklich zurücksetzen?")) return;
-
-  /* =========================
-     RESET
-  ========================= */
-  localStorage.removeItem("fs_lager_data_v1");
-
-  fsData = structuredClone(DEFAULT_FS_DATA);
-  renderFS();
-}

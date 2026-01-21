@@ -14,6 +14,7 @@ const FM_EDITABLE_FIELDS = [
    STATUS
 ===================================================== */
 
+window.renderFM = renderFM;
 
 const DEFAULT_FM_DATA = [
   {
@@ -516,7 +517,7 @@ function fmCell(value, rowIndex, field) {
       title="${tooltip}"
     >
       <div class="edit-wrapper">
-        <span>${value ?? ""}</span>
+        <span>${highlightText(value ?? "", App.search)}</span>
         ${
           canEdit
             ? `<span class="edit-icon"
@@ -529,54 +530,39 @@ function fmCell(value, rowIndex, field) {
 }
 
 
-async function editFM(icon, rowIndex, field) {
-
-  /* Feld darf überhaupt editiert werden */
-  if (!FM_EDITABLE_FIELDS.includes(field)) return;
-
-  /* 🔐 Zentrale Edit-Freigabe (Admin ohne Key, Edit mit Key) */
-  if (!await requireEditSaveUnlock()) return;
+function editFM(icon, rowIndex, field) {
+ 
+  const canEdit = editEnabled && FM_EDITABLE_FIELDS.includes(field);
+  if (!requireAdminUnlock()) return;
 
   const td = icon.closest("td");
-  if (!td) return;
-
   const span = td.querySelector("span");
+
   if (!span) return;
 
-  const oldValue = span.textContent ?? "";
+  const oldValue = span.textContent;
 
-  /* ✨ Edit startet → Aktivität */
-  registerEditActivity();
-
-  /* Input erzeugen */
+  // Input erzeugen
   const input = document.createElement("input");
   input.type = "text";
   input.value = oldValue;
   input.className = "cell-input";
 
-  /* Span ersetzen */
+  // Span ersetzen
   span.replaceWith(input);
   input.focus();
 
   function save() {
     const newValue = input.value.trim();
 
-    /* Speichern zählt als Aktivität */
-    registerEditActivity();
-
-    if (newValue !== oldValue) {
-      fmData[rowIndex][field] = newValue;
-      saveFMData();
-    }
-
+    // Daten aktualisieren
+    fmData[rowIndex][field] = newValue;
+    saveFMData();
+    // Re-Render
     renderFM();
   }
 
-  /* ⌨️ Tippen hält Edit aktiv */
-  input.addEventListener("input", registerEditActivity);
-
   input.addEventListener("blur", save);
-
   input.addEventListener("keydown", e => {
     if (e.key === "Enter") input.blur();
     if (e.key === "Escape") renderFM();
@@ -584,19 +570,18 @@ async function editFM(icon, rowIndex, field) {
 }
 
 
-
 function renderFM() {
-  if (!loggedIn) return;
+ /* if (!App.loggedIn) return;*/
   const tbody = document.getElementById("fmTableBody");
   tbody.innerHTML = "";
 
   /* ===== FILTER ===== */
   let fmFiltered = fmData;
 
-  if (globalSearchTerm) {
+  if (App.search) {
     fmFiltered = fmFiltered.filter(row =>
       Object.values(row).some(v =>
-        String(v).toLowerCase().includes(globalSearchTerm)
+        String(v).toLowerCase().includes(App.search)
       )
     );
   }
@@ -610,19 +595,20 @@ fmFiltered.forEach((row, i) => {
 
   tbody.innerHTML += `
     <tr title="Lagerbestand: ${bestandText}">
-        <td data-col="pos1">${highlightText(row.pos1 ?? "", globalSearchTerm)}</td>
-        <td data-col="artikel1">${highlightText(row.artikel1 ?? "", globalSearchTerm)}</td>
-        <td data-col="artikel2">${highlightText(row.artikel2 ?? "", globalSearchTerm)}</td>
-        <td data-col="artikel">${highlightText(row.artikel ?? "", globalSearchTerm)}</td>
-        <td data-col="koernung">${highlightText(row.koernung ?? "", globalSearchTerm)}</td>
-        <td data-col="abmessung">${highlightText(row.abmessung ?? "", globalSearchTerm)}</td>
-        <td data-col="verpackung">${highlightText(row.verpackung ?? "", globalSearchTerm)}</td>
-        <td data-col="verpackung">${highlightText(row.pos_Nr ?? "", globalSearchTerm)}</td>
+        <td data-col="pos1">${highlightText(row.pos1 ?? "", App.search)}</td>
+        <td data-col="artikel1">${highlightText(row.artikel1 ?? "", App.search)}</td>
+        <td data-col="artikel2">${highlightText(row.artikel2 ?? "", App.search)}</td>
+        <td data-col="artikel">${highlightText(row.artikel ?? "", App.search)}</td>
+        <td data-col="koernung">${highlightText(row.koernung ?? "", App.search)}</td>
+        <td data-col="abmessung">${highlightText(row.abmessung ?? "", App.search)}</td>
+        <td data-col="verpackung">${highlightText(row.verpackung ?? "", App.search)}</td>
+        <td data-col="pos_Nr">${highlightText(row.pos_Nr ?? "", App.search)}</td>
         ${fmCell(row.bestand, i, "bestand")}
         ${fmCell(row.bemerkung, i, "bemerkung")}
       </tr>
     `;
   });
+   requestAnimationFrame(collectSearchHits);
 }
 
 document
@@ -642,23 +628,9 @@ document
 
 
 
-/* =====================================================
-   RESET FM SECTION (ADMIN)
-===================================================== */
 function resetFM() {
-  /* =========================
-     ADMIN-PRÜFUNG
-  ========================= */
-  if (!requireAdminUnlock()) return;
-
-  /* =========================
-     BESTÄTIGUNG
-  ========================= */
   if (!confirm("FM-Daten wirklich zurücksetzen?")) return;
 
-  /* =========================
-     RESET
-  ========================= */
   localStorage.removeItem("fmData");
 
   fmData = structuredClone(DEFAULT_FM_DATA);
