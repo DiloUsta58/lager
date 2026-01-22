@@ -1111,7 +1111,7 @@ function toggleKEColumn(colIndex, visible) {
 
 function reapplyKEColumns() {
   document
-    .querySelectorAll(".ke-column-controls input[type=checkbox]")
+    .querySelectorAll("#keSection .column-toggle-grid input[type=checkbox]")
     .forEach(cb => cb.dispatchEvent(new Event("change")));
 }
 
@@ -1477,7 +1477,7 @@ safeOn(categoryFilter, "change", () => {
    KE – SPALTEN CHECKBOXEN
 ===================================================== */
 document
-  .querySelectorAll(".ke-column-controls input[type=checkbox]")
+  .querySelectorAll("#keSection .column-toggle-grid input[type=checkbox]")
   .forEach(cb => {
     cb.addEventListener("change", () => {
       const key = cb.dataset.col;
@@ -1894,7 +1894,7 @@ const KE_COL_STATE_KEY = "keColumnState";
 function saveKEColumnState() {
   const state = {};
   document
-    .querySelectorAll(".ke-column-controls input[type=checkbox]")
+    .querySelectorAll("#keSection .column-toggle-grid input[type=checkbox]")
     .forEach(cb => {
       state[cb.dataset.col] = cb.checked;
     });
@@ -1908,7 +1908,7 @@ function restoreKEColumnState() {
   try {
     const state = JSON.parse(raw);
     document
-      .querySelectorAll(".ke-column-controls input[type=checkbox]")
+      .querySelectorAll("#keSection .column-toggle-grid input[type=checkbox]")
       .forEach(cb => {
         if (cb.dataset.col in state) {
           cb.checked = !!state[cb.dataset.col];
@@ -1922,7 +1922,7 @@ function restoreKEColumnState() {
 
 /* Speichern bei Änderung */
 document
-  .querySelectorAll(".ke-column-controls input[type=checkbox]")
+  .querySelectorAll("#keSection .column-toggle-grid input[type=checkbox]")
   .forEach(cb => cb.addEventListener("change", saveKEColumnState));
 
 /* Wiederherstellen beim Start */
@@ -1936,7 +1936,7 @@ const FS_COL_STATE_KEY = "fsColumnState";
 function saveFSColumnState() {
   const state = {};
   document
-    .querySelectorAll(".fs-column-controls input[type=checkbox]")
+    .querySelectorAll("#fsSection .column-toggle-grid input[type=checkbox]")
     .forEach(cb => {
       state[cb.dataset.col] = cb.checked;
     });
@@ -1950,12 +1950,13 @@ function restoreFSColumnState() {
   try {
     const state = JSON.parse(raw);
     document
-      .querySelectorAll(".fs-column-controls input[type=checkbox]")
+      .querySelectorAll("#fsSection .column-toggle-grid input[type=checkbox]")
       .forEach(cb => {
         if (cb.dataset.col in state) {
           cb.checked = !!state[cb.dataset.col];
         }
       });
+
     if (typeof reapplyFsColumns === "function") {
       reapplyFsColumns();
     }
@@ -1964,11 +1965,31 @@ function restoreFSColumnState() {
   }
 }
 
+/* Speichern bei Änderung */
 document
-  .querySelectorAll(".fs-column-controls input[type=checkbox]")
+  .querySelectorAll("#fsSection .column-toggle-grid input[type=checkbox]")
   .forEach(cb => cb.addEventListener("change", saveFSColumnState));
 
-document.addEventListener("DOMContentLoaded", restoreFSColumnState);
+/* Initialisierung */
+document.addEventListener("DOMContentLoaded", () => {
+  restoreFSColumnState();
+
+  document
+    .querySelectorAll("#fsSection .column-toggle-grid input[type=checkbox]")
+    .forEach(cb => {
+      cb.addEventListener("change", () => {
+        const key = cb.dataset.col;
+        const colIndex = FS_COLUMN_MAP[key];
+        if (colIndex !== undefined) {
+          toggleFSColumn(colIndex, cb.checked);
+        }
+      });
+    });
+
+  if (typeof renderFS === "function") renderFS();
+  if (typeof reapplyFsColumns === "function") reapplyFsColumns();
+});
+
 
 /* =====================================================
    UNLOAD-SICHERUNG

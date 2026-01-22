@@ -384,27 +384,8 @@ async function editFS(icon, index, field) {
   };
 }
 
-
-
-document.addEventListener("DOMContentLoaded", () => {
-  document
-    .querySelectorAll(".fs-column-controls input[type=checkbox]")
-    .forEach(cb => {
-      cb.addEventListener("change", () => {
-        const key = cb.dataset.col;
-        const colIndex = FS_COLUMN_MAP[key];
-        if (colIndex !== undefined) {
-          toggleFSColumn(colIndex, cb.checked);
-        }
-      });
-    });
-
-  if (typeof renderFS === 'function') { renderFS(); }
-  if (typeof reapplyFsColumns === 'function') { reapplyFsColumns(); }
-});
-
 /* =====================================================
-   RESET FM SECTION (ADMIN)
+   RESET FS SECTION (ADMIN)
 ===================================================== */
 function resetFS() {
   /* =========================
