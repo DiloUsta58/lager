@@ -48,9 +48,16 @@ async function login(e) {
   loginBox.style.display = "none";
   app.style.display = "block";
 
-  document.getElementById("historySection").style.display = "none";
-  document.getElementById("lastUpdate").style.display = "block";
-  document.getElementById("fmSection").style.display = "block";
+    /* =========================
+     UI
+      document.getElementById("keSection").style.display = "block";
+      document.getElementById("historySection").style.display = "none";
+      document.getElementById("fsSection").style.display = "block";
+      document.getElementById("fmSection").style.display = "block";
+      document.getElementById("inventarSection").style.display = "block";
+      document.getElementById("historySectionIExport").style.display = "block";
+      document.getElementById("lastUpdate").style.display = "block";
+  ========================= */
 
   initCategories();
   syncAdminUI();          // reagiert jetzt auf isAdmin
@@ -83,13 +90,21 @@ function logout() {
   /* =========================
      UI – SECTIONS AUS
   ========================= */
+  const ke = document.getElementById("keSection");
   const hs = document.getElementById("historySection");
-  const lu = document.getElementById("lastUpdate");
+  const fs = document.getElementById("fsSection");
   const fm = document.getElementById("fmSection");
+  const inv = document.getElementById("inventarSection");
+  const his = document.getElementById("historySectionIExport");
+  const lu = document.getElementById("lastUpdate");
 
+  if (ke) ke.style.display = "none";
   if (hs) hs.style.display = "none";
-  if (lu) lu.style.display = "none";
+  if (fs) fs.style.display = "none";
   if (fm) fm.style.display = "none";
+  if (inv) inv.style.display = "none";
+  if (his) his.style.display = "none";
+  if (lu) lu.style.display = "none";
 
   /* =========================
      SUCHE RESET
