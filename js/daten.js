@@ -36,13 +36,16 @@ const MATERIAL_GEWICHT_PRO_STK = {
   "cobalt aluminat": 20,
   "isopropanol": 220,
   "ludox": 255,
-  "w640": 60,
+  "w640": 60
 };
 
 const MATERIAL_PRO_STK = {
   "baffle Ø 688mm": 50,
   "baffle Ø 910mm": 50,
-  "hartfilzplatte 1000x1500": 40
+  "hartfilzplatte 1000x1500": 40,
+  "Trenscheiben Tyrolit": 50,
+  "Trenscheiben Pferd": 50
+  
 };
 
   
@@ -94,6 +97,19 @@ const FS_COLUMN_MAP = {
   kuerzel: 5,
   bestand: 6,
   dpc: 7
+};
+
+const FM_COLUMN_MAP = {
+  pos1: 0,
+  artikel1: 1,
+  artikel2: 2,
+  artikel: 3,
+  koernung: 4,
+  abmessung: 5,
+  verpackung: 6,
+  pos_Nr: 7,
+  bestand: 8,
+  bemerkung: 9
 };
 
 /* =====================================================
@@ -1474,21 +1490,6 @@ safeOn(categoryFilter, "change", () => {
 
 
 /* =====================================================
-   KE – SPALTEN CHECKBOXEN
-===================================================== */
-document
-  .querySelectorAll("#keSection .column-toggle-grid input[type=checkbox]")
-  .forEach(cb => {
-    cb.addEventListener("change", () => {
-      const key = cb.dataset.col;
-      const colIndex = KE_COLUMN_MAP[key];
-      if (colIndex !== undefined) {
-        toggleKEColumn(colIndex, cb.checked);
-      }
-    });
-  });
-
-/* =====================================================
    KE – ZEILE HINZUFÜGEN
 ===================================================== */
 function addRowAfter(index) {
@@ -1920,13 +1921,6 @@ function restoreKEColumnState() {
   }
 }
 
-/* Speichern bei Änderung */
-document
-  .querySelectorAll("#keSection .column-toggle-grid input[type=checkbox]")
-  .forEach(cb => cb.addEventListener("change", saveKEColumnState));
-
-/* Wiederherstellen beim Start */
-document.addEventListener("DOMContentLoaded", restoreKEColumnState);
 
 /* =====================================================
    SPALTEN-PERSISTENZ (FS)
@@ -1965,31 +1959,65 @@ function restoreFSColumnState() {
   }
 }
 
-/* Speichern bei Änderung */
-document
-  .querySelectorAll("#fsSection .column-toggle-grid input[type=checkbox]")
-  .forEach(cb => cb.addEventListener("change", saveFSColumnState));
-
-/* Initialisierung */
-document.addEventListener("DOMContentLoaded", () => {
-  restoreFSColumnState();
-
+  /* =====================
+     SPALTEN
+  ===================== */
+function reapplyFsColumns() {
   document
     .querySelectorAll("#fsSection .column-toggle-grid input[type=checkbox]")
-    .forEach(cb => {
-      cb.addEventListener("change", () => {
-        const key = cb.dataset.col;
-        const colIndex = FS_COLUMN_MAP[key];
-        if (colIndex !== undefined) {
-          toggleFSColumn(colIndex, cb.checked);
-        }
-      });
-    });
+    .forEach(cb => cb.dispatchEvent(new Event("change")));
+}
 
-  if (typeof renderFS === "function") renderFS();
-  if (typeof reapplyFsColumns === "function") reapplyFsColumns();
+function toggleFMColumn(colIndex, visible) {
+  const table = document.querySelector("#fmSection table");
+  if (!table) return;
+
+  table.querySelectorAll("tr").forEach(row => {
+    const cell = row.children[colIndex];
+    if (cell) {
+      cell.style.display = visible ? "" : "none";
+    }
+  });
+}
+
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  /* =====================
+     KE
+  ===================== */
+  setupColumnToggles({
+    sectionId: "keSection",
+    storageKey: "keColumnState",
+    columnMap: KE_COLUMN_MAP,
+    toggleFn: toggleKEColumn,
+    reapplyFn: reapplyKEColumns
+  });
+
+  /* =====================
+     FS
+  ===================== */
+  setupColumnToggles({
+    sectionId: "fsSection",
+    storageKey: "fsColumnState",
+    columnMap: FS_COLUMN_MAP,
+    toggleFn: toggleFSColumn,
+    reapplyFn: reapplyFsColumns
+  });
+
+  /* =====================
+     FM
+     (funktioniert bereits)
+  ===================== */
+  setupColumnToggles({
+    sectionId: "fmSection",
+    storageKey: "fmColumnState",
+    columnMap: FM_COLUMN_MAP,
+    toggleFn: toggleFMColumn,
+    reapplyFn: renderFM
+  });
+
 });
-
 
 /* =====================================================
    UNLOAD-SICHERUNG
@@ -2186,6 +2214,57 @@ window.addEventListener("DOMContentLoaded", () => {
 ["click", "keydown", "mousemove", "scroll"].forEach(evt => {
   document.addEventListener(evt, registerUserActivity, true);
 });
+
+
+
+  /* ==============================================
+     GEMEINSAME HILFSFUNKTION / SPALTEN
+  ========================================== */
+function setupColumnToggles({
+  sectionId,
+  storageKey,
+  columnMap,
+  toggleFn,
+  reapplyFn
+}) {
+  const selector = `#${sectionId} .column-toggle-grid input[type=checkbox]`;
+
+  /* Restore */
+  const raw = localStorage.getItem(storageKey);
+  if (raw) {
+    try {
+      const state = JSON.parse(raw);
+      document.querySelectorAll(selector).forEach(cb => {
+        if (cb.dataset.col in state) {
+          cb.checked = !!state[cb.dataset.col];
+        }
+      });
+    } catch {
+      console.warn(`${sectionId}: Column State konnte nicht geladen werden`);
+    }
+  }
+
+  /* Apply + Save */
+  document.querySelectorAll(selector).forEach(cb => {
+    cb.addEventListener("change", () => {
+      const key = cb.dataset.col;
+      const colIndex = columnMap[key];
+      if (colIndex !== undefined) {
+        toggleFn(colIndex, cb.checked);
+      }
+
+      const state = {};
+      document.querySelectorAll(selector).forEach(c => {
+        state[c.dataset.col] = c.checked;
+      });
+      localStorage.setItem(storageKey, JSON.stringify(state));
+    });
+  });
+
+  if (typeof reapplyFn === "function") {
+    reapplyFn();
+  }
+}
 
 /* =====================================================
    EOF – daten.js vollständig
