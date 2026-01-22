@@ -131,21 +131,52 @@
                 KE SECTION
             ========================= -->
 
-            <div id="keSection" class="tab-section active">
-              <div class="ke-column-controls">
-                <label class="locked"><input type="checkbox" data-col="Material" checked disabled>Material</label>
-                <label><input type="checkbox" data-col="e" checked>E-Nummer</label>
-                <label><input type="checkbox" data-col="charge" checked>Charge-Nr.</label>
-                <label><input type="checkbox" data-col="palette" checked>Paletten-Nr.</label>
-                <label><input type="checkbox" data-col="regal" checked>Regal</label>
-                <label><input type="checkbox" data-col="bestand" checked>Bestand</label>
-                <label><input type="checkbox" data-col="bemerkung" checked>Bemerkung / Status</label>
+          <div id="keSection" class="tab-section active">
+            <div class="ke-column-controls ke-checkbox-grid">
 
-                  <div style="display: flex; justify-content: flex-end;">
-                      <button id="ResetKEToggleBtn" class="ResetKEBtn" onclick="resetKE()">Tabelle zurücksetzen</button>
-                  </div>
+              <label class="locked">
+                <input type="checkbox" data-col="Material" checked disabled>
+                <span>Material</span>
+              </label>
 
+              <label>
+                <input type="checkbox" data-col="e" checked>
+                <span>E-Nummer</span>
+              </label>
+
+              <label>
+                <input type="checkbox" data-col="charge" checked>
+                <span>Charge-Nr.</span>
+              </label>
+
+              <label>
+                <input type="checkbox" data-col="palette" checked>
+                <span>Paletten-Nr.</span>
+              </label>
+
+              <label>
+                <input type="checkbox" data-col="regal" checked>
+                <span>Regal</span>
+              </label>
+
+              <label>
+                <input type="checkbox" data-col="bestand" checked>
+                <span>Bestand</span>
+              </label>
+
+              <label>
+                <input type="checkbox" data-col="bemerkung" checked>
+                <span>Bemerkung / Status</span>
+              </label>
+
+              <div class="ke-reset-wrap">
+                <button id="ResetKEToggleBtn"
+                        class="ResetKEBtn"
+                        onclick="resetKE()">
+                  Tabelle zurücksetzen
+                </button>
               </div>
+            </div>
         <center>
           <!-- Such- & Steuerleiste -->
             <div id="keToolbar">
@@ -202,19 +233,57 @@
                 FS SECTION
             ========================= -->
             <div id="fsSection" class="tab-section">
-              <div class="fs-column-controls">
-                <label><input type="checkbox" data-col="kurz" checked>Kurz</label>
-                <label class="locked"><input type="checkbox" checked disabled>Bezeichnung</label>
-                <label><input type="checkbox" data-col="material">Material</label>
-                <label><input type="checkbox" data-col="stueck" checked>Stückzahl</label>
-                <label><input type="checkbox" data-col="e" checked>E-Nummer</label>
-                <label><input type="checkbox" data-col="kuerzel" checked>Kürzel</label>
-                <label><input type="checkbox" data-col="bestand" checked>Bestand K.</label>
-                <label><input type="checkbox" data-col="dpc" checked>Bestand D</label>
-                  <div style="display: flex; justify-content: flex-end;">
-                      <button id="ResetFSToggleBtn" class="ResetFSBtn" onclick="resetFS()">Tabelle zurücksetzen</button>
-                  </div>                
+              <div class="fs-column-controls fs-checkbox-grid">
+
+                <label>
+                  <input type="checkbox" data-col="kurz" checked>
+                  <span>Kurz</span>
+                </label>
+
+                <label class="locked">
+                  <input type="checkbox" checked disabled>
+                  <span>Bezeichnung</span>
+                </label>
+
+                <label>
+                  <input type="checkbox" data-col="material">
+                  <span>Material</span>
+                </label>
+
+                <label>
+                  <input type="checkbox" data-col="stueck" checked>
+                  <span>Stückzahl</span>
+                </label>
+
+                <label>
+                  <input type="checkbox" data-col="e" checked>
+                  <span>E-Nummer</span>
+                </label>
+
+                <label>
+                  <input type="checkbox" data-col="kuerzel" checked>
+                  <span>Kürzel</span>
+                </label>
+
+                <label>
+                  <input type="checkbox" data-col="bestand" checked>
+                  <span>Bestand K.</span>
+                </label>
+
+                <label>
+                  <input type="checkbox" data-col="dpc" checked>
+                  <span>Bestand D</span>
+                </label>
+
+                <div class="fs-reset-wrap">
+                  <button id="ResetFSToggleBtn"
+                          class="ResetFSBtn"
+                          onclick="resetFS()">
+                    Tabelle zurücksetzen
+                  </button>
+                </div>
               </div>
+
 
               <div class="table-fullwidth">
                 <div class="table-scroll">
@@ -243,25 +312,66 @@
                 FM SECTION
             ========================= -->
               <section id="fmSection" class="tab-section" style="display:none;">
-                                              
-              <!-- Spaltenauswahl -->
-              <div class="fm-column-toggle">
-                <label><label class="locked"><input type="checkbox" checked disabled> Abmessung</label>
-                <label><input type="checkbox" data-col="pos1" checked>Pos. Nr.</label>
-                <label><input type="checkbox" data-col="artikel1" checked>Artikel-Nr. #1</label>
-                <label><input type="checkbox" data-col="artikel2" checked>Artikel-Nr. #2</label>
-                <label><input type="checkbox" data-col="artikel" checked>Artikel</label>
-                <label><input type="checkbox" data-col="koernung" checked>Körnung</label>
-                <label><input type="checkbox" data-col="verpackung" checked>Verpackung</label>
-                <label><input type="checkbox" data-col="pos_Nr" checked>Pos.Nr.</label>
-                <label><input type="checkbox" data-col="bestand" checked> Bestand</label>
-                <label><input type="checkbox" data-col="bemerkung" checked> Bemerkung</label>
-                  <div style="display: flex; justify-content: flex-end;">
-                      <button id="ResetFMToggleBtn" class="ResetFMBtn" onclick="resetFM()">Tabelle zurücksetzen</button>
+                <div class="fm-column-toggle fm-checkbox-grid">
+
+                  <label class="locked">
+                    <input type="checkbox" checked disabled>
+                    <span>Abmessung</span>
+                  </label>
+
+                  <label>
+                    <input type="checkbox" data-col="pos1" checked>
+                    <span>Pos. Nr.</span>
+                  </label>
+
+                  <label>
+                    <input type="checkbox" data-col="artikel1" checked>
+                    <span>Artikel-Nr. #1</span>
+                  </label>
+
+                  <label>
+                    <input type="checkbox" data-col="artikel2" checked>
+                    <span>Artikel-Nr. #2</span>
+                  </label>
+
+                  <label>
+                    <input type="checkbox" data-col="artikel" checked>
+                    <span>Artikel</span>
+                  </label>
+
+                  <label>
+                    <input type="checkbox" data-col="koernung" checked>
+                    <span>Körnung</span>
+                  </label>
+
+                  <label>
+                    <input type="checkbox" data-col="verpackung" checked>
+                    <span>Verpackung</span>
+                  </label>
+
+                  <label>
+                    <input type="checkbox" data-col="pos_Nr" checked>
+                    <span>Pos.Nr.</span>
+                  </label>
+
+                  <label>
+                    <input type="checkbox" data-col="bestand" checked>
+                    <span>Bestand</span>
+                  </label>
+
+                  <label>
+                    <input type="checkbox" data-col="bemerkung" checked>
+                    <span>Bemerkung</span>
+                  </label>
+
+                  <div class="fm-reset-wrap">
+                    <button id="ResetFMToggleBtn"
+                            class="ResetFMBtn"
+                            onclick="resetFM()">
+                      Tabelle zurücksetzen
+                    </button>
                   </div>
-              </div>
-
-
+                </div>
               <!-- Tabelle -->
               <div class="table-fullwidth">
                 <div class="table-scroll">

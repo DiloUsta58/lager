@@ -65,9 +65,15 @@ const defaultData = [
 /* =======================
    MATERIAL FM / TRENNEREI
 ======================= */
-{ cat: "Material FM / Trennerei", material: "Korund NK 60", e: "E32853200", shelf: "", bestand: "",_isDefault: true, _isClone: false },
-{ cat: "Material FM / Trennerei", material: "Korund NK 90", e: "E32853500", shelf: "", bestand: "",_isDefault: true, _isClone: false },
-{ cat: "Material FM / Trennerei", material: "Nussschalengranulat", e: "E00010320B", shelf: "", bestand: "",_isDefault: true, _isClone: false },
+{ cat: "Material FM", material: "Korund NK 60", e: "E32853200", shelf: "", bestand: "",_isDefault: true, _isClone: false },
+{ cat: "Material FM", material: "Korund NK 90", e: "E32853500", shelf: "", bestand: "",_isDefault: true, _isClone: false },
+
+/* =======================
+   MATERIAL TRENNEREI
+======================= */
+{ cat: "Trennerei TR", material: "Nussschalengranulat", e: "E00010320B", shelf: "", bestand: "",_isDefault: true, _isClone: false },
+{ cat: "Trennerei TR", material: "Trenscheiben Tyrolit", e: "E000000000", shelf: "", bestand: "",_isDefault: true, _isClone: false },
+{ cat: "Trennerei TR", material: "Trenscheiben Pferd", e: "E000000000", shelf: "", bestand: "",_isDefault: true, _isClone: false },
 
 /* =======================
    MATERIAL FLÜSSIGKEITEN

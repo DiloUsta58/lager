@@ -100,7 +100,7 @@ const DEFAULT_FS_DATA = [
   },
   {
     kurz: "171#",
-    bezeichnung: "171# Melting Liner F3AADG0827",
+    bezeichnung: "171# Melting Liner A4AADG1171",
     material: "F4A",
     stueck: 32,
     eNummer: "E32350100",
@@ -130,7 +130,7 @@ const DEFAULT_FS_DATA = [
   },
   {
     kurz: "120kg",
-    bezeichnung: "120kg Alumina A4AADG1159",
+    bezeichnung: "120kg Alumina A4AADG1239",
     material: "A4A1239",
     stueck: 18,
     eNummer: "E32346120",
