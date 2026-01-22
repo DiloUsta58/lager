@@ -1456,20 +1456,18 @@ mark.hit.active-hit {
 
 #scrollTopBtn {
   position: fixed;
-  right: 18px;
-  bottom: 24px;
-  z-index: 999;
+  z-index: 9999;
 
-  width: 44px;
-  height: 44px;
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
 
   border: none;
   cursor: pointer;
 
-  background: rgba(120,120,120,0.75);
+  background: rgba(96,165,250,0.95);
   color: #fff;
-  font-size: 20px;
+  font-size: 26px;
   font-weight: bold;
 
   display: flex;
@@ -1478,9 +1476,10 @@ mark.hit.active-hit {
 
   opacity: 0;
   pointer-events: none;
-  transform: translateY(10px);
+  transform: translateY(12px);
   transition: opacity 0.25s ease, transform 0.25s ease;
 }
+
 
 /* Sichtbar */
 #scrollTopBtn.visible {
@@ -1504,13 +1503,15 @@ mark.hit.active-hit {
 }
 @media (max-width: 1024px) {
   #scrollTopBtn {
-    width: 52px;
-    height: 52px;
-    right: 16px;
-    bottom: 64px;   /* höher, wegen Systemleisten */
-    font-size: 22px;
+    right: max(16px, env(safe-area-inset-right));
+    bottom: max(96px, env(safe-area-inset-bottom));
+
+    width: 72px;
+    height: 72px;
+    font-size: 28px;
   }
 }
+
 @media (max-width: 600px) {
   #scrollTopBtn {
     width: 58px;
@@ -1521,5 +1522,16 @@ mark.hit.active-hit {
 
     font-size: 24px;
     border-radius: 50%;
+  }
+}
+
+@media (max-width: 480px) {
+  #scrollTopBtn {
+    right: max(14px, env(safe-area-inset-right));
+    bottom: max(110px, env(safe-area-inset-bottom));
+
+    width: 76px;
+    height: 76px;
+    font-size: 30px;
   }
 }
