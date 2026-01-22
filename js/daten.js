@@ -1014,17 +1014,18 @@ function buildFSInventurRows() {
     const material = (r.bezeichnung || r.kurz || "").trim();
     if (!material) return;
 
-    const bestandEinheiten = Number(r.bestand);
-    const stueckProEinheit = Number(r.stueck);
+    const bestandK = Number(String(r.bestand || 0).replace(",", "."));
+    const bestandD = Number(String(r.dpc || 0).replace(",", "."));
+    const stueckProEinheit = Number(String(r.stueck || 0).replace(",", "."));
 
     if (
-      isNaN(bestandEinheiten) || bestandEinheiten <= 0 ||
-      isNaN(stueckProEinheit) || stueckProEinheit <= 0
+      isNaN(stueckProEinheit) || stueckProEinheit <= 0 ||
+      (bestandK + bestandD) <= 0
     ) {
       return;
     }
 
-    const gesamtStk = bestandEinheiten * stueckProEinheit;
+    const gesamtStk = (bestandK + bestandD) * stueckProEinheit;
 
     if (!map.has(material)) {
       map.set(material, {
@@ -1083,6 +1084,7 @@ function buildFSInventurRows() {
 
   return result;
 }
+
 
 
 
@@ -2265,6 +2267,43 @@ function setupColumnToggles({
     reapplyFn();
   }
 }
+
+/* ===============================
+   SCROLL TO TOP BUTTON
+================================ */
+
+(function () {
+  const btn = document.getElementById("scrollTopBtn");
+  if (!btn) return;
+
+  const SHOW_AT = 300;     // px nach unten → Button erscheint
+  const HIDE_AT = 120;     // px nach oben → Button verschwindet
+
+  let lastScrollY = window.scrollY;
+
+  window.addEventListener("scroll", () => {
+    const currentY = window.scrollY;
+
+    // Scroll nach unten → einblenden
+    if (currentY > SHOW_AT && currentY > lastScrollY) {
+      btn.classList.add("visible");
+    }
+
+    // Scroll nach oben → ausblenden
+    if (currentY < HIDE_AT) {
+      btn.classList.remove("visible");
+    }
+
+    lastScrollY = currentY;
+  });
+
+  btn.addEventListener("click", () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+  });
+})();
 
 /* =====================================================
    EOF – daten.js vollständig

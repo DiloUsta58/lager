@@ -1449,3 +1449,47 @@ mark.hit.active-hit {
 .inventur-date button.invDate:hover {
   background: #3b82f6;
 }
+
+/* ===============================
+   SCROLL TO TOP BUTTON
+================================ */
+
+#scrollTopBtn {
+  position: fixed;
+  right: 18px;
+  bottom: 24px;
+  z-index: 999;
+
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+
+  border: none;
+  cursor: pointer;
+
+  background: rgba(120,120,120,0.75);
+  color: #fff;
+  font-size: 20px;
+  font-weight: bold;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(10px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+/* Sichtbar */
+#scrollTopBtn.visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+/* Hover */
+#scrollTopBtn:hover {
+  background: rgba(96,165,250,0.9); /* dein Blau */
+}
