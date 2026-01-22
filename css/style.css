@@ -1493,3 +1493,33 @@ mark.hit.active-hit {
 #scrollTopBtn:hover {
   background: rgba(96,165,250,0.9); /* dein Blau */
 }
+@media (min-width: 1025px) {
+  #scrollTopBtn {
+    width: 44px;
+    height: 44px;
+    right: 18px;
+    bottom: 24px;
+    font-size: 20px;
+  }
+}
+@media (max-width: 1024px) {
+  #scrollTopBtn {
+    width: 52px;
+    height: 52px;
+    right: 16px;
+    bottom: 64px;   /* höher, wegen Systemleisten */
+    font-size: 22px;
+  }
+}
+@media (max-width: 600px) {
+  #scrollTopBtn {
+    width: 58px;
+    height: 58px;
+
+    right: 14px;
+    bottom: 90px;   /* NICHT vom Browser / Thumb verdeckt */
+
+    font-size: 24px;
+    border-radius: 50%;
+  }
+}
