@@ -625,23 +625,6 @@ fmFiltered.forEach((row, i) => {
   });
 }
 
-document
-  .querySelectorAll('#fmSection input[type="checkbox"][data-col]')
-  .forEach(cb => {
-    cb.addEventListener("change", () => {
-      const col = cb.dataset.col;
-      const visible = cb.checked;
-
-      document
-        .querySelectorAll(`#fmSection [data-col="${col}"]`)
-        .forEach(el => {
-          el.style.display = visible ? "" : "none";
-        });
-    });
-  });
-
-
-
 /* =====================================================
    RESET FM SECTION (ADMIN)
 ===================================================== */

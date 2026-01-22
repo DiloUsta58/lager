@@ -714,37 +714,18 @@ mark.search-hit {
     font-size: 11px;
   }
 
-    /* Alles aus ---> Das ist nur sinnvoll, wenn ausschließlich nur Inventur drucken.
-  body * {
-    visibility: hidden;
-  }
-
-/* Inventur sichtbar 
-#inventarSection,
-#inventarSection * {
-  visibility: visible;
-}
-*/
-
 #inventarSection {
     position: absolute;
     left: 0;
     top: 0;
     width: 100%;
   }
-/*Überschrift + Stichtag formatieren*/
-#inventarSection h3 {
-    font-size: 16px;
-    margin-bottom: 6px;
-  }
 
-  .inventur-header {
-    margin-bottom: 10px;
-  }
 
-  .inventur-header button {
-    display: none;
-  }
+
+
+
+
 /* Tabelle druckoptimiert*/
   table {
     width: 100%;
@@ -1110,7 +1091,7 @@ th:nth-child(7) {   /* Summe */
      FOOTER / SEITENZAHL
   ===================== */
   footer::after {
-    content: "Lettzte Änderrung: " counter(page);
+    content: "Seite: " counter(page);
 
   }
 }
@@ -1295,9 +1276,9 @@ mark.hit.active-hit {
 /* LOGOUT TIMER ENDE*/
 
 
-/* =========================================
+/* ==================================================
    COLUMN TOGGLE – DESKTOP (KE / FS / FM) VERSION 1
-========================================= */
+=============================================== */
 @media (min-width: 1025px) {
 
   .column-toggle-grid {
@@ -1402,4 +1383,69 @@ mark.hit.active-hit {
   .column-toggle-grid button {
     width: 100%;
   }
+}
+
+
+
+/* ===============================
+   INVENTUR HEADER
+================================ */
+
+#inventarSection .inventur-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+/* Container */
+.inventur-header {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+
+/* Rechte Einheit */
+.inventur-date {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  background: rgba(255,255,255,0.04);
+  padding: 6px 10px;
+  border-radius: 10px;
+}
+
+/* Label */
+.inventur-date label {
+  font-size: 12px;
+  opacity: 0.75;
+  white-space: nowrap;
+}
+
+/* Date Input */
+.inventur-date input[type="date"] {
+  background: transparent;
+  color: inherit;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 6px;
+  padding: 4px 6px;
+  font-size: 12px;
+}
+
+/* Button elegant */
+.inventur-date button.invDate {
+  padding: 4px 10px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+
+  background: #60a5fa;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* optional Hover */
+.inventur-date button.invDate:hover {
+  background: #3b82f6;
 }

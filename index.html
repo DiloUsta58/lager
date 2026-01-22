@@ -321,7 +321,7 @@
 
                   <label>
                     <input type="checkbox" data-col="pos1" checked>
-                    <span>Pos. Nr.</span>
+                    <span>Pos. Nr.#1</span>
                   </label>
 
                   <label>
@@ -351,7 +351,7 @@
 
                   <label>
                     <input type="checkbox" data-col="pos_Nr" checked>
-                    <span>Pos.Nr.</span>
+                    <span>Pos.Nr.#2</span>
                   </label>
 
                   <label>
@@ -399,12 +399,16 @@
                 INVENTUR SECTION
             ========================= -->
             <div id="inventarSection" class="tab-section">
-              <h3>Inventur – Gesamtübersicht</h3>
+                <h3 class="inventur-title">Inventur – Gesamtübersicht</h3>
 
-              <div class="inventur-header">
-                <label>Inventur-Stichtag:<input type="date" id="inventurDate"></label>
-                <button class="invDate" onclick="saveInventurDate()">Datum Fixieren!</button>
-              </div>
+                <div class="inventur-header">
+                  <div class="inventur-date">
+                    <label for="inventurDate">Inventur-Stichtag</label>
+                    <input type="date" id="inventurDate">
+                    <button class="invDate" onclick="saveInventurDate()">Fixieren</button>
+                  </div>
+                </div>
+
 
               <div class="table-fullwidth">
                 <div class="table-scroll">
