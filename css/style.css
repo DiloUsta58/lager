@@ -1566,3 +1566,32 @@ mark.hit.active-hit {
   }
 }
 
+/* ===============================
+   STICKY SEARCH WRAPPER
+================================ */
+
+.search-wrapper {
+  position: sticky;
+  top: 6px;                /* Abstand zum oberen Rand */
+  z-index: 30;
+
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  padding: 6px 8px;
+  border-radius: 10px;
+
+  background: var(--bg, #fff);
+}
+/* MOBILE FEINTUNING */
+@media (max-width: 768px) {
+  .search-wrapper {
+    top: 4px;
+    padding: 6px;
+  }
+
+  .sSearch {
+    font-size: 14px;
+  }
+}
