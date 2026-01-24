@@ -864,7 +864,7 @@ th:nth-child(7) {   /* Summe */
 /* Material */
 #keSection th:nth-child(2),
 #keSection td:nth-child(2) {
-  width: 22%;
+  width: 18%;
   text-align: left !important;
   white-space: normal;
 }
@@ -891,7 +891,7 @@ th:nth-child(7) {   /* Summe */
 /* Wareneingang */
 #keSection th:nth-child(6),
 #keSection td:nth-child(6) {
-  width: 8%;
+  width: 12%;
 }
 
 /* Regal */
