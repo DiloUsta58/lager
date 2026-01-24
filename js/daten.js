@@ -83,9 +83,10 @@ const KE_COLUMN_MAP = {
   e: 2,
   charge: 3,
   palette: 4,
-  regal: 5,
-  bestand: 6,
-  bemerkung: 7
+  wahrendatum: 5,
+  regal: 6,
+  bestand: 7,
+  bemerkung: 8
 };
 
 const FS_COLUMN_MAP = {
@@ -293,13 +294,6 @@ function updateLogoutTimerUI(remainingMs) {
 
   el.querySelector(".time").textContent = `${m}:${s}`;
 }
-
-
-
-/* ===============================
-   ZENTRALE Logout-Status ENDE
-================================ */
-
 
 /* ======================================
      Zentrale Edit-Freischaltung ANFANG
@@ -686,9 +680,10 @@ function renderKE() {
       <tr class="data-row ${row._isDefault ? "default-row" : ""}">
         <td></td>
         <td>${m.material || ""}</td>
-        <td>${m.e || ""}</td>
+        <td>${m.eNummer || ""}</td>
         <td>${m.charge || ""}</td>
         <td>${m.palette || ""}</td>
+        <td>${m.wahrendatum || ""}</td>
         <td>${m.shelf || ""}</td>
         <td>${m.bestand || ""}</td>
         <td>${m.bemerkung || ""}</td>
@@ -1505,6 +1500,7 @@ function addRowAfter(index) {
     e: base.e,
     charge: "",
     palette: "",
+    wahrendatum:"",
     shelf: "",
     bestand: "",
     bemerkung: "",
@@ -1742,6 +1738,7 @@ renderKE = function () {
                     ${cell(row.e, index, "e")}
                     ${cell(row.charge, index, "charge")}
                     ${cell(row.palette, index, "palette")}
+                    ${cell(row.wahrendatum, index, "wahrendatum")}
                     ${cell(row.shelf, index, "shelf")}
                     ${cell(row.bestand, index, "bestand")}
                     ${cell(row.bemerkung, index, "bemerkung")}
