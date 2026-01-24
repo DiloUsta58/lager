@@ -1569,10 +1569,15 @@ mark.hit.active-hit {
 /* ===============================
    STICKY SEARCH WRAPPER
 ================================ */
+.sSearch {
+  flex: 1;
+  padding: 6px 10px;
+  border-radius: 8px;
+}
 
 .search-wrapper {
   position: sticky;
-  top: 6px;                /* Abstand zum oberen Rand */
+  top: 6px;
   z-index: 30;
 
   display: flex;
@@ -1583,15 +1588,35 @@ mark.hit.active-hit {
   border-radius: 10px;
 
   background: var(--bg, #fff);
+
+  /* 🔹 NEU */
+  opacity: 0.85;
+  transition: opacity 0.2s ease, background-color 0.2s ease;
 }
+
+/* Hover (Desktop) */
+.search-wrapper:hover {
+  opacity: 1;
+}
+
+/* Fokus – wichtig für Klick & Mobile */
+.search-wrapper:focus-within {
+  opacity: 1;
+}
+
+
 /* MOBILE FEINTUNING */
 @media (max-width: 768px) {
-  .search-wrapper {
-    top: 4px;
-    padding: 6px;
-  }
 
-  .sSearch {
-    font-size: 14px;
+  .search-wrapper {
+    top: max(6px, env(safe-area-inset-top));
+    padding: 10px 10px;
+    gap: 8px;
+
+    border-radius: 14px;
+
+    opacity: 0.9;                 /* leicht sichtbar beim Scroll */
+    backdrop-filter: blur(2px);   /* optional, modern */
   }
 }
+
