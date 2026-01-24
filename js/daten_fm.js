@@ -530,7 +530,7 @@ function fmCell(value, rowIndex, field) {
 
 
 async function editFM(icon, rowIndex, field) {
-
+  AppState.isEditing = true;
   /* Feld darf überhaupt editiert werden */
   if (!FM_EDITABLE_FIELDS.includes(field)) return;
 
@@ -557,8 +557,12 @@ async function editFM(icon, rowIndex, field) {
   /* Span ersetzen */
   span.replaceWith(input);
   input.focus();
+  input.addEventListener("focus", () => {
+    AppState.isEditing = true;
+  });
 
   function save() {
+    AppState.isEditing = false;
     const newValue = input.value.trim();
 
     /* Speichern zählt als Aktivität */
@@ -575,11 +579,16 @@ async function editFM(icon, rowIndex, field) {
   /* ⌨️ Tippen hält Edit aktiv */
   input.addEventListener("input", registerEditActivity);
 
-  input.addEventListener("blur", save);
+  input.addEventListener("blur", () => {
+    setTimeout(save, 0);
+  });
 
   input.addEventListener("keydown", e => {
     if (e.key === "Enter") input.blur();
-    if (e.key === "Escape") renderFM();
+    if (e.key === "Escape") {
+        AppState.isEditing = false;   // 🔑 HINZUFÜGEN
+        renderFM();
+      }
   });
 }
 
@@ -588,6 +597,8 @@ async function editFM(icon, rowIndex, field) {
 function renderFM() {
   if (!loggedIn) return;
   const tbody = document.getElementById("fmTableBody");
+
+  if (AppState.isEditing) return;
   tbody.innerHTML = "";
 
   /* ===== FILTER ===== */

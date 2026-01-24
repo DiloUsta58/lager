@@ -22,11 +22,21 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* INPUT */
-  search.addEventListener("input", () => {
-    clear.style.display = search.value ? "inline" : "none";
+let searchTimeout;
+
+search.addEventListener("input", () => {
+  clear.style.display = search.value ? "inline" : "none";
+
+  if (AppState.isEditing) return;
+
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
     App.performSearch(search.value);
-    requestAnimationFrame(updateNav);
-  });
+    updateNav();
+  }, 120);
+});
+
+
 
   /* CLEAR */
   clear.addEventListener("click", () => {

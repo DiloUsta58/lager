@@ -48,6 +48,11 @@ const MATERIAL_PRO_STK = {
   
 };
 
+window.AppState = {
+  isEditing: false,
+  activeTable: null
+};
+
   
 /* =====================================================
    STATUS
@@ -112,6 +117,31 @@ const FM_COLUMN_MAP = {
   bestand: 8,
   bemerkung: 9
 };
+
+/* =====================================================
+   TABELLE EDITIEREN
+===================================================== */
+
+function makeEditableCell(td, rowIndex, field, dataArray, renderFn) {
+
+  td.addEventListener("focus", () => {
+    AppState.isEditing = true;
+    AppState.activeTable = renderFn;
+  });
+
+  td.addEventListener("input", (e) => {
+    dataArray[rowIndex][field] = e.target.textContent;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(dataArray));
+  });
+
+  td.addEventListener("blur", () => {
+    AppState.isEditing = false;
+    AppState.activeTable = null;
+    renderFn();
+  });
+}
+
+
 
 /* =====================================================
    DATEN LADEN
@@ -585,47 +615,45 @@ window.TabController = (() => {
     fs: {
       section: "fsSection",
       render: () => {
-      document.getElementById("fmSection").style.display = "none";
-      document.getElementById("historySection").style.display = "none";
-    if (window.renderFS) {
-      window.renderFS();
-    } else {
-      console.warn("renderFS() noch nicht geladen");
-    }
+        document.getElementById("fmSection").style.display = "none";
+        document.getElementById("historySection").style.display = "none";
+        if (window.renderFS) {
+          window.renderFS();
+        } else {
+          console.warn("renderFS() noch nicht geladen");
+        }
       }
     },
-
     fm: {
-    section: "fmSection",
-    render: () => {
-    loadFMData();
-    renderFM();
-    document.getElementById("fmSection").style.display = "block";
-    document.getElementById("historySection").style.display = "none";
-    }
-  },
+      section: "fmSection",
+      render: () => {
+        loadFMData();
+        renderFM();
+        document.getElementById("fmSection").style.display = "block";
+        document.getElementById("historySection").style.display = "none";
+      }
+    },
     inv: {
-    section: "inventarSection",
-    render: () => {
-      renderInventur();
-      document.getElementById("fmSection").style.display = "none";
-      document.getElementById("historySection").style.display = "none";
-    }
-  },
+      section: "inventarSection",
+      render: () => {
+        renderInventur();
+        document.getElementById("fmSection").style.display = "none";
+        document.getElementById("historySection").style.display = "none";
+      }
+    },
     history: {
       section: "historySection",
       render: () => {
         document.getElementById("fmSection").style.display = "none";
-
         if (editEnabled) renderHistoryKE();
-      },
-        },
+      }
+    },
     historySectionIExport: {
       section: "historySectionIExport",
       render: () => {
-      document.getElementById("fmSection").style.display = "none";  
-      document.getElementById("historySection").style.display = "none";      
-      renderHistory();
+        document.getElementById("fmSection").style.display = "none";
+        document.getElementById("historySection").style.display = "none";
+        renderHistory();
       }
     }
   };
@@ -634,6 +662,12 @@ window.TabController = (() => {
 
   function show(tab) {
     if (!tabs[tab]) return;
+
+    // 🔑 ANDROID-TABLET FIX: während Edit NICHT neu rendern
+    if (window.AppState && window.AppState.isEditing) {
+      return;
+    }
+
     active = tab;
 
     Object.entries(tabs).forEach(([key, cfg]) => {
@@ -657,14 +691,18 @@ window.TabController = (() => {
     const saved = localStorage.getItem("activeTab") || "ke";
     show(saved);
   }
-  return { init, show, getActive: () => active};   // 🔑 NEU 
+
+  return { init, show, getActive: () => active };
 })();
+
 
 /* =====================================================
    KE RENDERING
 ===================================================== */
 function renderKE() {
   if (!loggedIn) return;
+
+  if (AppState.isEditing) return;
   tableBody.innerHTML = "";
 
   let lastCat = null;
@@ -1584,6 +1622,7 @@ function findDuplicateKE({ charge, palette }) {
 
 
 async function editCell(icon, index, field) {
+  AppState.isEditing = true;
   /* Geschützte Felder nur im Edit-Modus */
   if (PROTECTED_FIELDS.includes(field) && !editEnabled) return;
 
@@ -1605,13 +1644,15 @@ async function editCell(icon, index, field) {
   const input = td.querySelector(".edit-input");
   const btn = td.querySelector(".edit-apply");
   input.focus();
-
+  input.addEventListener("focus", () => {
+    AppState.isEditing = true;
+  });
   /* ✨ Edit startet → Aktivität registrieren */
   registerEditActivity();
 
   const commit = () => {
+    AppState.isEditing = false;
     const newValue = input.value;
-
     /* Jede Aktion = Aktivität */
     registerEditActivity();
 
@@ -1634,6 +1675,7 @@ async function editCell(icon, index, field) {
         if (dupIndex !== -1) {
           alert(`Eintrag bereits vorhanden (Zeile ${dupIndex + 1})`);
           scrollToKERow(dupIndex);
+          AppState.isEditing = false;   
           renderKE();
           reapplyKEColumns();
           return;
@@ -1651,7 +1693,7 @@ async function editCell(icon, index, field) {
         newValue
       });
     }
-
+    AppState.isEditing = false;
     renderKE();
     reapplyKEColumns();
   };
@@ -1666,7 +1708,10 @@ async function editCell(icon, index, field) {
     }
   });
 
-  input.addEventListener("blur", commit);
+    input.addEventListener("blur", () => {
+      setTimeout(commit, 0);
+    });
+
   btn.addEventListener("click", commit);
 }
 

@@ -250,6 +250,7 @@ function saveFS() {
 ========================= */
 function renderFS() {
   const body = document.getElementById("fsTableBody");
+  if (AppState.isEditing) return;
   body.innerHTML = "";
 
   /* ===== FILTER: GENAU HIER ===== */
@@ -330,7 +331,7 @@ function fsCell(value, index, field, label, colClass) {
 }
 
 async function editFS(icon, index, field) {
-
+AppState.isEditing = true;
   /* 🔐 Zentrale Edit-Freigabe */
   if (!await requireEditSaveUnlock()) return;
 
@@ -342,7 +343,9 @@ async function editFS(icon, index, field) {
   td.innerHTML = `<input class="edit-input" value="${oldValue}">`;
   const input = td.querySelector("input");
   input.focus();
-
+  input.addEventListener("focus", () => {
+    AppState.isEditing = true;
+  });
   /* ✨ Edit startet → Aktivität */
   registerEditActivity();
 
@@ -357,30 +360,35 @@ async function editFS(icon, index, field) {
     }
     if (e.key === "Escape") {
       e.preventDefault();
+      AppState.isEditing = false;   // 🔑 HINZUFÜGEN
       if (typeof renderFS === "function") renderFS();
     }
+
   });
 
   input.onblur = () => {
-    const newValue = input.value;
+    setTimeout(() => {
+      AppState.isEditing = false;
 
-    /* Speichern = Aktivität */
-    registerEditActivity();
+      const newValue = input.value;
 
-    fsData[index][field] = newValue;
-    saveFS();
+      registerEditActivity();
 
-    saveHistory({
-      time: new Date().toISOString(),
-      table: "FS",
-      field,
-      oldValue,
-      newValue,
-      row: fsData[index].bezeichnung
-    });
+      fsData[index][field] = newValue;
+      saveFS();
 
-    if (typeof renderFS === "function") renderFS();
-    if (typeof reapplyFsColumns === "function") reapplyFsColumns();
+      saveHistory({
+        time: new Date().toISOString(),
+        table: "FS",
+        field,
+        oldValue,
+        newValue,
+        row: fsData[index].bezeichnung
+      });
+
+      if (typeof renderFS === "function") renderFS();
+      if (typeof reapplyFsColumns === "function") reapplyFsColumns();
+    }, 0);
   };
 }
 
