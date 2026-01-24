@@ -1620,3 +1620,43 @@ mark.hit.active-hit {
   }
 }
 
+/* Input selbst: Daumen- & Zoom-tauglich */
+@media (max-width: 768px) {
+
+  .sSearch {
+    font-size: 16px;      /* extrem wichtig: verhindert iOS Zoom */
+    padding: 10px 12px;
+    border-radius: 12px;
+  }
+}
+
+/* Clear-Button & Navigation besser erreichbar */
+@media (max-width: 768px) {
+
+  .search-clear {
+    font-size: 18px;
+    padding: 6px;
+  }
+
+  .search-nav button {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+  }
+}
+
+/* Fokus- & Klick-Zustand (entscheidend!) */
+@media (max-width: 768px) {
+
+  .search-wrapper:focus-within {
+    opacity: 1;
+    background: var(--bg, #fff);
+  }
+}
+/* minimaler Sticky-Schatten */
+@media (max-width: 768px) {
+  .search-wrapper {
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  }
+}
+
