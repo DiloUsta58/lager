@@ -11,7 +11,7 @@ const DEFAULT_FS_DATA = [
 {
     kurz: "Penny",
     bezeichnung: "Penny Melt Liner",
-    material: "F4A",
+    material: "F4AADG1150",
     stueck: 256,
     eNummer: "E00010323",
     kuerzel: "1150",
@@ -21,7 +21,7 @@ const DEFAULT_FS_DATA = [
   {
     kurz: "30#",
     bezeichnung: "30# Melting Liner F4XADG0560",
-    material: "F4X",
+    material: "F4XADG0560",
     stueck: 144,
     eNummer: "E32346800",
     kuerzel: "560",
@@ -31,7 +31,7 @@ const DEFAULT_FS_DATA = [
   {
     kurz: "50#",
     bezeichnung: "50# Melting Liner F4XADG0561",
-    material: "F4X",
+    material: "F4XADG0561",
     stueck: 144,
     eNummer: "E32347200",
     kuerzel: "561",
@@ -40,8 +40,8 @@ const DEFAULT_FS_DATA = [
   },
   {
     kurz: "60#",
-    bezeichnung: "60# Melting Liner F4X 758",
-    material: "F4X",
+    bezeichnung: "60# Melting Liner F4XADG0758",
+    material: "F4XADG0758",
     stueck: 144,
     eNummer: "E32347400",
     kuerzel: "758",
@@ -50,28 +50,58 @@ const DEFAULT_FS_DATA = [
   },
   {
     kurz: "75#",
-    bezeichnung: "75# Melting Liner F4AXADG0759",
-    material: "F4X",
+    bezeichnung: "75# Melting Liner F4XADG0759",
+    material: "F4XADG0759",
     stueck: 100,
     eNummer: "E32347600",
     kuerzel: "759",
     bestand: "",
     dpc: ""
   },
+   {
+    kurz: "45kg Melting Liner",
+    bezeichnung: "45 kg Melting Liner A4AADG1351",
+    material: "A4AADG1351",
+    stueck: 32,
+    eNummer: "EXXXXXXXX",
+    kuerzel: "1351",
+    bestand: "",
+    dpc: ""
+  },
+  {
+    kurz: "55kg Melting Liner",
+    bezeichnung: "55kg Melting Liner A4AADG1350",
+    material: "A4AADG1350",
+    stueck: 32,
+    eNummer: "EXXXXXXXX",
+    kuerzel: "1350",
+    bestand: "",
+    dpc: ""
+  },
+     {
+    kurz: "75kg RECESSED RADIUS LINER",
+    bezeichnung: "45 kg Melting Liner A4AADG1344",
+    material: "A4AADG1344",
+    stueck: 32,
+    eNummer: "EXXXXXXXX",
+    kuerzel: "1344",
+    bestand: "",
+    dpc: ""
+  },
   {
     kurz: "110 CS",
     bezeichnung: "110# Melting Liner F4XADG0926",
-    material: "F4X",
+    material: "F4XADG0926",
     stueck: 100,
     eNummer: "E32347800",
-    kuerzel: "926",
+    kuerzel: "926 CS",
     bestand: "",
     dpc: ""
   },
     {
     kurz: "110 AL",
-    bezeichnung: "110# Melting Liner F4XADG0926",
-    material: "A4A",
+    bezeichnung: "110# Melting Liner A4AADG0926",
+    material: "A4AADG0926",
     stueck: 100,
     eNummer: "E32346200",
     kuerzel: "926",
@@ -80,8 +110,8 @@ const DEFAULT_FS_DATA = [
   },
   {
     kurz: "150cs",
-    bezeichnung: "50kg Melting Liner with… F3AADG0996",
-    material: "F4A996",
+    bezeichnung: "50kg Melting Liner F4AADG0996",
+    material: "F4AADG0996 CS",
     stueck: 32,
     eNummer: "E32348000",
     kuerzel: "996",
@@ -90,8 +120,8 @@ const DEFAULT_FS_DATA = [
   },
     {
     kurz: "150Alu",
-    bezeichnung: "50kg Melting Liner with… A4AADG0996",
-    material: "A4A",
+    bezeichnung: "50kg Melting Liner A4AADG0996",
+    material: "A4AADG0996 AL",
     stueck: 32,
     eNummer: "E32348004",
     kuerzel: "996",
@@ -101,7 +131,7 @@ const DEFAULT_FS_DATA = [
   {
     kurz: "171#",
     bezeichnung: "171# Melting Liner A4AADG1171",
-    material: "F4A",
+    material: "A4AADG1171",
     stueck: 32,
     eNummer: "E32350100",
     kuerzel: "1171",
@@ -109,12 +139,12 @@ const DEFAULT_FS_DATA = [
     dpc: ""
   },
     {
-    kurz: "205#",
+    kurz: "205# ALUMICON",
     bezeichnung: "205# A4AADG1170",
-    material: "A4A",
+    material: "A4AADG",
     stueck: 32,
     eNummer: "E32348005",
-    kuerzel: "A4A1170",
+    kuerzel: "1170",
     bestand: "",
     dpc: ""
   },
@@ -124,14 +154,14 @@ const DEFAULT_FS_DATA = [
     material: "A4B932",
     stueck: 9,
     eNummer: "E32350600",
-    kuerzel: "A4B932",
+    kuerzel: "932",
     bestand: "",
     dpc: ""
   },
   {
     kurz: "120kg",
     bezeichnung: "120kg Alumina A4AADG1239",
-    material: "A4A1239",
+    material: "A4AADG1239",
     stueck: 18,
     eNummer: "E32346120",
     kuerzel: "1239",
@@ -140,11 +170,11 @@ const DEFAULT_FS_DATA = [
   },
   {
     kurz: "155kg",
-    bezeichnung: "155kg Alumina",
-    material: "A4A",
+    bezeichnung: "155kg MELTING LINER A4AADG1444",
+    material: "A4AADG1444",
     stueck: 9,
     eNummer: "E32346155",
-    kuerzel: "A4A1444",
+    kuerzel: "1444",
     bestand: "",
     dpc: ""
   },
@@ -160,8 +190,8 @@ const DEFAULT_FS_DATA = [
   },
   {
     kurz: "120kg",
-    bezeichnung: "120kg Backup A4BADG1160",
-    material: "A4B",
+    bezeichnung: "120kg Backup A4BADG1154",
+    material: "A4BADG1154",
     stueck: 5,
     eNummer: "E32349120",
     kuerzel: "1154",

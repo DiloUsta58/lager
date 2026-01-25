@@ -34,18 +34,17 @@ const WACHS_GEWICHTE = {
 
 const MATERIAL_GEWICHT_PRO_STK = {
   "cobalt aluminat": 20,
-  "isopropanol": 220,
+  "isopropanol": 150,
   "ludox": 255,
   "w640": 60
 };
 
 const MATERIAL_PRO_STK = {
-  "baffle Ø 688mm": 50,
-  "baffle Ø 910mm": 50,
-  "hartfilzplatte 1000x1500": 40,
+  "Baffle Ø 688mm": 50,
+  "Baffle Ø 910mm": 50,
+  "Hartfilzplatte 1000x1500": 40,
   "Trenscheiben Tyrolit": 50,
   "Trenscheiben Pferd": 50
-  
 };
 
 window.AppState = {
@@ -637,6 +636,7 @@ window.TabController = (() => {
       section: "inventarSection",
       render: () => {
         renderInventur();
+        loadInventurDate();
         document.getElementById("fmSection").style.display = "none";
         document.getElementById("historySection").style.display = "none";
       }
@@ -710,7 +710,7 @@ function renderKE() {
   data.forEach(m => {
     if (m.cat !== lastCat) {
       tableBody.innerHTML +=
-        `<tr class="category"><td colspan="9">${m.cat}</td></tr>`;
+        `<tr class="category"><td colspan="10">${m.cat}</td></tr>`;
       lastCat = m.cat;
     }
 
@@ -870,8 +870,6 @@ function loadInventurDate() {
   if (input) input.value = val;
 }
 
-
-
 function renderInventur() {
   const body = document.getElementById("invTableBody");
   if (!body) return;
@@ -926,10 +924,22 @@ function renderInventur() {
   });
 }
 
+/* =========================
+   HILFSFUNKTION: NORMALISIERUNG
+========================= */
+function norm(str) {
+  return String(str)
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/ø/g, "o")
+    .replace(/\s+/g, " ")
+    .trim();
+}
 
-
-/*Neue KE-Inventur-Aufbereitung (ersetzt alte Gruppierung)*/
-
+/* =========================
+   KE – INVENTUR AUFBEREITUNG
+========================= */
 function buildKEInventurRows() {
   const map = new Map();
 
@@ -937,91 +947,127 @@ function buildKEInventurRows() {
     const material = (r.material || "").trim();
     if (!material) return;
 
+    const materialNorm = norm(material);
+
     const eNummer = (r.e || "").trim();
     const charge = (r.charge || "").trim();
     const palette = (r.palette || "").trim();
 
-    const bestandStk = Number(String(r.bestand).replace(",", "."));
-    if (isNaN(bestandStk) || bestandStk <= 0) return;
+    const einh = Number(String(r.bestand).replace(",", "."));
+    if (isNaN(einh) || einh <= 0) return;
 
-    let bestandWert = bestandStk;
-    let einheit = "kg";
-    const materialKey = material.toLowerCase();
+    let resultValue = einh;     // numerischer Wert für Summierung
+    let resultUnit = "kg";      // kg | Stk
+    let displayText = "";
+    let matched = false;
 
     /* =========================
-       🔹 STÜCK-BERECHNUNG
+       1️⃣ WACHS (kg pro Stück)
     ========================= */
-    Object.keys(MATERIAL_PRO_STK).forEach(key => {
-      if (materialKey.includes(key.toLowerCase())) {
-        bestandWert = bestandStk * MATERIAL_PRO_STK[key];
-        einheit = "Stk";
+    for (const key in WACHS_GEWICHTE) {
+      if (materialNorm === norm(key)) {
+        resultValue = einh * WACHS_GEWICHTE[key];
+        resultUnit = "kg";
+        displayText = `${resultValue.toFixed(2)} kg (${einh} Stk.)`;
+        matched = true;
+        break;
       }
-    });
-
-    /* =========================
-       🔹 GEWICHT / STK
-    ========================= */
-    Object.keys(MATERIAL_GEWICHT_PRO_STK).forEach(key => {
-      if (materialKey.includes(key)) {
-        bestandWert = bestandStk * MATERIAL_GEWICHT_PRO_STK[key];
-        einheit = "kg";
-      }
-    });
-
-    /* =========================
-       🔹 WACHS (überschreibt alles)
-    ========================= */
-    if (
-      materialKey.includes("wachs") &&
-      WACHS_GEWICHTE[material]
-    ) {
-      bestandWert = bestandStk * WACHS_GEWICHTE[material];
-      einheit = "kg";
     }
 
+    /* =========================
+       2️⃣ STÜCK-ARTIKEL
+    ========================= */
+    if (!matched) {
+      for (const key in MATERIAL_PRO_STK) {
+        if (materialNorm.includes(norm(key))) {
+          resultValue = einh * MATERIAL_PRO_STK[key];
+          resultUnit = "Stk";
+          displayText = `${resultValue.toFixed(2)} Stk (${einh} Einh.)`;
+          matched = true;
+          break;
+        }
+      }
+    }
+
+    /* =========================
+       3️⃣ GEWICHT PRO STÜCK
+    ========================= */
+    if (!matched) {
+      for (const key in MATERIAL_GEWICHT_PRO_STK) {
+        if (materialNorm.includes(norm(key))) {
+          resultValue = einh * MATERIAL_GEWICHT_PRO_STK[key];
+          resultUnit = "kg";
+          displayText = `${resultValue.toFixed(2)} kg (${einh} Stk.)`;
+          matched = true;
+          break;
+        }
+      }
+    }
+
+    /* =========================
+       4️⃣ STANDARD
+    ========================= */
+    if (!matched) {
+      displayText = `${einh.toFixed(2)} kg`;
+      resultValue = einh;
+      resultUnit = "kg";
+    }
+
+    /* =========================
+       MAP INITIALISIEREN
+    ========================= */
     if (!map.has(material)) {
       map.set(material, {
         rows: [],
         total: 0,
-        einheit
+        unit: resultUnit,
+        einheiten: 0   // 👈 WICHTIG
       });
     }
 
-    map.get(material).rows.push({
+    const entry = map.get(material);
+
+    entry.rows.push({
       source: "KE",
       beschreibung: material,
       eNummer,
       charge,
       palette,
-      bestand: bestandWert.toFixed(2),
+      bestand: displayText,
       gesamt: ""
     });
 
-    map.get(material).total += bestandWert;
+    entry.total += resultValue;
+
+    /* =========================
+       🔥 EINHEITEN AUFADDEN
+    ========================= */
+    if (resultUnit === "Stk") {
+      entry.einheiten += einh;
+    }
   });
 
+  /* =========================
+     AUSGABE ERSTELLEN
+  ========================= */
   const result = [];
 
   map.forEach((entry, material) => {
 
-    /* =========================
-       🔹 EINZELPRODUKT
-    ========================= */
+    /* EINZELPRODUKT */
     if (entry.rows.length === 1) {
-      const r = entry.rows[0];
-
       result.push({
-        ...r,
+        ...entry.rows[0],
         bestand: "→",
-        gesamt: entry.total.toFixed(2) + " " + entry.einheit
+        gesamt:
+          entry.unit === "Stk"
+            ? `${entry.total.toFixed(2)} Stk (${entry.einheiten} Einh.)`
+            : `${entry.total.toFixed(2)} kg`
       });
-
       return;
     }
 
-    /* =========================
-       🔹 MEHRERE ZEILEN
-    ========================= */
+    /* MEHRERE ZEILEN */
     entry.rows.forEach(r => result.push(r));
 
     result.push({
@@ -1031,13 +1077,15 @@ function buildKEInventurRows() {
       charge: "",
       palette: "",
       bestand: "",
-      gesamt: entry.total.toFixed(2) + " " + entry.einheit
+      gesamt:
+        entry.unit === "Stk"
+          ? `${entry.total.toFixed(2)} Stk (${entry.einheiten} Einh.)`
+          : `${entry.total.toFixed(2)} kg`
     });
   });
 
   return result;
 }
-
 
 
 function buildFSInventurRows() {
@@ -1051,19 +1099,22 @@ function buildFSInventurRows() {
     const bestandD = Number(String(r.dpc || 0).replace(",", "."));
     const stueckProEinheit = Number(String(r.stueck || 0).replace(",", "."));
 
+    const einheiten = bestandK + bestandD;
+
     if (
       isNaN(stueckProEinheit) || stueckProEinheit <= 0 ||
-      (bestandK + bestandD) <= 0
+      isNaN(einheiten) || einheiten <= 0
     ) {
       return;
     }
 
-    const gesamtStk = (bestandK + bestandD) * stueckProEinheit;
+    const gesamtStk = einheiten * stueckProEinheit;
 
     if (!map.has(material)) {
       map.set(material, {
         rows: [],
-        total: 0
+        total: 0,
+        einheiten: 0
       });
     }
 
@@ -1074,10 +1125,12 @@ function buildFSInventurRows() {
       charge: "",
       palette: "",
       bestand: gesamtStk,
+      _einheiten: einheiten,
       gesamt: ""
     });
 
     map.get(material).total += gesamtStk;
+    map.get(material).einheiten += einheiten;
   });
 
   const result = [];
@@ -1091,9 +1144,13 @@ function buildFSInventurRows() {
       const r = entry.rows[0];
 
       result.push({
-        ...r,
+        source: "FS",
+        beschreibung: material,
+        eNummer: r.eNummer,
+        charge: "",
+        palette: "",
         bestand: "→",
-        gesamt: entry.total + " Stk"
+        gesamt: `${entry.total} Stk – (${entry.einheiten} Pal.)`
       });
 
       return;
@@ -1102,7 +1159,17 @@ function buildFSInventurRows() {
     /* =========================
        🔹 FALL A: MEHRERE ZEILEN
     ========================= */
-    entry.rows.forEach(r => result.push(r));
+    entry.rows.forEach(r => {
+      result.push({
+        source: "FS",
+        beschreibung: material,
+        eNummer: r.eNummer,
+        charge: "",
+        palette: "",
+        bestand: r.bestand,
+        gesamt: ""
+      });
+    });
 
     result.push({
       source: "FS",
@@ -1111,12 +1178,13 @@ function buildFSInventurRows() {
       charge: "",
       palette: "",
       bestand: "",
-      gesamt: entry.total + " Stk"
+      gesamt: `${entry.total} Stk – (${entry.einheiten} Pal.)`
     });
   });
 
   return result;
 }
+
 
 
 
@@ -1769,7 +1837,7 @@ renderKE = function () {
 
     if (row.cat !== lastCat) {
       tableBody.innerHTML +=
-        `<tr class="category"><td colspan="9">${row.cat}</td></tr>`;
+        `<tr class="category"><td colspan="10">${row.cat}</td></tr>`; /* WENN NEUE SPALTE KOMMT MUSS COLSPAN= ANZAHL + 1! */
       lastCat = row.cat;
     }
 

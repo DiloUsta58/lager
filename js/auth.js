@@ -49,7 +49,7 @@ async function login(e) {
   app.style.display = "block";
 
     /* =========================
-     UI
+     TABELLEN
       document.getElementById("keSection").style.display = "block";
       document.getElementById("historySection").style.display = "none";
       document.getElementById("fsSection").style.display = "block";
@@ -57,7 +57,7 @@ async function login(e) {
       document.getElementById("inventarSection").style.display = "block";
       document.getElementById("historySectionIExport").style.display = "block";
       document.getElementById("lastUpdate").style.display = "block";
-  ========================= */
+      ========================= */ 
 
   initCategories();
   syncAdminUI();          // reagiert jetzt auf isAdmin
