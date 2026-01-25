@@ -1661,6 +1661,89 @@ mark.hit.active-hit {
   z-index: 1000;
 }
 
+/* =========================
+   INVENTUR TOOLTIP
+========================= */
+.inv-value {
+  position: relative;
+  cursor: help;
+}
+
+/* Tooltip */
+.inv-value::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+
+  padding: 6px 10px;
+  border-radius: 8px;
+
+  font-size: 12px;
+  font-weight: 500;
+
+  background: rgba(30,30,30,0.95);
+  color: #fff;
+
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+  z-index: 9999;
+}
+
+/* Pfeil */
+.inv-value::before {
+  content: "";
+  position: absolute;
+  bottom: 115%;
+  left: 50%;
+  transform: translateX(-50%);
+
+  border-width: 6px;
+  border-style: solid;
+  border-color: rgba(30,30,30,0.95) transparent transparent transparent;
+
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+/* Hover aktiv */
+.inv-value:hover::after,
+.inv-value:hover::before {
+  opacity: 1;
+}
+
+/* Dark Mode */
+[data-theme="dark"] .inv-value::after {
+  background: rgba(92, 1, 1, 0.95);
+}
+
+@media (hover: none) {
+  .inv-value::after,
+  .inv-value::before {
+    display: none;
+  }
+}
+
+/* =========================
+   MOBILE CLICK TOOLTIP
+========================= */
+
+/* Tooltip auch bei Klick sichtbar */
+.inv-value.active::after,
+.inv-value.active::before {
+  opacity: 1;
+}
+
+/* Touch-optimiert */
+@media (hover: none) {
+  .inv-value {
+    cursor: pointer;
+  }
+}
+
 
 /* ==============================
    Tabellenkopf beim Scrollen fix

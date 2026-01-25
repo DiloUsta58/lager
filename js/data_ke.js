@@ -77,9 +77,9 @@ const defaultData = [
 /* =======================
    MATERIAL FLÜSSIGKEITEN
 ======================= */
-{ cat: "Material Flüssigkeiten Keramik", material: "W640", enummer: "E32874640",wahrendatum: "" , shelf: "", bestand: "",_isDefault: true, _isClone: false },
-{ cat: "Material Flüssigkeiten Keramik", material: "Latex", enummer: "E32874500",wahrendatum: "" , shelf: "", bestand: "",_isDefault: true, _isClone: false },
-{ cat: "Material Flüssigkeiten Keramik", material: "Ludox", enummer: "E32874300",wahrendatum: "" , shelf: "", bestand: "",_isDefault: true, _isClone: false },
+{ cat: "Material Flüssigkeiten Keramik", material: "W640 XC8", enummer: "E32874640",wahrendatum: "" , shelf: "", bestand: "",_isDefault: true, _isClone: false },
+{ cat: "Material Flüssigkeiten Keramik", material: "Latex Dow DL460E", enummer: "E32874500",wahrendatum: "" , shelf: "", bestand: "",_isDefault: true, _isClone: false },
+{ cat: "Material Flüssigkeiten Keramik", material: "Ludox PX30 PIC", enummer: "E32874300",wahrendatum: "" , shelf: "", bestand: "",_isDefault: true, _isClone: false },
 { cat: "Material Flüssigkeiten Keramik", material: "Isopropanol", enummer: "E00006517",wahrendatum: "" , shelf: "", bestand: "",_isDefault: true, _isClone: false },
 { cat: "Material Flüssigkeiten Keramik", material: "Symperonic", enummer: "E32871300",wahrendatum: "" , shelf: "", bestand: "",_isDefault: true, _isClone: false }
 
