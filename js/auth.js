@@ -146,6 +146,14 @@ function logout() {
   ========================= */
   app.style.display = "none";
   loginBox.style.display = "block";
+
+    document.getElementById("keSection").style.display = "none";
+    document.getElementById("historySection").style.display = "none";
+    document.getElementById("fsSection").style.display = "none";
+    document.getElementById("fmSection").style.display = "none";
+    document.getElementById("inventarSection").style.display = "none";
+    document.getElementById("historySectionIExport").style.display = "none";
+
   disableEditMode();
 }
 

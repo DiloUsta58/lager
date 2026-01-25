@@ -2419,34 +2419,6 @@ function setupColumnToggles({
   });
 })();
 
-
-/* =========================
-   MOBILE CLICK TOOLTIP
-========================= */
-document.addEventListener("click", e => {
-  const target = e.target.closest(".inv-value");
-
-  // Klick außerhalb → alle schließen
-  if (!target) {
-    document
-      .querySelectorAll(".inv-value.active")
-      .forEach(el => el.classList.remove("active"));
-    return;
-  }
-
-  // Anderen Tooltip schließen
-  document
-    .querySelectorAll(".inv-value.active")
-    .forEach(el => {
-      if (el !== target) el.classList.remove("active");
-    });
-
-  // Toggle aktuellen
-  target.classList.toggle("active");
-
-  e.stopPropagation();
-});
-
 /* =====================================================
    EOF – daten.js vollständig
 ===================================================== */
