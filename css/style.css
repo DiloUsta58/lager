@@ -712,14 +712,6 @@ mark.search-hit {
     font-size: 11px;
   }
 
-#inventarSection {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-  }
-
-
 
 /* Tabelle druckoptimiert*/
   table {
@@ -1605,6 +1597,7 @@ mark.hit.active-hit {
 }
 
 
+
 /* MOBILE FEINTUNING */
 @media (max-width: 768px) {
 
@@ -1660,3 +1653,32 @@ mark.hit.active-hit {
   }
 }
 
+#inventarSection .search-wrapper {
+  position: fixed;
+  top: 6px;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+}
+
+
+/* ==============================
+   Tabellenkopf beim Scrollen fix
+
+   .table-scroll {
+  position: relative;
+  overflow-y: auto;
+  max-height: calc(100vh - 260px);
+}
+
+.table-scroll thead th {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: var(--bg-card);
+}
+
+[data-theme="dark"] .table-scroll thead th {
+  background-color: #1e293b;
+}
+  ============================== */

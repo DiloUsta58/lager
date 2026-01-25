@@ -56,9 +56,10 @@ async function login(e) {
       document.getElementById("fmSection").style.display = "block";
       document.getElementById("inventarSection").style.display = "block";
       document.getElementById("historySectionIExport").style.display = "block";
-      document.getElementById("lastUpdate").style.display = "block";
+      
       ========================= */ 
-
+      
+  document.getElementById("lastUpdate").style.display = "block";
   initCategories();
   syncAdminUI();          // reagiert jetzt auf isAdmin
   loadInventurDate();

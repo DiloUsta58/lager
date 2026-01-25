@@ -608,7 +608,8 @@ window.TabController = (() => {
         renderKE();
         reapplyKEColumns();
         document.getElementById("fmSection").style.display = "none";
-        document.getElementById("historySection").style.display = "block";
+        document.getElementById("historySection").style.display = "block"; 
+        document.getElementById("lastUpdate").style.display = "block";
       }
     },
     fs: {
@@ -652,7 +653,7 @@ window.TabController = (() => {
       section: "historySectionIExport",
       render: () => {
         document.getElementById("fmSection").style.display = "none";
-        document.getElementById("historySection").style.display = "none";
+        document.getElementById("historySection").style.display = "block";
         renderHistory();
       }
     }
