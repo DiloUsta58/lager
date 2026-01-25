@@ -2422,7 +2422,7 @@ function setupColumnToggles({
 
 /* =========================
    MOBILE CLICK TOOLTIP
-
+========================= */
 document.addEventListener("click", e => {
   const target = e.target.closest(".inv-value");
 
@@ -2446,7 +2446,7 @@ document.addEventListener("click", e => {
 
   e.stopPropagation();
 });
-========================= */
+
 /* =====================================================
    EOF – daten.js vollständig
 ===================================================== */
