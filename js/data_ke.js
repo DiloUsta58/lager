@@ -8,18 +8,18 @@ const defaultData = [
 /* =======================
    MATERIAL KERAMIK
 ======================= */
-{ cat: "Material Keramik", material: "Alodur 0,1 - 0,15", enummer: "E32873900",wahrendatum: "" , shelf: "", bestand: "",_isDefault: true, _isClone: false },
-{ cat: "Material Keramik", material: "Alodur 0,25 - 0,5", enummer: "E32874100",wahrendatum: "" , shelf: "", bestand: "",_isDefault: true, _isClone: false },
-{ cat: "Material Keramik", material: "Alodur 0,5 - 1", enummer: "E32874200",wahrendatum: "" , shelf: "", bestand: "",_isDefault: true, _isClone: false },
-{ cat: "Material Keramik", material: "Tabular 14/28", enummer: "E32873100",wahrendatum: "" , shelf: "", bestand: "",_isDefault: true, _isClone: false },
+{ cat: "Material Keramik", material: "Alodur WRG 0,1 - 0,15 mm", enummer: "E32873900",wahrendatum: "" , shelf: "", bestand: "",_isDefault: true, _isClone: false },
+{ cat: "Material Keramik", material: "Alodur WRG 0,25 - 0,50 mm", enummer: "E32874100",wahrendatum: "" , shelf: "", bestand: "",_isDefault: true, _isClone: false },
+{ cat: "Material Keramik", material: "Alodur WRG 0,5 - 1,0 mm", enummer: "E32874200",wahrendatum: "" , shelf: "", bestand: "",_isDefault: true, _isClone: false },
+{ cat: "Material Keramik", material: "Tabular T 60 (14/28) 0,6 - 1mm Alfatab 30", enummer: "E32873100",wahrendatum: "" , shelf: "", bestand: "",_isDefault: true, _isClone: false },
 { cat: "Material Keramik", material: "DPC 200 mesh", enummer: "E32809100",wahrendatum: "" , shelf: "", bestand: "",_isDefault: true, _isClone: false },
-{ cat: "Material Keramik", material: "DPC 300 mesh", enummer: "E32809200",wahrendatum: "" , shelf: "", bestand: "",_isDefault: true, _isClone: false },
+{ cat: "Material Keramik", material: "Zirkonsand DPC 300 (Mesh 300)", enummer: "E32809200",wahrendatum: "" , shelf: "", bestand: "",_isDefault: true, _isClone: false },
 { cat: "Material Keramik", material: "DPC 300FG", enummer: "E32809301",wahrendatum: "" , shelf: "", bestand: "",_isDefault: true, _isClone: false },
-{ cat: "Material Keramik", material: "ZFG", enummer: "E32809300",wahrendatum: "" , shelf: "", bestand: "",_isDefault: true, _isClone: false },
-{ cat: "Material Keramik", material: "Nabalox", enummer: "E32870500",wahrendatum: "" , shelf: "", bestand: "",_isDefault: true, _isClone: false },
-{ cat: "Material Keramik", material: "F-240", enummer: "E32870800",wahrendatum: "" , shelf: "", bestand: "",_isDefault: true, _isClone: false },
-{ cat: "Material Keramik", material: "F-280", enummer: "E32874280",wahrendatum: "" , shelf: "", bestand: "",_isDefault: true, _isClone: false },
-{ cat: "Material Keramik", material: "ZrO2 (ehemals Q1)", enummer: "E32871400",wahrendatum: "" , shelf: "", bestand: "",_isDefault: true, _isClone: false },
+{ cat: "Material Keramik", material: "Zircon Fine Grind (ZFG)", enummer: "E32809300",wahrendatum: "" , shelf: "", bestand: "",_isDefault: true, _isClone: false },
+{ cat: "Material Keramik", material: "Nabalox No. 113 (Aluminiumoxid)", enummer: "E32870500",wahrendatum: "" , shelf: "", bestand: "",_isDefault: true, _isClone: false },
+{ cat: "Material Keramik", material: "Edelkorund F240", enummer: "E32870800",wahrendatum: "" , shelf: "", bestand: "",_isDefault: true, _isClone: false },
+{ cat: "Material Keramik", material: "F280", enummer: "E32874280",wahrendatum: "" , shelf: "", bestand: "",_isDefault: true, _isClone: false },
+{ cat: "Material Keramik", material: "Zirkonia ZrO² Z-211-D (Q1)", enummer: "E32871400",wahrendatum: "" , shelf: "", bestand: "",_isDefault: true, _isClone: false },
 { cat: "Material Keramik", material: "Cobalt Aluminat", enummer: "E32808800",wahrendatum: "" , shelf: "", bestand: "",_isDefault: true, _isClone: false },
 { cat: "Material Keramik", material: "Rhoseal", enummer: "E32873000",wahrendatum: "" , shelf: "", bestand: "",_isDefault: true, _isClone: false },
 { cat: "Material Keramik", material: "Rhoseal HT", enummer: "E32873200",wahrendatum: "" , shelf: "", bestand: "",_isDefault: true, _isClone: false },
@@ -28,13 +28,13 @@ const defaultData = [
    MATERIAL KERNFERTIGUNG
 ======================= */
 { cat: "Material Kernfertigung", material: "Remet FS 120 Mesh LHT", enummer: "E00010380",wahrendatum: "" , shelf: "", bestand: "",_isDefault: true, _isClone: false },
-{ cat: "Material Kernfertigung", material: "Amosil FW4", enummer: "E00010376_1",wahrendatum: "" , shelf: "", bestand: "",_isDefault: true, _isClone: false },
+{ cat: "Material Kernfertigung", material: "Amosil FW4", enummer: "E00010376",wahrendatum: "" , shelf: "", bestand: "",_isDefault: true, _isClone: false },
 { cat: "Material Kernfertigung", material: "Amosil 550", enummer: "E00010377",wahrendatum: "" , shelf: "", bestand: "",_isDefault: true, _isClone: false },
 { cat: "Material Kernfertigung", material: "Sikron SF6000", enummer: "E00001155",wahrendatum: "" , shelf: "", bestand: "",_isDefault: true, _isClone: false },
-{ cat: "Material Kernfertigung", material: "Zirkon", enummer: "E00004495",wahrendatum: "" , shelf: "", bestand: "",_isDefault: true, _isClone: false },
-{ cat: "Material Kernfertigung", material: "A800", enummer: "E00000452",wahrendatum: "" , shelf: "", bestand: "",_isDefault: true, _isClone: false },
+{ cat: "Material Kernfertigung", material: "Zirkonmehl DPC 8, kalziniert", enummer: "E00004495",wahrendatum: "" , shelf: "", bestand: "",_isDefault: true, _isClone: false },
+{ cat: "Material Kernfertigung", material: "Aluminiumhydroxid gepulvert (A800 EIMER)", enummer: "E00000452",wahrendatum: "" , shelf: "", bestand: "",_isDefault: true, _isClone: false },
 { cat: "Material Kernfertigung", material: "Al-Stearat", enummer: "E00001142",wahrendatum: "" , shelf: "", bestand: "",_isDefault: true, _isClone: false },
-{ cat: "Material Kernfertigung", material: "Ca-Stearat", enummer: "E00000451",wahrendatum: "" , shelf: "", bestand: "",_isDefault: true, _isClone: false },
+{ cat: "Material Kernfertigung", material: "Calciumstearat", enummer: "E00000451",wahrendatum: "" , shelf: "", bestand: "",_isDefault: true, _isClone: false },
 { cat: "Material Kernfertigung", material: "Nabalox No202 II", enummer: "",wahrendatum: "" , shelf: "", bestand: "",_isDefault: true, _isClone: false },
 
 /* =======================
@@ -42,7 +42,7 @@ const defaultData = [
 ======================= */
 { cat: "Material Wachs", material: "Modellwachs A7 FR 60", enummer: "E32880700",wahrendatum: "" , shelf: "", bestand: "",_isDefault: true, _isClone: false },
 { cat: "Material Wachs", material: "Paracast FW 14896", enummer: "E32882600",wahrendatum: "" , shelf: "", bestand: "",_isDefault: true, _isClone: false },
-{ cat: "Material Wachs", material: "B559", enummer: "E32882300",wahrendatum: "" , shelf: "", bestand: "",_isDefault: true, _isClone: false },
+{ cat: "Material Wachs", material: "Systemwachs B559 (Blau)", enummer: "E32882300",wahrendatum: "" , shelf: "", bestand: "",_isDefault: true, _isClone: false },
 
 /* =======================
    MATERIAL KERNBEARBEITUNG
