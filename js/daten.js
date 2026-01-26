@@ -67,8 +67,8 @@ let useEdit = false;
 /* =========================
    EDIT-KONFIGURATION
 ========================= */
-const LOGOUT_TIMEOUT_MS = 5 * 60 * 1000; // 5 Minute
-const EDIT_TIMEOUT_MS = 4 * 60 * 1000; // 4 Minute
+const LOGOUT_TIMEOUT_MS = 10 * 60 * 1000; // 5 Minute
+const EDIT_TIMEOUT_MS = 8 * 60 * 1000; // 4 Minute
 const EDIT_KEY_HASH =
   "c21c1a4d4f1e71a2f371d4431b92639129dedb0d4674c6c9ef97605bd321040c"; // 5858
 const LOGOUT_WARNING_MS = 30 * 1000; // 30 Sekunden
