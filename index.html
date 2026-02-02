@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+
+
+<title>Lagerverwaltung</title>
+
+   <link rel="stylesheet" href="css/style.css">
+
+
+  
+<!-- =========================
+     ICONS
+========================= -->
+
+<link rel="icon" href="icons/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32x32.png">
+
+<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon-180x180.png">
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1f4fd8">
+
+
+</head>
+<body>
+<button id="scrollTopBtn" aria-label="Nach oben scrollen">↑</button>
+
+<div id="print-header">
+  <div class="print-title">Lagerbestand</div>
+  <div class="print-date" id="print-date"></div>
+</div>
+
+<div id="loadingOverlay" class="loading-overlay" style="display:none">
+  <div class="loading-card">
+    <div class="loading-title" id="loadingText">Lade…</div>
+
+    <div class="progress-bar">
+      <div id="progressFill"></div>
+    </div>
+
+    <div class="progress-percent" id="progressPercent">0%</div>
+  </div>
+</div>
+
+
+<!-- =========================
+     LOGIN-BEREICH
+========================= -->
+<form id="loginForm" onsubmit="login(event)">
+    <div id="loginBox">
+      <h3>🔒 Anmeldung erforderlich</h3>
+      <input id="userInput" placeholder="Benutzer">
+      <input id="passInput" type="password" placeholder="Passwort">
+      <button type="submit">Anmelden</button>
+    </div>
+</form>
+
+
+<!-- =========================
+     GESCHÜTZTE APP
+========================= -->
+<div id="app">
+  <h2>Lagerverwaltung v1.0</h2>
+
+      <div class="top-bar">
+            <!-- Logout sperrt die komplette Liste wieder -->
+            <button class="btn" onclick="logout()">🔒Logout</button>
+            <button class="btnExport" onclick="exportAllData()">EXPORT DATEN</button>
+            
+            <input
+              type="file"
+              id="importFile"
+              accept="application/json"
+              hidden
+              onchange="importAllData()"
+            >
+            <button class="btnImport" onclick="document.getElementById('importFile').click()">
+              IMPORT DATEN!
+            </button>
+            
+            <!-- Key-Freischaltung 
+            <input class="inputs" id="keyInput" type="password" placeholder="Key eingeben">
+            <button id="editToggleBtn" class="btn" onclick="toggleEditing()">🔓 Freischalten</button>-->
+            <button id="themeToggleBtn" class="btn-primary" onclick="toggleTheme()">🌙 Dark Mode</button>
+    </div>
+
+      <div class="top-bar-right">
+          <button  id="resetMaterialDataBtn"  class="admin-btn danger"  onclick="resetMaterialData()">  Initialdaten neu laden</button>
+            <br>
+          <div id="editTimer" class="edit-timer hidden" title="Edit-Modus endet bei Inaktivität">
+            <span class="label">Edit aktiv</span><span class="icon">⏳</span>
+            <span class="time">05:00</span>
+          </div>
+          
+          <div id="logoutTimer" class="logout-timer hidden">
+          <span class="label">Automatischer Logout</span>
+          <span class="time">00:30</span>
+        </div>
+
+      </div>
+
+      <hr>
+
+        <div class="tab-bar">
+          <button class="tab-btn" data-tab="ke" data-label="Material / Rohstoff Liste">Material / Rohstoff Liste</button>
+          <button class="tab-btn" data-tab="fs" data-label="FS-Tiegel Liste">FS-Tiegel Liste</button>
+          <button class="tab-btn" data-tab="fm" data-label="FM-Schleifbänder">FM-Schleifbänder</button>
+          <button class="tab-btn" data-tab="inv" data-label="Inventur Liste">Inventur Liste</button>
+          <button class="tab-btn" data-tab="historySectionIExport" data-label="Historie">Historie</button>
+          <button class="no-print" onclick="printTable()">Drucken</button>
+        </div>
+        <hr>
+        
+            <!-- =========================
+                SEARCH WRAPPER
+            ========================== -->
+            <div class="search-wrapper">
+
+              <!-- Suchfeld -->
+              <input
+                class="sSearch"
+                id="search"
+                type="text"
+                placeholder="Suche (Material, E-Nummer, Regal)"
+                autocomplete="off"
+              />
+
+              <!-- ❌ Clear-Button -->
+              <span id="searchClear" class="search-clear">❌</span>
+
+              <!-- ↑ ↓ Treffer-Navigation -->
+              <div id="searchNav" class="search-nav">
+                <button id="searchPrev" type="button" title="Vorheriger Treffer">↑</button>
+                <button id="searchNext" type="button" title="Nächster Treffer">↓</button>
+              </div>
+
+            </div>
+
+    <div class="content">
+            <!-- =========================
+                KE SECTION
+            ========================= -->
+
+          <div id="keSection" class="tab-section active">
+            <div class="column-toggle-grid">
+
+              <label class="locked">
+                <input type="checkbox" data-col="Material" checked disabled>
+                <span>Material</span>
+              </label>
+
+              <label>
+                <input type="checkbox" data-col="enummer" checked>
+                <span>E-Nummer</span>
+              </label>
+
+              <label>
+                <input type="checkbox" data-col="charge" checked>
+                <span>Charge-Nr.</span>
+              </label>
+
+              <label>
+                <input type="checkbox" data-col="palette" checked>
+                <span>Paletten-Nr.</span>
+              </label>
+              <label>
+                <input type="checkbox" data-col="wahrendatum" checked>
+                <span>Wahreneingang</span>
+              </label>
+              <label>
+                <input type="checkbox" data-col="regal" checked>
+                <span>Regal</span>
+              </label>
+
+              <label>
+                <input type="checkbox" data-col="bestand" checked>
+                <span>Bestand</span>
+              </label>
+
+              <label>
+                <input type="checkbox" data-col="bemerkung" checked>
+                <span>Bemerkung / Status</span>
+              </label>
+
+              <div class="ke-reset-wrap">
+                <button id="ResetKEToggleBtn"
+                        class="ResetKEBtn"
+                        onclick="resetKE()">
+                  Tabelle zurücksetzen
+                </button>
+              </div>
+            </div>
+        <center>
+          <!-- Such- & Steuerleiste -->
+            <div id="keToolbar">
+              <select id="categoryFilter" class="filter">
+                <option value="">Alle Kategorien</option>
+              </select>
+            </div>
+        </center>
+              <!-- =========================
+                  MOBILE SORT DROPDOWN
+              ========================= -->
+              <div class="mobile-sort-bar">
+                <select id="mobileSortField" class="Xoption">
+                  <option value="">Sortieren nach …</option>
+                  <option value="material">Material</option>
+                  <option value="e">E-Nummer</option>
+                  <option value="charge">Charge</option>
+                  <option value="shelf">Regal</option>
+                  <option value="bemerkung">Status</option>
+                </select>
+                <button id="mobileSortDir" data-dir="asc" title="Sortierrichtung">▲</button>
+              </div>
+              <div class="table-fullwidth">
+                <div class="table-scroll">
+                  <table class="lager-table KE-table">
+                    <thead>
+                      <tr>
+                        <th></th>
+                        <th id="keSort-material" class="sortable">Material <span class="sort-indicator"></span></th>
+                        <th id="keSort-e" class="sortable">E-Nummer <span class="sort-indicator"></span></th>
+                        <th id="keSort-charge" class="sortable">Chargen Nr. <span class="sort-indicator"></span></th>
+                        <th>Paletten-Nr.</th>
+                        <th>Wahreneingang</th>
+                        <th id="keSort-shelf" class="sortable">Regal <span class="sort-indicator"></span></th>
+                        <th>Bestand</th>
+                        <th id="keSort-bemerkung" class="sortable">Bemerkung / Status<span class="sort-indicator"></span></th>                        
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- =========================
+                FS SECTION
+            ========================= -->
+            <div id="fsSection" class="tab-section">
+              <div class="column-toggle-grid">
+
+                <label>
+                  <input type="checkbox" data-col="kurz" checked>
+                  <span>Kurz</span>
+                </label>
+
+                <label class="locked">
+                  <input type="checkbox" checked disabled>
+                  <span>Bezeichnung</span>
+                </label>
+
+                <label>
+                  <input type="checkbox" data-col="material" checked>
+                  <span>Material</span>
+                </label>
+
+                <label>
+                  <input type="checkbox" data-col="stueck" checked>
+                  <span>Stückzahl</span>
+                </label>
+
+                <label>
+                  <input type="checkbox" data-col="eNummer" checked>
+                  <span>E-Nummer</span>
+                </label>
+
+                <label>
+                  <input type="checkbox" data-col="kuerzel" checked>
+                  <span>Kürzel</span>
+                </label>
+
+                <label>
+                  <input type="checkbox" data-col="bestand" checked>
+                  <span>Bestand K.</span>
+                </label>
+
+                <label>
+                  <input type="checkbox" data-col="dpc" checked>
+                  <span>Bestand D</span>
+                </label>
+
+                <div class="fs-reset-wrap">
+                  <button id="ResetFSToggleBtn"
+                          class="ResetFSBtn"
+                          onclick="resetFS()">
+                    Tabelle zurücksetzen
+                  </button>
+                </div>
+              </div>
+
+
+              <div class="table-fullwidth">
+                <div class="table-scroll">
+                  <table class="lager-table fs-table KE-table">
+                    <thead>
+                      <tr>
+                        <th>Kurz</th>
+                        <th>Bezeichnung</th>
+                        <th>Material</th>
+                        <th>Stückzahl</th>
+                        <th>E-Nummer</th>
+                        <th>Kürzel</th>
+                        <th>Bestand K.</th>
+                        <th>Bestand D</th>
+                      </tr>
+                    </thead>
+                    <tbody id="fsTableBody"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div> <!-- table-scroll -->
+          </div> <!-- table-fullwidth -->
+        </div> <!-- ✅ fsSection ENDE -->
+
+            <!-- =========================
+                FM SECTION
+            ========================= -->
+              <section id="fmSection" class="tab-section" style="display:none;">
+                <div class="column-toggle-grid">
+
+                  <label class="locked">
+                    <input type="checkbox" checked disabled>
+                    <span>Abmessung</span>
+                  </label>
+
+                  <label>
+                    <input type="checkbox" data-col="pos1" checked>
+                    <span>Pos. Nr.#1</span>
+                  </label>
+
+                  <label>
+                    <input type="checkbox" data-col="artikel1" checked>
+                    <span>Artikel-Nr. #1</span>
+                  </label>
+
+                  <label>
+                    <input type="checkbox" data-col="artikel2" checked>
+                    <span>Artikel-Nr. #2</span>
+                  </label>
+
+                  <label>
+                    <input type="checkbox" data-col="artikel" checked>
+                    <span>Artikel</span>
+                  </label>
+
+                  <label>
+                    <input type="checkbox" data-col="koernung" checked>
+                    <span>Körnung</span>
+                  </label>
+
+                  <label>
+                    <input type="checkbox" data-col="verpackung" checked>
+                    <span>Verpackung</span>
+                  </label>
+
+                  <label>
+                    <input type="checkbox" data-col="pos_Nr" checked>
+                    <span>Pos.Nr.#2</span>
+                  </label>
+
+                  <label>
+                    <input type="checkbox" data-col="bestand" checked>
+                    <span>Bestand</span>
+                  </label>
+
+                  <label>
+                    <input type="checkbox" data-col="bemerkung" checked>
+                    <span>Bemerkung</span>
+                  </label>
+
+                  <div class="fm-reset-wrap">
+                    <button id="ResetFMToggleBtn"
+                            class="ResetFMBtn"
+                            onclick="resetFM()">
+                      Tabelle zurücksetzen
+                    </button>
+                  </div>
+                </div>
+              <!-- Tabelle -->
+              <div class="table-fullwidth">
+                <div class="table-scroll">
+                  <table class="lager-table fmTable">
+                    <thead>
+                      <tr>
+                        <th data-col="pos1">Pos. #1</th>
+                        <th data-col="artikel1">Artikel-Nr. #1</th>
+                        <th data-col="artikel2">Artikel-Nr. #2</th>
+                        <th data-col="artikel">Artikel</th>
+                        <th data-col="koernung">Körnung</th>
+                        <th data-col="abmessung">Abmessung</th>
+                        <th data-col="verpackung">Verpackung</th>
+                        <th data-col="pos_Nr">Pos.Nr.</th>
+                        <th data-col="bestand">Bestand</th>
+                         <th data-col="bemerkung">Bemerkung</th>
+                      </tr>
+                    </thead>
+                    <tbody id="fmTableBody"></tbody>
+                  </table>
+                </div>
+              </div>
+            </section>
+            <!-- =========================
+                INVENTUR SECTION
+            ========================= -->
+            <div id="inventarSection" class="tab-section">
+                <h3 class="inventur-title">Inventur – Gesamtübersicht</h3>
+
+                <div class="inventur-header">
+                  <div class="inventur-date">
+                    <label for="inventurDate">Inventur-Stichtag</label>
+                    <input type="date" id="inventurDate">
+                    <button class="invDate" onclick="saveInventurDate()">Fixieren</button>
+                  </div>
+                </div>
+
+
+              <div class="table-fullwidth">
+                <div class="table-scroll">
+                  <table class="lager-table inv-table">
+                    <thead>
+                      <tr>
+                        <th>Quelle</th>
+                        <th>Beschreibung / Material</th>
+                        <th>E-Nummer</th>
+                        <th>Charge-Nr.</th>
+                        <th>Paletten-Nr.</th>
+                        <th>Bestand</th>
+                        <th>Gesamt</th>
+                      </tr>
+                    </thead>
+                    <tbody id="invTableBody"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          <!-- =========================
+              HISTORY SECTION TAB
+          ========================= -->
+      <section id="historySectionIExport" class="tab-section">
+          <h3>Änderungshistorie</h3>
+
+          <!-- Controls: Suche + Aktionen -->
+          <div class="history-controls">
+            <input
+              id="historySearch"
+              type="text"
+              placeholder="Historie durchsuchen …"
+              oninput="renderHistoryKE()"
+            >
+
+            <button
+              type="button"
+              class="danger"
+              onclick="clearDeleteHistory()"
+            >
+              Historie löschen
+            </button>
+          </div>
+
+          <!-- Tabelle -->
+          <div id="historyTableWrapper" class="table-scroll">
+            <table class="lager-table history-table">
+              <thead>
+                <tr>
+                  <th>Zeitpunkt</th>
+                  <th>Kategorie</th>
+                  <th>Material</th>
+                  <th>E-Nummer</th>
+                  <th>Charge</th>
+                  <th>Palette</th>
+                  <th>Regal</th>
+                  <th>Bestand</th>
+                  <th>Bemerkung</th>
+                  <th>↩</th>
+                </tr>
+              </thead>
+              <tbody id="historyBody">
+                <!-- renderHistoryKE() -->
+              </tbody>
+            </table>
+          </div>
+       </section>
+  </div>
+
+<hr>
+     <footer>
+        <div id="kimlik">© Dilaver Bölükbaşı</div>
+        <div id="lastUpdate" style="display:none;"></div>
+    </footer>
+
+<script src="js/auth_config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/daten_fm.js"></script>
+<script src="js/data_ke.js"></script>
+<script src="js/daten_fs.js"></script>
+<script src="js/daten.js"></script>
+<script src="js/search.js"></script>
+
+</body>
+</html>
