@@ -8,32 +8,45 @@ async function sha256(text) {
     .join("");
 }
 
-const APP_VERSION = "2.6.1";  
+const APP_VERSION = "2.6.2";  
 const VERSION_KEY = "app_version";
 
 /* =====================================================
    SERVER-VERSION PRÜFEN
 ===================================================== */
 async function checkServerVersion() {
+  const versionEl = document.getElementById("appVersion");
+
   try {
     const res = await fetch("https://dilousta58.github.io/lager/version.json", {
       cache: "no-store"
     });
 
-    if (!res.ok) return;
+    if (!res.ok) {
+      versionEl.className = "version-checking";
+      return;
+    }
 
     const data = await res.json();
-    const serverVersion = data.version;
+    const serverV = data.version;
 
-    if (!serverVersion) return;
-
-    if (serverVersion !== APP_VERSION) {
-      showServerUpdateNotice(APP_VERSION, serverVersion, data.changelog);
+    if (!serverV) {
+      versionEl.className = "version-checking";
+      return;
     }
+
+    if (serverV === APP_VERSION) {
+      versionEl.className = "version-ok";     // grün
+    } else {
+      versionEl.className = "version-outdated"; // rot
+      showServerUpdateNotice(APP_VERSION, serverV, data.changelog);
+    }
+
   } catch (err) {
-    console.warn("Server-Version konnte nicht geladen werden:", err);
+    versionEl.className = "version-checking"; // gelb
   }
 }
+
 
 /* =====================================================
    SERVER-UPDATE-HINWEIS ANZEIGEN
@@ -138,6 +151,14 @@ async function login(e) {
   }
 
   /* =========================
+     VERSION ANZEIGEN
+  ========================= */
+  const versionEl = document.getElementById("appVersion");
+  versionEl.textContent = `v${APP_VERSION}`;
+  versionEl.className = "version-checking";
+
+
+  /* =========================
      HASH
   ========================= */
   const passHash = await sha256(pass);
@@ -176,7 +197,6 @@ async function login(e) {
   checkServerVersion();
 
   document.getElementById("lastUpdate").style.display = "block";
-
   LoadingManager.step(15, "Oberfläche initialisiert…");
 
   /* =========================
@@ -218,12 +238,14 @@ async function login(e) {
      LOADER ENDE
   ========================= */
   LoadingManager.hide();
+
 }
 
 
-
+/* =====================================================
+   LOGOUT
+===================================================== */
 function logout() {
- /* console.warn("🚪 Logout"); */
 
   hideLogoutTimer();
   stopLogoutWatcher(); // 🔴 WICHTIG: nur EIN Watcher darf existieren
@@ -241,7 +263,7 @@ function logout() {
   AppState.isEditing = false;
 
   /* =========================
-     TAB-STATUS RESET (OHNE display:none!)
+     Alle Tabs deaktivieren
   ========================= */
   document.querySelectorAll(".tab-btn").forEach(btn =>
     btn.classList.remove("active")
@@ -285,11 +307,9 @@ function logout() {
   loginBox.style.display = "block";
 }
 
-
-
-
-
-
+/* =====================================================
+   ADMIN-UI SYNCHRONISIEREN
+===================================================== */
 function syncAdminUI() {
   /* =========================
      ADMIN-BUTTONS
@@ -320,6 +340,9 @@ function syncAdminUI() {
   });
 }
 
+/* =====================================================
+   ZENTRALE APP-INITIALISIERUNG
+===================================================== */
 document.addEventListener("DOMContentLoaded", () => {
   const isLoggedIn = sessionStorage.getItem("loggedIn") === "true";
   const role = sessionStorage.getItem("role");
