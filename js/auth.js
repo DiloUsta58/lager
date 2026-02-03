@@ -1,3 +1,5 @@
+
+
 async function sha256(text) {
   const enc = new TextEncoder().encode(text);
   const hashBuffer = await crypto.subtle.digest("SHA-256", enc);
@@ -5,6 +7,99 @@ async function sha256(text) {
     .map(b => b.toString(16).padStart(2, "0"))
     .join("");
 }
+
+const APP_VERSION = "2.5.0";  
+const VERSION_KEY = "app_version";
+
+/* =====================================================
+   SERVER-VERSION PRÜFEN
+===================================================== */
+async function checkServerVersion() {
+  try {
+    const res = await fetch("https://dilousta58.github.io/lager/version.json", {
+      cache: "no-store"
+    });
+
+    if (!res.ok) return;
+
+    const data = await res.json();
+    const serverVersion = data.version;
+
+    if (!serverVersion) return;
+
+    if (serverVersion !== APP_VERSION) {
+      showServerUpdateNotice(APP_VERSION, serverVersion, data.changelog);
+    }
+  } catch (err) {
+    console.warn("Server-Version konnte nicht geladen werden:", err);
+  }
+}
+
+/* =====================================================
+   SERVER-UPDATE-HINWEIS ANZEIGEN
+===================================================== */
+function showServerUpdateNotice(localV, serverV, changelog) {
+  const box = document.createElement("div");
+  box.className = "update-notice";
+  box.innerHTML = `
+    <div class="update-box">
+      <h3>Neue Version verfügbar</h3>
+      <p>Installiert: <b>${localV}</b></p>
+      <p>Server-Version: <b>${serverV}</b></p>
+      ${changelog ? `<p>Änderungen: ${changelog}</p>` : ""}
+      <button id="updateNowBtn">Jetzt aktualisieren</button>
+    </div>
+  `;
+  document.body.appendChild(box);
+
+  document.getElementById("updateNowBtn").onclick = () => {
+    location.reload(true);
+  };
+}
+
+
+/* =====================================================
+   APP-VERSION PRÜFEN
+===================================================== */
+
+function checkAppVersion() {
+  const saved = localStorage.getItem(VERSION_KEY);
+
+  // Erstmalige Nutzung → Version speichern
+  if (!saved) {
+    localStorage.setItem(VERSION_KEY, APP_VERSION);
+    return;
+  }
+
+  // Version unterschiedlich → Update-Hinweis
+  if (saved !== APP_VERSION) {
+    showUpdateNotice(saved, APP_VERSION);
+  }
+}
+
+/* =====================================================
+   UPDATE-HINWEIS ANZEIGEN
+===================================================== */
+
+function showUpdateNotice(oldV, newV) {
+  const box = document.createElement("div");
+  box.className = "update-notice";
+  box.innerHTML = `
+    <div class="update-box">
+      <h3>Neue Version verfügbar</h3>
+      <p>Installiert: <b>${oldV}</b></p>
+      <p>Aktuell: <b>${newV}</b></p>
+      <button id="updateNowBtn">Jetzt aktualisieren</button>
+    </div>
+  `;
+  document.body.appendChild(box);
+
+  document.getElementById("updateNowBtn").onclick = () => {
+    localStorage.setItem(VERSION_KEY, newV);
+    location.reload(true);
+  };
+}
+
 
 /* =========================
    ZENTRALE LOGIN-UI-STEUERUNG
@@ -76,6 +171,10 @@ async function login(e) {
   ========================= */
   loginBox.style.display = "none";
   app.style.display = "block";
+
+  checkAppVersion();
+  checkServerVersion();
+
   document.getElementById("lastUpdate").style.display = "block";
 
   LoadingManager.step(15, "Oberfläche initialisiert…");
@@ -225,6 +324,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const isLoggedIn = sessionStorage.getItem("loggedIn") === "true";
   const role = sessionStorage.getItem("role");
 
+  document.getElementById("footerVersion").textContent = `Version: ${APP_VERSION}`;
+
   if (isLoggedIn && role) {
     // ✅ SESSION OK → APP STARTEN
     loggedIn = true;
@@ -249,6 +350,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     app.style.display = "none";
     loginBox.style.display = "block";
+    checkAppVersion();
+    checkServerVersion();
   }
 });
 
