@@ -531,41 +531,49 @@ function fmCell(value, rowIndex, field) {
 
 async function editFM(icon, rowIndex, field) {
   AppState.isEditing = true;
-  /* Feld darf überhaupt editiert werden */
+
   if (!FM_EDITABLE_FIELDS.includes(field)) return;
 
-  /* 🔐 Zentrale Edit-Freigabe (Admin ohne Key, Edit mit Key) */
   if (!await requireEditSaveUnlock()) return;
 
   const td = icon.closest("td");
   if (!td) return;
 
-  const span = td.querySelector("span");
-  if (!span) return;
+  const oldValue = td.querySelector("span")?.textContent ?? "";
 
-  const oldValue = span.textContent ?? "";
-
-  /* ✨ Edit startet → Aktivität */
   registerEditActivity();
 
-  /* Input erzeugen */
-  const input = document.createElement("input");
-  input.type = "text";
-  input.value = oldValue;
-  input.className = "cell-input";
+  /* ✨ Edit-UI erzeugen */
+  td.innerHTML = `
+    <div class="edit-wrapper">
+      <input class="cell-input" type="text" value="${oldValue}">
+      <button class="edit-apply" type="button">✔️</button>
+    </div>
+  `;
 
-  /* Span ersetzen */
-  span.replaceWith(input);
+  const input = td.querySelector(".cell-input");
+
+      /* 🔧 Nur Zahlen für Bestand */
+    if (field === "bestand") {
+      input.addEventListener("input", () => {
+        let v = input.value.replace(/\D/g, ""); // alles außer Ziffern entfernen
+
+        // Optional: führende Nullen entfernen
+        if (v.length > 1) v = v.replace(/^0+/, "");
+
+        input.value = v;
+      });
+    }
+
+
+  const btn = td.querySelector(".edit-apply");
+
   input.focus();
-  input.addEventListener("focus", () => {
-    AppState.isEditing = true;
-  });
 
-  function save() {
+  function commit() {
     AppState.isEditing = false;
-    const newValue = input.value.trim();
 
-    /* Speichern zählt als Aktivität */
+    const newValue = input.value.trim();
     registerEditActivity();
 
     if (newValue !== oldValue) {
@@ -576,21 +584,35 @@ async function editFM(icon, rowIndex, field) {
     renderFM();
   }
 
-  /* ⌨️ Tippen hält Edit aktiv */
-  input.addEventListener("input", registerEditActivity);
-
-  input.addEventListener("blur", () => {
-    setTimeout(save, 0);
-  });
-
+  /* ENTER */
   input.addEventListener("keydown", e => {
-    if (e.key === "Enter") input.blur();
-    if (e.key === "Escape") {
-        AppState.isEditing = false;   // 🔑 HINZUFÜGEN
-        renderFM();
-      }
+    if (e.key === "Enter") {
+      e.preventDefault();
+      commit();
+    }
   });
+
+  /* ESC */
+  input.addEventListener("keydown", e => {
+    if (e.key === "Escape") {
+      e.preventDefault();
+      AppState.isEditing = false;
+      renderFM();
+    }
+  });
+
+  /* Button klick */
+  btn.addEventListener("click", commit);
+
+  /* Blur */
+  input.addEventListener("blur", () => {
+    setTimeout(commit, 0);
+  });
+
+  /* Aktivität */
+  input.addEventListener("input", registerEditActivity);
 }
+
 
 
 

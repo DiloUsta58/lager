@@ -450,8 +450,28 @@ async function editFS(icon, index, field) {
 
   const oldValue = fsData[index]?.[field] ?? "";
 
-  td.innerHTML = `<input class="edit-input" value="${oldValue}">`;
+  td.innerHTML = `
+    <div class="edit-wrapper">
+      <input class="edit-input" value="${oldValue}">
+      <button class="edit-apply" type="button">✔️</button>
+    </div>
+  `;
+
+
+  const btn = td.querySelector(".edit-apply");
   const input = td.querySelector("input");
+    /* 🔧 Nur Zahlen für FS: bestand + dpc */
+  if (field === "bestand" || field === "dpc") {
+    input.addEventListener("input", () => {
+      let v = input.value.replace(/\D/g, ""); // alles außer Ziffern entfernen
+
+      // Optional: führende Nullen entfernen
+      if (v.length > 1) v = v.replace(/^0+/, "");
+
+      input.value = v;
+    });
+  }
+
   input.focus();
 
   /* ✨ Edit startet */
@@ -474,13 +494,10 @@ async function editFS(icon, index, field) {
     }
   });
 
-  /* BLUR = SPEICHERN */
-  input.onblur = () => {
-    setTimeout(() => {
+    const commit = () => {
       AppState.isEditing = false;
 
       const newValue = input.value.trim();
-
       registerEditActivity();
 
       fsData[index][field] = newValue;
@@ -489,12 +506,36 @@ async function editFS(icon, index, field) {
       if (typeof renderFS === "function") renderFS();
       if (typeof reapplyFsColumns === "function") reapplyFsColumns();
 
-      /* ✨ Pulse nur für Bestand-Felder */
       if (field === "bestand" || field === "dpc") {
         setTimeout(() => pulseFSCell(index, field), 0);
       }
-    }, 0);
-  };
+    };
+
+    /* ENTER */
+    input.addEventListener("keydown", e => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        commit();
+      }
+    });
+
+    /* ESC */
+    input.addEventListener("keydown", e => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        AppState.isEditing = false;
+        renderFS();
+      }
+    });
+
+    /* Button klick */
+    btn.addEventListener("click", commit);
+
+    /* Blur */
+    input.addEventListener("blur", () => {
+      setTimeout(commit, 0);
+    });
+
 }
 
 

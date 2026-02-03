@@ -1853,6 +1853,72 @@ if (PROTECTED_FIELDS.includes(field)) return;
   `;
 
   const input = td.querySelector(".edit-input");
+    /* 🔧 Auto-Format + Validierung für Regal */
+    if (field === "shelf") {
+      input.addEventListener("input", () => {
+        let v = input.value.replace(/\D/g, ""); // nur Ziffern
+
+        // Maximal 6 Ziffern
+        if (v.length > 6) v = v.slice(0, 6);
+
+        // Segment extrahieren
+        let a = v.slice(0, 2);
+        let b = v.slice(2, 4);
+        let c = v.slice(4, 6);
+
+        // Begrenzungen anwenden
+        if (a.length === 2 && Number(a) > 4) a = "04";
+        if (b.length === 2 && Number(b) > 12) b = "12";
+        if (c.length === 2 && Number(c) > 12) c = "12";
+
+        // Auto-Format zusammensetzen
+        let formatted = "";
+        if (a) formatted = a;
+        if (b) formatted += "-" + b;
+        if (c) formatted += "-" + c;
+
+        input.value = formatted;
+      });
+    }
+
+      /* 🔧 Nur Zahlen für Bestand */
+    if (field === "bestand") {
+      input.addEventListener("input", () => {
+        // Alles entfernen, was keine Zahl ist
+        let v = input.value.replace(/\D/g, "");
+
+        // Optional: führende Nullen entfernen
+        if (v.length > 1) v = v.replace(/^0+/, "");
+
+        input.value = v;
+      });
+    }
+ 
+      /* 🔧 Bemerkung: Auto-Text + keine Sonderzeichen */
+      if (field === "bemerkung") {
+        input.addEventListener("input", () => {
+          let v = input.value;
+
+          // ❌ Sonderzeichen + Zahlen entfernen
+          v = v.replace(/[^a-zA-ZäöüÄÖÜß\s]/g, "");
+
+          // Kleinbuchstaben für Erkennung
+          const lower = v.toLowerCase().trim();
+
+          // 🔄 Auto-Ersetzung
+          if (lower.startsWith("fr")) {
+            v = "Frei";
+          } else if (lower.startsWith("un")) {
+            v = "Ungeprüft";
+          } else if (lower.startsWith("ge")) {
+            v = "Gesperrt";
+          }
+
+          input.value = v;
+        });
+      }
+
+
   const btn = td.querySelector(".edit-apply");
   input.focus();
   input.addEventListener("focus", () => {
