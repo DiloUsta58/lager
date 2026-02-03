@@ -334,6 +334,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     loginBox.style.display = "none";
     app.style.display = "block";
+    // Versionsanzeige aktualisieren
+    document.getElementById("appVersion").textContent = APP_VERSION;
 
     syncAdminUI();
     initCategories();
