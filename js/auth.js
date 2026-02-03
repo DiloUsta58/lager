@@ -154,7 +154,7 @@ async function login(e) {
      VERSION ANZEIGEN
   ========================= */
   const versionEl = document.getElementById("appVersion");
-  versionEl.textContent = `v${APP_VERSION}`;
+  versionEl.textContent = `Lagerverwaltung v${APP_VERSION}`;
   versionEl.className = "version-checking";
 
 
