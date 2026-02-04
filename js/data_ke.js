@@ -85,24 +85,51 @@ const defaultData = [
 
 ];
 
-
 function resetKESort() {
-  // Originaldaten wiederherstellen
-  data = JSON.parse(JSON.stringify(defaultData));
+  // 1. Map für Kategorie-Reihenfolge erstellen
+  const catOrder = new Map();
+  defaultData.forEach((item, index) => {
+    if (!catOrder.has(item.cat)) {
+      catOrder.set(item.cat, index);
+    }
+  });
 
-  // Sortierzustand zurücksetzen
+  // 2. Map für Reihenfolge innerhalb der Kategorie
+  const rowOrder = new Map();
+  defaultData.forEach((item, index) => {
+    rowOrder.set(item.material, index);
+  });
+
+  // 3. data nach Kategorien + Reihenfolge sortieren
+  data.sort((a, b) => {
+    const catA = catOrder.get(a.cat);
+    const catB = catOrder.get(b.cat);
+
+    // Kategorien sortieren
+    if (catA !== catB) {
+      return (catA ?? 99999) - (catB ?? 99999);
+    }
+
+    // Innerhalb der Kategorie sortieren
+    const rowA = rowOrder.get(a.material);
+    const rowB = rowOrder.get(b.material);
+
+    return (rowA ?? 99999) - (rowB ?? 99999);
+  });
+
+  // 4. Sortierzustand zurücksetzen
   keSortState.material = 1;
   keSortState.enummer = 1;
   keSortState.charge = 1;
   keSortState.shelf = 1;
   keSortState.bemerkung = 1;
 
-  // Sortierpfeile entfernen
+  // 5. Sortierpfeile entfernen
   document
     .querySelectorAll("#keSection th .sort-indicator")
     .forEach(el => el.textContent = "");
 
-  // Tabelle neu rendern
+  // 6. Tabelle neu rendern
   renderKE();
   reapplyKEColumns();
 }
