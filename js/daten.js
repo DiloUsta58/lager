@@ -1489,9 +1489,9 @@ function loadHistoryData() {
   historyData = raw ? JSON.parse(raw) : [];
 }
 
-
-
-
+/* =====================================================
+   ZENTRALE EDIT-TOGGLE-FUNKTION
+===================================================== */
 function toggleEditing() {
 
   if (!window.EDIT_ENABLED) {
@@ -1505,6 +1505,11 @@ function toggleEditing() {
     unlockEditing();
   }
 }
+
+
+/* =====================================================
+   EDIT-LOCK / UNLOCK
+===================================================== */
 
 function unlockEditing() {
   editEnabled = true;
@@ -1522,8 +1527,7 @@ function unlockEditing() {
   }
 }
 
-
-
+/* Auto-Lock Timer */
 function lockEditing() {
   editEnabled = false;
   useEdit = false;
@@ -1534,6 +1538,7 @@ function lockEditing() {
   syncEditToggleButton();   // 🔑 HINZUFÜGEN
 }
 
+/* Edit-Button-Synchronisation */
 function syncEditToggleButton() {
   const btn = document.getElementById("editToggleBtn");
   if (!btn) return;
@@ -1545,7 +1550,7 @@ function syncEditToggleButton() {
   }
 }
 
-
+/* Auto-Lock Timer starten */
 function startAutoLock() {
   clearTimeout(lockTimer);
   lockTimer = setTimeout(
@@ -1740,7 +1745,7 @@ function addRowAfter(index) {
   const newRow = {
     cat: base.cat,
     material: base.material,
-    e: base.enummer,
+    enummer: base.enummer,
     charge: "",
     palette: "",
     wahrendatum:"",
@@ -1853,6 +1858,77 @@ if (PROTECTED_FIELDS.includes(field)) return;
   `;
 
   const input = td.querySelector(".edit-input");
+
+      // 🔧 Datum-Maske aktivieren
+    if (field === "wahrendatum") {
+        attachWahrendatumMask(input);
+    }
+
+   function attachWahrendatumMask(input) {
+      let lastValid = ""; // letzter gültiger Wert
+
+      input.addEventListener("input", () => {
+        let raw = input.value.replace(/\D/g, "");
+
+        if (raw.length > 6) raw = raw.slice(0, 6);
+
+        // Formatierung
+        if (raw.length >= 5) {
+          raw = raw.replace(/(\d{2})(\d{2})(\d{1,2})/, "$1.$2.$3");
+        } else if (raw.length >= 3) {
+          raw = raw.replace(/(\d{2})(\d{1,2})/, "$1.$2");
+        }
+
+        // Temporär setzen, damit wir prüfen können
+        input.value = raw;
+
+        // Noch nicht vollständig → akzeptieren, aber nicht prüfen
+        if (raw.length < 8) {
+          lastValid = raw;
+          input.classList.remove("input-error");
+          return;
+        }
+
+        const [d, m, y] = raw.split(".").map(Number);
+
+        if (!isStrictValidDate(d, m, y)) {
+          // ❌ Ungültig → auf letzten gültigen Wert zurückspringen
+          input.classList.add("input-error");
+          input.value = lastValid;
+          return;
+        }
+
+        // ✅ Gültig
+        input.classList.remove("input-error");
+        lastValid = raw;
+      });
+    }
+
+    function isStrictValidDate(d, m, y) {
+      if (m < 1 || m > 12) return false;
+      if (d < 1) return false;
+
+      const daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+      const fullYear = 2000 + y;
+      const isLeap =
+        (fullYear % 4 === 0 && fullYear % 100 !== 0) ||
+        (fullYear % 400 === 0);
+
+      if (m === 2 && isLeap) {
+        return d <= 29;
+      }
+
+      if (m === 2 && !isLeap) {
+        return d <= 28;
+      }
+
+      return d <= daysInMonth[m - 1];
+    }
+
+
+
+
     /* 🔧 Auto-Format + Validierung für Regal */
     if (field === "shelf") {
       input.addEventListener("input", () => {
@@ -1930,6 +2006,33 @@ if (PROTECTED_FIELDS.includes(field)) return;
   const commit = () => {
     AppState.isEditing = false;
     const newValue = input.value;
+
+      /* 🔧 Spezielle Validierung für Wahrendatum */
+      if (field === "wahrendatum") {
+        const raw = newValue.trim();
+
+        // ✔ Leeres Datum ist erlaubt → NICHT prüfen
+        if (raw === "") {
+          // Speichern von leerem Datum ist erlaubt
+        } else {
+          // ❗ Nur prüfen, wenn etwas drinsteht
+          if (!/^\d{2}\.\d{2}\.\d{2}$/.test(raw)) {
+            alert("Ungültiges Datum!");
+            input.focus();
+            return;
+          }
+
+          const [d, m, y] = raw.split(".").map(Number);
+
+          if (!isStrictValidDate(d, m, y)) {
+            alert("Ungültiges Datum!");
+            input.focus();
+            return;
+          }
+        }
+      }
+
+
     /* Jede Aktion = Aktivität */
     registerEditActivity();
 
@@ -2021,17 +2124,18 @@ function getFilteredData() {
 }
 
 /* =====================================================
-   KE – RENDER OVERRIDE MIT FILTER
+   KE – RENDER OVERRIDE
 ===================================================== */
 const _renderOriginal = renderKE;
 renderKE = function () {
   if (!loggedIn) return;
+  if (AppState.isEditing) return;
 
   tableBody.innerHTML = "";
 
   const filtered = getFilteredData();
   setTabCount("ke", filtered.length);
-  
+
   let lastCat = null;
 
   filtered.forEach(row => {
@@ -2039,44 +2143,40 @@ renderKE = function () {
 
     if (row.cat !== lastCat) {
       tableBody.innerHTML +=
-        `<tr class="category"><td colspan="10">${row.cat}</td></tr>`; /* WENN NEUE SPALTE KOMMT MUSS COLSPAN= ANZAHL + 1! */
+        `<tr class="category"><td colspan="10">${row.cat}</td></tr>`;
       lastCat = row.cat;
     }
 
     tableBody.innerHTML += `
-      <tr class="data-row ${row._isDefault ? "default-row" : "🔒"}">
-                <!-- ➕ LINKS -->
-                <td class="row-action left">
-                  <span class="row-btn add" onclick="addRowAfter(${index})">＋</span>
-                </td>
-                    ${cell(row.material, index, "material")}
-                    ${cell(row.enummer, index, "enummer")}
-                    ${cell(row.charge, index, "charge")}
-                    ${cell(row.palette, index, "palette")}
-                    ${cell(row.wahrendatum, index, "wahrendatum")}
-                    ${cell(row.shelf, index, "shelf")}
-                    ${cell(row.bestand, index, "bestand")}
-                    ${cell(row.bemerkung, index, "bemerkung")}
-                <!-- ➖ RECHTS -->
-                      <td class="row-action right">
-                        ${
-                          row._isDefault
-                            ? (
-                                hasClearableContent(row)
-                                  ? `<span class="row-btn clear"
-                                      title="Felder leeren"
-                                      onclick="clearKERowFields(${index})">🧹</span>`
-                                  : ""
-                              )
-                            : `<span class="row-btn remove"
-                                title="Zeile löschen"
-                                onclick="removeRow(${index})">−</span>`
-                        }
-                      </td>
+      <!-- ➕ LINKS -->
+      <tr class="data-row ${row._isDefault ? "default-row" : ""}">
+        <td class="row-action left">
+          <span class="row-btn add" onclick="addRowAfter(${index})">➕</span>
+        </td>
+
+        ${cell(row.material, index, "material")}
+        ${cell(row.enummer, index, "enummer")}
+        ${cell(row.charge, index, "charge")}
+        ${cell(row.palette, index, "palette")}
+        ${cell(row.wahrendatum, index, "wahrendatum")}
+        ${cell(row.shelf, index, "shelf")}
+        ${cell(row.bestand, index, "bestand")}
+        ${cell(row.bemerkung, index, "bemerkung")}
+        <!-- ➖ RECHTS -->
+        <td class="row-action right">
+          ${
+            row._isDefault
+              ? (hasClearableContent(row)
+                  ? `<span class="row-btn clear" onclick="clearKERowFields(${index})">🧹</span>`
+                  : "")
+              : `<span class="row-btn remove" onclick="removeRow(${index})">➖</span>`
+          }
+        </td>
       </tr>
     `;
   });
 };
+
 
 /* =====================================================
    KEYBOARD SHORTCUTS

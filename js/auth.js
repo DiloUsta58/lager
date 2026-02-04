@@ -8,7 +8,7 @@ async function sha256(text) {
     .join("");
 }
 
-const APP_VERSION = "2.6.2";  
+const APP_VERSION = "2.6.3";  
 const VERSION_KEY = "app_version";
 
 /* =====================================================
@@ -129,6 +129,16 @@ function syncLoginUI() {
   }
 }
 
+/* =====================================================
+   VERSION-UI AKTUALISIEREN
+===================================================== */
+function updateVersionUI() {
+  const versionEl = document.getElementById("appVersion");
+  if (!versionEl) return;
+
+  versionEl.textContent = `Lagerverwaltung v${APP_VERSION}`;
+  versionEl.className = "version-checking";
+}
 
 /* =====================================================
    LOGIN / LOGOUT
@@ -149,14 +159,6 @@ async function login(e) {
     alert("Auth-Konfiguration fehlt");
     return;
   }
-
-  /* =========================
-     VERSION ANZEIGEN
-  ========================= */
-  const versionEl = document.getElementById("appVersion");
-  versionEl.textContent = `Lagerverwaltung v${APP_VERSION}`;
-  versionEl.className = "version-checking";
-
 
   /* =========================
      HASH
@@ -192,7 +194,8 @@ async function login(e) {
   ========================= */
   loginBox.style.display = "none";
   app.style.display = "block";
-
+  
+  updateVersionUI();
   checkAppVersion();
   checkServerVersion();
 
@@ -350,15 +353,21 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("footerVersion").textContent = `Version: ${APP_VERSION}`;
 
   if (isLoggedIn && role) {
-    // ✅ SESSION OK → APP STARTEN
+
+    /* =========================
+       VERSION ANZEIGEN
+    ========================= */
+    const versionEl = document.getElementById("appVersion");
+    versionEl.textContent = `Lagerverwaltung v${APP_VERSION}`;
+    versionEl.className = "version-checking";
+
+    // SESSION OK → APP STARTEN
     loggedIn = true;
     isAdmin = role === "admin";
     editEnabled = localStorage.getItem("editEnabled") === "true";
 
     loginBox.style.display = "none";
     app.style.display = "block";
-    // Versionsanzeige aktualisieren
-    document.getElementById("appVersion").textContent = APP_VERSION;
 
     syncAdminUI();
     initCategories();
@@ -367,6 +376,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     lastUserActivity = Date.now();
     startLogoutWatcher();
+    checkServerVersion();
+
   } else {
     // ❌ KEINE SESSION → LOGIN
     loggedIn = false;
@@ -375,8 +386,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     app.style.display = "none";
     loginBox.style.display = "block";
+
+    updateVersionUI();
     checkAppVersion();
     checkServerVersion();
   }
 });
-
