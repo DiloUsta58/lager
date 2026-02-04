@@ -844,6 +844,18 @@ mark.search-hit {
 }
 
 
+[data-theme="dark"] .ResetSortKEBtn {
+    background: #2a2a2a;
+    color: #ffffff;
+}
+
+[data-theme="dark"] .ResetSortKEBtn:hover {
+    background: #067919;
+    color: #ffffff;
+}
+
+
+
 [data-theme="dark"] .ResetFSBtn {
     background: #2a2a2a;
     color: #ffffff;
