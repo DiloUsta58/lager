@@ -86,8 +86,30 @@ const defaultData = [
 ];
 
 
-let materialData;
+function resetKESort() {
+  // Originaldaten wiederherstellen
+  data = JSON.parse(JSON.stringify(defaultData));
 
+  // Sortierzustand zurücksetzen
+  keSortState.material = 1;
+  keSortState.enummer = 1;
+  keSortState.charge = 1;
+  keSortState.shelf = 1;
+  keSortState.bemerkung = 1;
+
+  // Sortierpfeile entfernen
+  document
+    .querySelectorAll("#keSection th .sort-indicator")
+    .forEach(el => el.textContent = "");
+
+  // Tabelle neu rendern
+  renderKE();
+  reapplyKEColumns();
+}
+
+
+
+let materialData;
 (function initKE() {
   const raw = localStorage.getItem(STORAGE_KEY);
 

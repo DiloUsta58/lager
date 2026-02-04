@@ -96,7 +96,7 @@ let lastUserActivity = Date.now();
 ===================================================== */
 const KE_COLUMN_MAP = {
   material: 1,
-  e: 2,
+  enummer: 2,
   charge: 3,
   palette: 4,
   wahrendatum: 5,
@@ -361,6 +361,7 @@ function resetKE() {
 
   renderKE();
 }
+
 /* ===============================
    ZENTRALE Logout-Status ANFANG
 ================================ */
@@ -2854,7 +2855,7 @@ function setupColumnToggles({
 /* Sort-Zustand */
 const keSortState = {
   material: 1,
-  e: 1,
+  enummer: 1,
   charge: 1,
   shelf: 1,
   bemerkung: 1
@@ -2912,9 +2913,11 @@ function compareByField(a, b, field) {
     case "material":
       return normText(a.material).localeCompare(normText(b.material), "de", { numeric: true });
 
-    case "e":
-      return normText(a.e).localeCompare(normText(b.e), "de", { numeric: true });
-
+      case "enummer": {
+        const numA = parseInt(String(a.enummer).replace(/\D/g, ""), 10) || 0;
+        const numB = parseInt(String(b.enummer).replace(/\D/g, ""), 10) || 0;
+        return numA - numB;
+      }
     case "charge":
       return normText(a.charge).localeCompare(normText(b.charge), "de", { numeric: true });
 
@@ -3008,7 +3011,7 @@ if (mobileSortField && mobileSortDirBtn) {
 
 
 document.getElementById("keSort-material")?.addEventListener("click", () => sortKEBy("material"));
-document.getElementById("keSort-e")?.addEventListener("click", () => sortKEBy("e"));
+document.getElementById("keSort-enummer")?.addEventListener("click", () => sortKEBy("enummer"));
 document.getElementById("keSort-charge")?.addEventListener("click", () => sortKEBy("charge"));
 document.getElementById("keSort-shelf")?.addEventListener("click", () => sortKEBy("shelf"));
 document.getElementById("keSort-bemerkung")?.addEventListener("click", () => sortKEBy("bemerkung"));
