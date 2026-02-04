@@ -11,8 +11,8 @@
   --row-even: #03fcb1;
   --row-odd: #131208;
   --border: #d0d7e2;
-  --textColorSum: #077517;
-
+  --textColorSum: #060808;
+  --bgTxtInventur: #fde68a;
 }
 
 [data-theme="dark"] {
@@ -24,7 +24,8 @@
   --Drow-even: #0f0f0f;
   --Drow-odd: #1a1a1a;
   --border: #333333;
-  --textColorSum: #a7f3d0;
+  --textColorSum: #10b4f0;
+  --bgTxtInventur: #363a35;
   --row-hover: rgba(255, 255, 255, 0.06);
 }
 
@@ -1193,20 +1194,42 @@ mark.search-hit {
   color: var(--textColorSum);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
-   text-align: right;
+  text-align: right;
 }
 
+/* Bestände, Summe und Gesamt in Inventur hervorheben 
+tr.inventory-sum td:nth-child(2),
+*/
+tr.inventory-sum td:first-child,
+tr.inventory-sum td:nth-child(2),
+tr.inventory-sum td:nth-child(7) {
+  background:var(--bgTxtInventur);
+  color: var(--textColorSum);
+  font-weight: 700;
+}
 
+/* Inventur – bestimmte Spalten zentrieren */
 [data-theme="dark"] tr.inventory-sum {
   background: transparent;
   color: inherit;
   font-weight: normal;
 }
-
+/* Summenzeile im Inventur-Tab hervorheben */
 [data-theme="dark"] tr.inventory-sum td:last-child {
   color: var(--textColorSum);
   font-weight: 700;
 }
+
+/* Bestände, Summe und Gesamt in Inventur hervorheben */
+[data-theme="dark"] tr.inventory-sum td:first-child,
+tr.inventory-sum td:nth-child(2),
+tr.inventory-sum td:nth-child(7) {
+  background:var(--bgTxtInventur);
+  color: var(--textColorSum);
+  font-weight: 700;
+}
+
+
 
 /* Inventur – bestimmte Spalten zentrieren */
 td:nth-child(1),
@@ -2159,7 +2182,6 @@ mark.hit.active-hit {
 }
 
 
-
 /* ==================================================
    HARD TAB VISIBILITY FIX (FM Logout Bug)
    Verhindert sichtbare Header / Checkboxen bei Logout
@@ -2176,4 +2198,24 @@ mark.hit.active-hit {
 #fmSection:not(.active) thead,
 #fmSection:not(.active) tbody {
   display: none !important;
+}
+
+/* =========================
+   APP VERSION INDICATOR
+========================= */
+#appVersion {
+  font-weight: bold;
+  margin-left: 6px;
+}
+
+.version-ok {
+  color: var(--text); /* grün */
+}
+
+.version-outdated {
+  color: #e74c3c; /* rot */
+}
+
+.version-checking {
+  color: #f1c40f; /* gelb */
 }
