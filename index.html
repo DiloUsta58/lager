@@ -208,7 +208,7 @@
                 <select id="mobileSortField" class="Xoption">
                   <option value="">Sortieren nach …</option>
                   <option value="material">Material</option>
-                  <option value="e">E-Nummer</option>
+                  <option value="enummer">E-Nummer</option>
                   <option value="charge">Charge</option>
                   <option value="shelf">Regal</option>
                   <option value="bemerkung">Status</option>
@@ -222,7 +222,7 @@
                       <tr>
                         <th></th>
                         <th id="keSort-material" class="sortable">Material <span class="sort-indicator"></span></th>
-                        <th id="keSort-e" class="sortable">E-Nummer <span class="sort-indicator"></span></th>
+                        <th id="keSort-enummer" class="sortable">E-Nummer <span class="sort-indicator"></span></th>
                         <th id="keSort-charge" class="sortable">Chargen Nr. <span class="sort-indicator"></span></th>
                         <th>Paletten-Nr.</th>
                         <th>Wahreneingang</th>
@@ -288,12 +288,15 @@
                   <button id="ResetFSToggleBtn"
                           class="ResetFSBtn"
                           onclick="resetFS()">
-                    Tabelle zurücksetzen
+                    Tabelle Leeren
+                  </button>
+                  <button id="ResetKESortBtn"
+                          class="ResetKEBtn"
+                          onclick="resetKESort()">
+                    Sortierung zurücksetzen
                   </button>
                 </div>
               </div>
-
-
               <div class="table-fullwidth">
                 <div class="table-scroll">
                   <table class="lager-table fs-table KE-table">
