@@ -343,22 +343,10 @@ function updateSearchCounts() {
    RESET KE SECTION (ADMIN)
 ===================================================== */
 function resetKE() {
-  /* =========================
-     ADMIN-PRÜFUNG
-  ========================= */
   if (!requireAdminUnlock()) return;
-
-  /* =========================
-     BESTÄTIGUNG
-  ========================= */
   if (!confirm("KE-Daten wirklich zurücksetzen?")) return;
-
-  /* =========================
-     RESET
-  ========================= */
   localStorage.removeItem("materialData");
   data = structuredClone(defaultData);
-
   renderKE();
 }
 
