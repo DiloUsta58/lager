@@ -8,7 +8,7 @@ async function sha256(text) {
     .join("");
 }
 
-const APP_VERSION = "2.6.4";  
+const APP_VERSION = "2.6.5";  
 const VERSION_KEY = "app_version";
 
 /* =====================================================
