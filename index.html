@@ -85,6 +85,7 @@
             <input class="inputs" id="keyInput" type="password" placeholder="Key eingeben">
             <button id="editToggleBtn" class="btn" onclick="toggleEditing()">🔓 Freischalten</button>-->
             <button id="themeToggleBtn" class="btn-primary" onclick="toggleTheme()">🌙 Dark Mode</button>
+            <button class="btn" onclick="location.href='settings.html'" aria-label="Einstellungen">⚙️</button>
     </div>
 
       <div class="top-bar-right">
@@ -137,6 +138,9 @@
                 <button id="searchNext" type="button" title="Nächster Treffer">↓</button>
               </div>
 
+            </div>
+            <div id="hintBar" class="hint-bar">
+              Tipp: Klick auf ✏️ zum Bearbeiten, ➕ zum Duplizieren einer Zeile.
             </div>
 
     <div class="content">
@@ -209,31 +213,20 @@
               <!-- =========================
                   MOBILE SORT DROPDOWN
               ========================= -->
-              <div class="mobile-sort-bar">
-                <select id="mobileSortField" class="Xoption">
-                  <option value="">Sortieren nach …</option>
-                  <option value="material">Material</option>
-                  <option value="enummer">E-Nummer</option>
-                  <option value="charge">Charge</option>
-                  <option value="shelf">Regal</option>
-                  <option value="bemerkung">Status</option>
-                </select>
-                <button id="mobileSortDir" data-dir="asc" title="Sortierrichtung">▲</button>
-              </div>
               <div class="table-fullwidth">
                 <div class="table-scroll">
                   <table class="lager-table KE-table">
                     <thead>
                       <tr>
                         <th></th>
-                        <th id="keSort-material" class="sortable">Material <span class="sort-indicator"></span></th>
-                        <th id="keSort-enummer" class="sortable">E-Nummer <span class="sort-indicator"></span></th>
-                        <th id="keSort-charge" class="sortable">Chargen Nr. <span class="sort-indicator"></span></th>
+                        <th>Material</th>
+                        <th>E-Nummer</th>
+                        <th>Chargen Nr.</th>
                         <th>Paletten-Nr.</th>
                         <th>Wahreneingang</th>
                         <th id="keSort-shelf" class="sortable">Regal <span class="sort-indicator"></span></th>
                         <th>Bestand</th>
-                        <th id="keSort-bemerkung" class="sortable">Bemerkung / Status<span class="sort-indicator"></span></th>                        
+                        <th>Bemerkung / Status</th>                        
                         <th></th>
                       </tr>
                     </thead>
@@ -504,6 +497,27 @@
 <script src="js/daten_fs.js"></script>
 <script src="js/daten.js"></script>
 <script src="js/search.js"></script>
+<script>
+  (function initFontSize() {
+    const stored = parseInt(localStorage.getItem("fontSizePx"), 10);
+    const value = Number.isFinite(stored) ? stored : 16;
+    document.documentElement.style.setProperty("--ui-font-size", `${value}px`);
+  })();
+  (function applyUiSettings() {
+    const autoSave = localStorage.getItem("ui_autoSave");
+    const showHints = localStorage.getItem("ui_showHints");
+    const compactMode = localStorage.getItem("ui_compactMode");
+
+    window.APP_SETTINGS = {
+      autoSave: autoSave !== "false",
+      showHints: showHints !== "false",
+      compactMode: compactMode === "true"
+    };
+
+    document.body.classList.toggle("hints-off", !window.APP_SETTINGS.showHints);
+    document.body.classList.toggle("compact-mode", window.APP_SETTINGS.compactMode);
+  })();
+</script>
 
 </body>
 </html>

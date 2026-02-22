@@ -6,12 +6,14 @@
   --bg: #f4f6fb;
   --bg-card: #fde68a;
   --text: #1f2937;
+  --ui-font-size: 16px;
   --accent: #2563eb;
   --accent-soft: #05b93b;
   --row-even: #03fcb1;
   --row-odd: #131208;
   --border: #d0d7e2;
   --textColorSum: #060808;
+  --textStdMaterial: #05800d;
   --bgTxtInventur: #fde68a;
 }
 
@@ -25,6 +27,7 @@
   --Drow-odd: #1a1a1a;
   --border: #333333;
   --textColorSum: #10b4f0;
+  --textStdMaterial: #047aa1;
   --bgTxtInventur: #363a35;
   --row-hover: rgba(255, 255, 255, 0.06);
 }
@@ -57,6 +60,16 @@ body {
     display: none;
 }
 
+.hint-bar {
+  margin: 8px 0 14px;
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+body.hints-off .hint-bar {
+  display: none;
+}
+
 #keSection th.sortable {
   cursor: pointer;
   user-select: none;
@@ -68,6 +81,11 @@ body {
 
 [data-theme="dark"] #keSection th.sortable:hover {
   background: rgba(233, 192, 5, 0.359);
+}
+
+.std-has-clone td {
+  color: var(--textStdMaterial);
+  font-weight: 700;
 }
 
 .sort-indicator {
@@ -422,6 +440,22 @@ tr.category .row-lock {
   font-size: 14px;
 }
 
+/* Schriftgröße nur für Haupttabellen */
+.KE-table,
+.fs-table,
+.fmTable,
+.inv-table {
+  font-size: var(--ui-font-size);
+}
+
+body.compact-mode .lager-table td {
+  padding: 6px 8px;
+}
+
+body.compact-mode .lager-table thead th {
+  padding: 8px 10px;
+}
+
 /* Kopf */
 .lager-table thead th {
   background: #e5e7eb;
@@ -456,7 +490,6 @@ tr.category .row-lock {
 ========================= */
 .lager-table.fs-table {
   table-layout: fixed;
-  font-size: 13px;
 }
 .lager-table.fs-table td {
   white-space: normal; /* erlauben von Umbrüchen */

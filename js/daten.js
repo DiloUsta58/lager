@@ -1739,7 +1739,7 @@ function addRowAfter(index) {
     palette: "",
     wahrendatum:"",
     shelf: "",
-    bestand: "",
+    bestand: "0",
     bemerkung: "",
     _isDefault: false,
     _isClone: true
@@ -1783,10 +1783,10 @@ function removeRow(index) {
 /* =====================================================
    KE – INLINE EDIT
 ===================================================== */
-function cell(value, index, field) {
-
+function cell(value, index, field, row) {
   const protectedField = PROTECTED_FIELDS.includes(field);
-  const canEdit = !protectedField || editEnabled;
+  const isDefaultRow = !!row?._isDefault;
+  const canEdit = !isDefaultRow && !protectedField;
 
   // 🔹 Bemerkung-Farblogik
   let extraClass = "";
@@ -1805,12 +1805,10 @@ function cell(value, index, field) {
       <td class="${protectedField ? "protected" : ""} ${extraClass}">
         <div class="edit-wrapper">
           <span>${highlightText(value ?? "", globalSearchTerm)}</span>
-          ${
-            canEdit
-              ? `<span class="edit-icon"
-                  onclick="editCell(this, ${index}, '${field}')">✏️</span>`
-              : ""
-          }
+          ${canEdit
+            ? `<span class="edit-icon"
+                onclick="editCell(this, ${index}, '${field}')">✏️</span>`
+            : ""}
         </div>
       </td>
     `;
@@ -1827,8 +1825,16 @@ function findDuplicateKE({ charge, palette }) {
 
 async function editCell(icon, index, field) {
   AppState.isEditing = true;
-  /* Geschützte Felder nur im Edit-Modus */
-if (PROTECTED_FIELDS.includes(field)) return;
+  const row = data[index];
+  if (row?._isDefault) {
+    AppState.isEditing = false;
+    return;
+  }
+  /* Geschützte Felder niemals editierbar */
+  if (PROTECTED_FIELDS.includes(field)) {
+    AppState.isEditing = false;
+    return;
+  }
 
 
   /* 🔐 Zentrale Edit-Freigabe */
@@ -2070,9 +2076,12 @@ if (PROTECTED_FIELDS.includes(field)) return;
     }
   });
 
+  const autoSave = window.APP_SETTINGS?.autoSave !== false;
+  if (autoSave) {
     input.addEventListener("blur", () => {
       setTimeout(commit, 0);
     });
+  }
 
   btn.addEventListener("click", commit);
 }
@@ -2136,21 +2145,28 @@ renderKE = function () {
       lastCat = row.cat;
     }
 
+    const hasClone = row._isDefault && data.some(r =>
+      r._isClone &&
+      r.cat === row.cat &&
+      r.material === row.material &&
+      r.enummer === row.enummer
+    );
+
     tableBody.innerHTML += `
       <!-- ➕ LINKS -->
-      <tr class="data-row ${row._isDefault ? "default-row" : ""}">
+      <tr class="data-row ${row._isDefault ? "default-row" : ""} ${hasClone ? "std-has-clone" : ""}">
         <td class="row-action left">
           <span class="row-btn add" onclick="addRowAfter(${index})">➕</span>
         </td>
 
-        ${cell(row.material, index, "material")}
-        ${cell(row.enummer, index, "enummer")}
-        ${cell(row.charge, index, "charge")}
-        ${cell(row.palette, index, "palette")}
-        ${cell(row.wahrendatum, index, "wahrendatum")}
-        ${cell(row.shelf, index, "shelf")}
-        ${cell(row.bestand, index, "bestand")}
-        ${cell(row.bemerkung, index, "bemerkung")}
+        ${cell(row.material, index, "material", row)}
+        ${cell(row.enummer, index, "enummer", row)}
+        ${cell(row.charge, index, "charge", row)}
+        ${cell(row.palette, index, "palette", row)}
+        ${cell(row.wahrendatum, index, "wahrendatum", row)}
+        ${cell(row.shelf, index, "shelf", row)}
+        ${cell(row.bestand, index, "bestand", row)}
+        ${cell(row.bemerkung, index, "bemerkung", row)}
         <!-- ➖ RECHTS -->
         <td class="row-action right">
           ${
@@ -2926,6 +2942,15 @@ function compareByField(a, b, field) {
 function sortKEBy(field) {
   const dir = keSortState[field] || 1;
 
+  const defaultOrder = new Map();
+  defaultData.forEach((row, idx) => {
+    const key = `${row.cat}||${row.material}||${row.enummer}`;
+    if (!defaultOrder.has(key)) defaultOrder.set(key, idx);
+  });
+
+  const originalIndex = new Map();
+  data.forEach((row, idx) => originalIndex.set(row, idx));
+
   /* 🔹 1. Nach Kategorien gruppieren */
   const categoryMap = new Map();
 
@@ -2937,7 +2962,35 @@ function sortKEBy(field) {
 
   /* 🔹 2. Innerhalb jeder Kategorie sortieren */
   categoryMap.forEach(rows => {
-    rows.sort((a, b) => compareByField(a, b, field) * dir);
+    // Default-Reihenfolge fix, Klone nur innerhalb ihres Materials sortieren
+    const defaults = rows.filter(r => r._isDefault);
+    const clones = rows.filter(r => !r._isDefault);
+
+    defaults.sort((a, b) => {
+      const keyA = `${a.cat}||${a.material}||${a.enummer}`;
+      const keyB = `${b.cat}||${b.material}||${b.enummer}`;
+      return (defaultOrder.get(keyA) ?? 99999) - (defaultOrder.get(keyB) ?? 99999);
+    });
+
+    const used = new Set();
+    const result = [];
+
+    defaults.forEach(def => {
+      result.push(def);
+      const rel = clones.filter(c =>
+        c.cat === def.cat &&
+        c.material === def.material &&
+        c.enummer === def.enummer
+      );
+      rel.sort((a, b) => compareByField(a, b, field) * dir);
+      rel.forEach(c => used.add(c));
+      result.push(...rel);
+    });
+
+    const orphan = clones.filter(c => !used.has(c));
+    orphan.sort((a, b) => compareByField(a, b, field) * dir);
+    rows.length = 0;
+    rows.push(...result, ...orphan);
   });
 
   /* 🔹 3. data ARRAY NEU ZUSAMMENSETZEN (Kategorie-Reihenfolge bleibt!) */
@@ -2998,11 +3051,7 @@ if (mobileSortField && mobileSortDirBtn) {
 }
 
 
-document.getElementById("keSort-material")?.addEventListener("click", () => sortKEBy("material"));
-document.getElementById("keSort-enummer")?.addEventListener("click", () => sortKEBy("enummer"));
-document.getElementById("keSort-charge")?.addEventListener("click", () => sortKEBy("charge"));
 document.getElementById("keSort-shelf")?.addEventListener("click", () => sortKEBy("shelf"));
-document.getElementById("keSort-bemerkung")?.addEventListener("click", () => sortKEBy("bemerkung"));
 
 
 /* =========================

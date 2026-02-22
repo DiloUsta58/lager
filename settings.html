@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lagerverwaltung – Einstellungen</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="icons/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16x16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32x32.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon-180x180.png">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1f4fd8">
+  <style>
+    :root {
+      --settings-bg-1: var(--bg);
+      --settings-bg-2: var(--bg-card);
+      --settings-ink: var(--text);
+      --settings-muted: rgba(31, 41, 55, 0.7);
+      --settings-card: var(--bg-card);
+      --settings-border: var(--border);
+      --settings-accent: var(--accent);
+      --settings-accent-2: var(--accent-soft);
+      --settings-shadow: 0 10px 30px rgba(2, 6, 23, 0.08);
+      --settings-radius: 18px;
+      --settings-font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      --settings-display: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    [data-theme="dark"] {
+      --settings-muted: rgba(229, 231, 235, 0.7);
+      --settings-shadow: 0 12px 34px rgba(0, 0, 0, 0.35);
+    }
+
+    body {
+      background:
+        radial-gradient(1200px 600px at 10% -10%, rgba(5, 185, 59, 0.12), transparent 60%),
+        radial-gradient(1200px 600px at 110% 0%, rgba(37, 99, 235, 0.10), transparent 50%),
+        linear-gradient(180deg, var(--settings-bg-1), var(--settings-bg-2));
+      color: var(--settings-ink);
+      font-family: var(--settings-font);
+      min-height: 100vh;
+    }
+
+    #app {
+      display: block;
+      max-width: 1100px;
+      margin: 32px auto 80px;
+      padding: 0 20px;
+    }
+
+    .settings-hero {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 24px;
+      align-items: stretch;
+      margin-bottom: 28px;
+    }
+
+    .settings-hero-card {
+      background: var(--settings-card);
+      border: 1px solid var(--settings-border);
+      border-radius: var(--settings-radius);
+      padding: 26px 28px;
+      box-shadow: var(--settings-shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .settings-hero-card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(120deg, transparent 0%, rgba(37, 99, 235, 0.08) 50%, transparent 100%);
+      pointer-events: none;
+    }
+
+    .settings-title {
+      font-family: var(--settings-display);
+      font-size: 36px;
+      margin: 0 0 10px;
+      letter-spacing: 0.3px;
+    }
+
+    .settings-subtitle {
+      margin: 0;
+      color: var(--settings-muted);
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    .settings-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+
+    .settings-btn {
+      border: 1px solid var(--settings-border);
+      background: var(--settings-card);
+      color: var(--settings-ink);
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 120ms ease, border-color 120ms ease;
+    }
+
+    .settings-btn.primary {
+      background: var(--settings-accent);
+      color: #fff;
+      border-color: transparent;
+    }
+
+    .settings-btn:hover {
+      transform: translateY(-1px);
+      border-color: var(--settings-accent);
+    }
+
+    .settings-side {
+      background: var(--settings-card);
+      border: 1px solid var(--settings-border);
+      border-radius: var(--settings-radius);
+      padding: 22px 24px;
+      box-shadow: var(--settings-shadow);
+      display: grid;
+      gap: 14px;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(37, 99, 235, 0.12);
+      color: var(--settings-accent);
+      font-weight: 600;
+      font-size: 13px;
+      width: fit-content;
+    }
+
+    .settings-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 22px;
+    }
+
+    .settings-card {
+      background: var(--settings-card);
+      border: 1px solid var(--settings-border);
+      border-radius: var(--settings-radius);
+      padding: 22px 22px 20px;
+      box-shadow: var(--settings-shadow);
+      position: relative;
+    }
+
+    .settings-card h3 {
+      margin: 0 0 10px;
+      font-size: 18px;
+      letter-spacing: 0.2px;
+    }
+
+    .settings-card p {
+      margin: 0 0 16px;
+      color: var(--settings-muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .field {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .field label {
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--settings-muted);
+    }
+
+    .field select,
+    .field input[type="text"] {
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--settings-border);
+      background: transparent;
+      color: var(--settings-ink);
+      font-size: 14px;
+    }
+
+    [data-theme="dark"] .field select {
+      background: var(--bg-card);
+      color: #e5e7eb;
+      border-color: #333333;
+      color-scheme: dark;
+    }
+
+    [data-theme="dark"] .field select option {
+      background: var(--bg-card);
+      color: #e5e7eb;
+    }
+
+    .option-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--settings-border);
+      margin-bottom: 8px;
+      background: rgba(37, 99, 235, 0.05);
+    }
+
+    .option-row input {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      border: 1.5px solid rgba(0,0,0,0.25);
+      border-radius: 6px;
+      background: #fff;
+      box-shadow: inset 0 1px 2px rgba(0,0,0,0.08);
+      display: inline-grid;
+      place-content: center;
+      transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .option-row input::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 3px;
+      background: var(--accent);
+      transform: scale(0);
+      transition: transform 0.12s ease;
+    }
+
+    .option-row input:checked {
+      border-color: var(--accent);
+      background: #eef5ff;
+      box-shadow: 0 2px 6px rgba(37,99,235,0.25);
+    }
+
+    .option-row input:checked::before {
+      transform: scale(1);
+    }
+
+    .option-row input:hover {
+      border-color: rgba(37,99,235,0.6);
+      box-shadow: 0 2px 6px rgba(37,99,235,0.2);
+    }
+
+    .option-row input:focus-visible {
+      outline: none;
+      border-color: rgba(37,99,235,0.9);
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.2);
+    }
+
+    [data-theme="dark"] .option-row input {
+      border-color: rgba(255,255,255,0.35);
+      background: #1f1f1f;
+      box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);
+    }
+
+    [data-theme="dark"] .option-row input:hover {
+      border-color: rgba(96,165,250,0.7);
+      box-shadow: 0 2px 8px rgba(96,165,250,0.35);
+    }
+
+    [data-theme="dark"] .option-row input:focus-visible {
+      outline: none;
+      border-color: rgba(96,165,250,0.9);
+      box-shadow: 0 0 0 3px rgba(96,165,250,0.28);
+    }
+
+    [data-theme="dark"] .option-row input:checked {
+      background: rgba(96,165,250,0.15);
+      box-shadow: 0 2px 8px rgba(96,165,250,0.35);
+    }
+
+    .option-row span {
+      font-size: 14px;
+    }
+
+    .data-actions {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .data-actions .settings-btn {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .settings-footer {
+      margin-top: 26px;
+      color: var(--settings-muted);
+      font-size: 13px;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 920px) {
+      .settings-hero {
+        grid-template-columns: 1fr;
+      }
+
+      .settings-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <section class="settings-hero">
+      <div class="settings-hero-card">
+        <div class="status-pill">Einstellungen aktiv</div>
+        <h1 class="settings-title">Systemeinstellungen</h1>
+        <p class="settings-subtitle">
+          Passe die Oberfläche und den Datenfluss der Lagerverwaltung an. Alle Werte werden lokal gespeichert
+          und sofort übernommen.
+        </p>
+        <div class="settings-actions">
+          <button class="settings-btn primary" type="button" onclick="location.href='index.html'">Zurück zur Übersicht</button>
+          <button class="settings-btn" type="button" id="applyThemeNow">Theme erneut anwenden</button>
+        </div>
+      </div>
+      <div class="settings-side">
+        <div>
+          <strong>Aktives Theme</strong>
+          <div id="activeThemeLabel">Light</div>
+        </div>
+        <div>
+          <strong>Schriftgröße</strong>
+          <div id="activeFontLabel">16px</div>
+        </div>
+        <div>
+          <strong>Status</strong>
+          <div>Lokale Speicherung aktiv</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="settings-grid">
+      <div class="settings-card">
+        <h3>Schriftgröße</h3>
+        <p>Wähle die Schriftgröße für Tabellen und Oberfläche. Der aktuelle Wert wird sofort angezeigt.</p>
+        <div class="field">
+          <label for="fontSizeSelect">Aktuelle Größe: <span id="fontSizeValue">16px</span></label>
+          <select id="fontSizeSelect">
+            <option value="6">6px</option>
+            <option value="7">7px</option>
+            <option value="8">8px</option>
+            <option value="9">9px</option>
+            <option value="10">10px</option>
+            <option value="11">11px</option>
+            <option value="12">12px</option>
+            <option value="13">13px</option>
+            <option value="14">14px</option>
+            <option value="15">15px</option>
+            <option value="16">16px</option>
+          </select>
+        </div>
+        <button class="settings-btn primary" id="fontSizeSave" type="button">Speichern</button>
+      </div>
+
+      <div class="settings-card">
+        <h3>Oberfläche</h3>
+        <p>Steuere Anzeigeoptionen, die deinen Alltag erleichtern.</p>
+        <div class="option-row">
+          <input type="checkbox" id="autoSaveSetting" checked>
+          <span>Änderungen automatisch speichern</span>
+        </div>
+        <div class="option-row">
+          <input type="checkbox" id="showHintsSetting">
+          <span>Hinweise anzeigen</span>
+        </div>
+        <div class="option-row">
+          <input type="checkbox" id="compactModeSetting">
+          <span>Kompakte Tabellenansicht</span>
+        </div>
+        <button class="settings-btn primary" type="button">Speichern</button>
+      </div>
+
+      <div class="settings-card">
+        <h3>Daten (geänderte Zellen)</h3>
+        <p>Verwalte markierte Änderungen und speichere sie dauerhaft.</p>
+        <div class="data-actions">
+          <button class="settings-btn" type="button">Geänderte Zellen anzeigen</button>
+          <button class="settings-btn primary" type="button">Änderungen speichern</button>
+          <button class="settings-btn" type="button">Änderungen laden</button>
+        </div>
+      </div>
+
+      <div class="settings-card">
+        <h3>System</h3>
+        <p>Kurze Zusammenfassung und schnelle Aktionen.</p>
+        <div class="field">
+          <label>Letztes Speichern</label>
+          <input type="text" value="Lokaler Speicher" readonly>
+        </div>
+        <div class="field">
+          <label>Status</label>
+          <input type="text" value="Bereit" readonly>
+        </div>
+        <button class="settings-btn" type="button">System prüfen</button>
+      </div>
+    </section>
+
+    <div class="settings-footer">
+      <span>Diese Seite verwendet die gespeicherten Theme- und Schriftgrößenwerte.</span>
+      <span>© Lagerverwaltung</span>
+    </div>
+  </div>
+
+  <script>
+    (function initTheme() {
+      const saved = localStorage.getItem("theme");
+      const label = document.getElementById("activeThemeLabel");
+      if (saved === "dark") {
+        document.documentElement.setAttribute("data-theme", "dark");
+        if (label) label.textContent = "Dark";
+      } else {
+        document.documentElement.removeAttribute("data-theme");
+        if (label) label.textContent = "Light";
+      }
+    })();
+
+    (function initFontSize() {
+      const defaultPx = 16;
+      const stored = parseInt(localStorage.getItem("fontSizePx"), 10);
+      const current = Number.isFinite(stored) ? stored : defaultPx;
+
+      const root = document.documentElement;
+      const valueEl = document.getElementById("fontSizeValue");
+      const select = document.getElementById("fontSizeSelect");
+      const btnSave = document.getElementById("fontSizeSave");
+      const sideLabel = document.getElementById("activeFontLabel");
+
+      function apply(px) {
+        root.style.setProperty("--ui-font-size", px + "px");
+        if (valueEl) valueEl.textContent = px + "px";
+        if (sideLabel) sideLabel.textContent = px + "px";
+      }
+
+      select.value = String(current);
+      apply(current);
+
+      select.addEventListener("change", () => {
+        const v = parseInt(select.value, 10);
+        if (!Number.isFinite(v)) return;
+        apply(v);
+      });
+
+      btnSave.addEventListener("click", () => {
+        const v = parseInt(select.value, 10);
+        if (!Number.isFinite(v)) return;
+        localStorage.setItem("fontSizePx", String(v));
+      });
+    })();
+
+    (function initUiSettings() {
+      const autoSaveEl = document.getElementById("autoSaveSetting");
+      const showHintsEl = document.getElementById("showHintsSetting");
+      const compactModeEl = document.getElementById("compactModeSetting");
+
+      const autoSave = localStorage.getItem("ui_autoSave");
+      const showHints = localStorage.getItem("ui_showHints");
+      const compactMode = localStorage.getItem("ui_compactMode");
+
+      autoSaveEl.checked = autoSave !== "false";
+      showHintsEl.checked = showHints !== "false";
+      compactModeEl.checked = compactMode === "true";
+
+      function persist() {
+        localStorage.setItem("ui_autoSave", String(autoSaveEl.checked));
+        localStorage.setItem("ui_showHints", String(showHintsEl.checked));
+        localStorage.setItem("ui_compactMode", String(compactModeEl.checked));
+      }
+
+      autoSaveEl.addEventListener("change", persist);
+      showHintsEl.addEventListener("change", persist);
+      compactModeEl.addEventListener("change", persist);
+      persist();
+    })();
+
+    document.getElementById("applyThemeNow")?.addEventListener("click", () => {
+      const saved = localStorage.getItem("theme");
+      if (saved === "dark") {
+        document.documentElement.setAttribute("data-theme", "dark");
+      } else {
+        document.documentElement.removeAttribute("data-theme");
+      }
+    });
+  </script>
+</body>
+</html>
