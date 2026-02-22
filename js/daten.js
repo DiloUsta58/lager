@@ -2770,6 +2770,41 @@ window.addEventListener("DOMContentLoaded", () => {
   el.textContent = formatted;
 });
 
+// Mobile: Material-Zelle kurz vollständig anzeigen (Popup)
+function showMaterialPopup(text) {
+  if (!text) return;
+  let popup = document.getElementById("materialPopup");
+  if (!popup) {
+    popup = document.createElement("div");
+    popup.id = "materialPopup";
+    popup.className = "material-popup";
+    document.body.appendChild(popup);
+  }
+
+  popup.textContent = text;
+  popup.classList.add("show");
+
+  clearTimeout(popup._hideTimer);
+  popup._hideTimer = setTimeout(() => {
+    popup.classList.remove("show");
+  }, 5000);
+}
+
+document.addEventListener("click", (e) => {
+  if (!window.matchMedia("(max-width: 1024px)").matches) return;
+  if (e.target.closest(".edit-icon")) return;
+
+  const cell = e.target.closest("#keSection .KE-table td");
+  if (!cell) return;
+  const row = cell.parentElement;
+  if (!row || !row.classList.contains("data-row")) return;
+  if (cell.cellIndex !== 1) return; // Material-Spalte
+
+  const span = cell.querySelector(".edit-wrapper span");
+  const text = span ? span.textContent.trim() : cell.textContent.trim();
+  showMaterialPopup(text);
+});
+
 /* Aktivität richtig registrieren */
 ["click", "keydown", "mousemove", "scroll"].forEach(evt => {
   document.addEventListener(evt, registerUserActivity, true);
