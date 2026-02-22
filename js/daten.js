@@ -2771,7 +2771,7 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 
 // Mobile: Material-Zelle kurz vollständig anzeigen (Popup)
-function showMaterialPopup(text) {
+function showMaterialPopup(text, anchorRect) {
   if (!text) return;
   let popup = document.getElementById("materialPopup");
   if (!popup) {
@@ -2782,6 +2782,15 @@ function showMaterialPopup(text) {
   }
 
   popup.textContent = text;
+  if (anchorRect) {
+    const top = Math.max(8, anchorRect.top - 12);
+    const left = anchorRect.left + anchorRect.width / 2;
+    popup.style.top = `${top}px`;
+    popup.style.left = `${left}px`;
+  } else {
+    popup.style.top = "20px";
+    popup.style.left = "50%";
+  }
   popup.classList.add("show");
 
   clearTimeout(popup._hideTimer);
@@ -2790,7 +2799,7 @@ function showMaterialPopup(text) {
   }, 5000);
 }
 
-document.addEventListener("click", (e) => {
+function handleMaterialTap(e) {
   if (!window.matchMedia("(max-width: 1024px)").matches) return;
   if (e.target.closest(".edit-icon")) return;
 
@@ -2802,8 +2811,11 @@ document.addEventListener("click", (e) => {
 
   const span = cell.querySelector(".edit-wrapper span");
   const text = span ? span.textContent.trim() : cell.textContent.trim();
-  showMaterialPopup(text);
-});
+  showMaterialPopup(text, cell.getBoundingClientRect());
+}
+
+document.addEventListener("click", handleMaterialTap);
+document.addEventListener("touchstart", handleMaterialTap, { passive: true });
 
 /* Aktivität richtig registrieren */
 ["click", "keydown", "mousemove", "scroll"].forEach(evt => {
