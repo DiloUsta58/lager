@@ -2016,6 +2016,31 @@ mark.hit.active-hit {
   .column-toggle-grid button {
     width: 100%;
   }
+
+  /* KE: Material-Zelle kürzen auf Mobile */
+  #keSection .KE-table td:nth-child(2) {
+    max-width: 20ch;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  #keSection .KE-table td:nth-child(2) .edit-wrapper span {
+    display: inline-block;
+    max-width: 20ch;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: bottom;
+  }
+
+  /* Tabellenüberschriften: max 10 Zeichen auf Mobile */
+  .lager-table thead th {
+    max-width: 10ch;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
 
 

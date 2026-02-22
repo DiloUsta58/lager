@@ -340,6 +340,14 @@ function toggleFSColumn(colIndex, visible) {
   });
 }
 
+function formatENummerDisplayFS(value) {
+  const str = String(value ?? "");
+  if (!str) return "";
+  if (!window.matchMedia("(max-width: 1024px)").matches) return str;
+  if (str.length <= 4) return str;
+  return "…" + str.slice(4);
+}
+
 /* =========================
    RENDERING
 ========================= */
@@ -386,7 +394,7 @@ function renderFS() {
         </td>
 
         ${fsCell(
-          highlightText(r.eNummer || "", globalSearchTerm),
+          highlightText(formatENummerDisplayFS(r.eNummer || ""), globalSearchTerm),
           i,
           "eNummer",
           "E-Nummer"
@@ -550,4 +558,3 @@ function resetFS() {
   localStorage.setItem(FS_KEY, JSON.stringify(fsData));
   renderFS();
 }
-

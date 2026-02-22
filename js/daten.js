@@ -1019,7 +1019,7 @@ function renderInventur() {
       <tr class="${r.gesamt ? 'inventory-sum' : ''}">
         <td>${highlightText(r.source, globalSearchTerm)}</td>
         <td>${highlightText(r.beschreibung, globalSearchTerm)}</td>
-        <td>${highlightText(r.eNummer, globalSearchTerm)}</td>
+        <td>${highlightText(formatENummerDisplay(r.eNummer), globalSearchTerm)}</td>
         <td>${highlightText(r.charge, globalSearchTerm)}</td>
         <td>${highlightText(r.palette, globalSearchTerm)}</td>
         <td>${r.bestand}</td>
@@ -1324,6 +1324,14 @@ function highlightText(text, term) {
   return String(text).replace(r, `<mark class="hit">$1</mark>`);
 }
 
+function formatENummerDisplay(value) {
+  const str = String(value ?? "");
+  if (!str) return "";
+  if (!window.matchMedia("(max-width: 1024px)").matches) return str;
+  if (str.length <= 4) return str;
+  return "…" + str.slice(4);
+}
+
 
 
 /* =====================================================
@@ -1416,7 +1424,7 @@ function renderHistoryKE() {
         <td>${time}</td>
         <td>${r.cat || ""}</td>
         <td>${r.material || ""}</td>
-        <td>${r.e || ""}</td>
+        <td>${formatENummerDisplay(r.e || "")}</td>
         <td>${r.charge || ""}</td>
         <td>${r.palette || ""}</td>
         <td>${r.shelf || ""}</td>
@@ -1784,6 +1792,9 @@ function removeRow(index) {
    KE – INLINE EDIT
 ===================================================== */
 function cell(value, index, field, row) {
+  if (field === "enummer") {
+    value = formatENummerDisplay(value);
+  }
   const protectedField = PROTECTED_FIELDS.includes(field);
   const isDefaultRow = !!row?._isDefault;
   const canEdit = !isDefaultRow && !protectedField;
