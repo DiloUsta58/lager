@@ -2765,21 +2765,14 @@ function showMaterialPopup(text, anchorRect) {
   }
 
   popup.textContent = text;
-  if (anchorRect) {
-    const top = Math.max(8, anchorRect.top - 12);
-    const left = anchorRect.left + anchorRect.width / 2;
-    popup.style.top = `${top}px`;
-    popup.style.left = `${left}px`;
-  } else {
-    popup.style.top = "20px";
-    popup.style.left = "50%";
-  }
+  popup.style.top = "50%";
+  popup.style.left = "50%";
   popup.classList.add("show");
 
   clearTimeout(popup._hideTimer);
   popup._hideTimer = setTimeout(() => {
     popup.classList.remove("show");
-  }, 5000);
+  }, 3000);
 }
 
 function handleMaterialTap(e) {
@@ -2794,7 +2787,7 @@ function handleMaterialTap(e) {
 
   const span = cell.querySelector(".edit-wrapper span");
   const text = span ? span.textContent.trim() : cell.textContent.trim();
-  showMaterialPopup(text, cell.getBoundingClientRect());
+  showMaterialPopup(text);
 }
 
 document.addEventListener("click", handleMaterialTap);

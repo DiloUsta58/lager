@@ -18,23 +18,28 @@ document.addEventListener("DOMContentLoaded", () => {
   if (!search || !clear || !searchNav) return;
 
   function updateNav() {
-    searchNav.style.display = hasSearchHits() ? "flex" : "none";
+    const count =
+      typeof window.hasSearchHits === "function"
+        ? (window.hasSearchHits() ? document.querySelectorAll("mark.hit, mark.search-hit").length : 0)
+        : document.querySelectorAll("mark.hit, mark.search-hit").length;
+    searchNav.style.display = count > 1 ? "flex" : "none";
   }
 
   /* INPUT */
 let searchTimeout;
 
-search.addEventListener("input", () => {
-  clear.style.display = search.value ? "inline" : "none";
+  search.addEventListener("input", () => {
+    clear.style.display = search.value ? "inline" : "none";
 
-  if (AppState.isEditing) return;
+    if (AppState.isEditing) return;
 
-  clearTimeout(searchTimeout);
-  searchTimeout = setTimeout(() => {
-    App.performSearch(search.value);
-    updateNav();
-  }, 120);
-});
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+      App.performSearch(search.value);
+      requestAnimationFrame(updateNav);
+      setTimeout(updateNav, 200);
+    }, 120);
+  });
 
 
 

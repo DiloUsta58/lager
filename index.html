@@ -66,10 +66,15 @@
   <h2 id="appTitle"><span id="appVersion"></span></h2>
 
       <div class="top-bar">
+        <div class="menu-wrap">
+          <button class="menu-toggle btn" type="button" aria-haspopup="true" aria-expanded="false">
+            ☰ Menü
+          </button>
+          <div class="menu-panel" role="menu" aria-label="Hauptmenü">
             <!-- Logout sperrt die komplette Liste wieder -->
-            <button class="btn" onclick="logout()">🔒Logout</button>
-            <button class="btnExport" onclick="exportAllData()">EXPORT DATEN</button>
-            
+            <button class="btn" role="menuitem" onclick="logout()">🔒Logout</button>
+            <button class="btnExport" role="menuitem" onclick="exportAllData()">EXPORT DATEN</button>
+
             <input
               type="file"
               id="importFile"
@@ -77,16 +82,18 @@
               hidden
               onchange="importAllData()"
             >
-            <button class="btnImport" onclick="document.getElementById('importFile').click()">
+            <button class="btnImport" role="menuitem" onclick="document.getElementById('importFile').click()">
               IMPORT DATEN!
             </button>
-            
+
             <!-- Key-Freischaltung 
             <input class="inputs" id="keyInput" type="password" placeholder="Key eingeben">
             <button id="editToggleBtn" class="btn" onclick="toggleEditing()">🔓 Freischalten</button>-->
-            <button id="themeToggleBtn" class="btn-primary" onclick="toggleTheme()">🌙 Dark Mode</button>
-            <button class="btn" onclick="location.href='settings.html'" aria-label="Einstellungen">⚙️</button>
-    </div>
+            <button id="themeToggleBtn" class="btn-primary" role="menuitem" onclick="toggleTheme()">🌙 Dark Mode</button>
+            <button class="btn" role="menuitem" onclick="location.href='settings.html'" aria-label="Einstellungen">⚙️ Optionen</button>
+          </div>
+        </div>
+      </div>
 
       <div class="top-bar-right">
           <button  id="resetMaterialDataBtn"  class="admin-btn danger"  onclick="resetMaterialData()">  Initialdaten neu laden</button>
@@ -105,7 +112,7 @@
 
       <hr>
 
-        <div class="tab-bar">
+        <div class="tab-bar tab-style-pill">
           <button class="tab-btn" data-tab="ke" data-label="Material / Rohstoff Liste">Material / Rohstoff Liste</button>
           <button class="tab-btn" data-tab="fs" data-label="FS-Tiegel Liste">FS-Tiegel Liste</button>
           <button class="tab-btn" data-tab="fm" data-label="FM-Schleifbänder">FM-Schleifbänder</button>
@@ -195,11 +202,7 @@
                         onclick="resetKE()">
                   Tabelle Leeren
                 </button>
-                  <button id="ResetKESortBtn"
-                          class="ResetSortKEBtn"
-                          onclick="resetKESort()">
-                    Sortierung zurücksetzen
-                  </button>                
+              
               </div>
             </div>
         <center>
@@ -483,8 +486,9 @@
        </section>
   </div>
 
-<hr>
+<br>
      <footer>
+        <img class="footer-logo" src="icons/favicon-32x32.png" alt="Logo">
         <div id="kimlik">© Dilaver Bölükbaşı</div>
         <div id="lastUpdate" style="display:none;"></div>
         <span id="footerVersion">Version: …</span>
@@ -516,6 +520,30 @@
 
     document.body.classList.toggle("hints-off", !window.APP_SETTINGS.showHints);
     document.body.classList.toggle("compact-mode", window.APP_SETTINGS.compactMode);
+  })();
+  (function initMenu() {
+    const wrap = document.querySelector(".menu-wrap");
+    const toggle = document.querySelector(".menu-toggle");
+    if (!wrap || !toggle) return;
+
+    toggle.addEventListener("click", () => {
+      const open = wrap.classList.toggle("open");
+      toggle.setAttribute("aria-expanded", open ? "true" : "false");
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!wrap.classList.contains("open")) return;
+      if (wrap.contains(e.target)) return;
+      wrap.classList.remove("open");
+      toggle.setAttribute("aria-expanded", "false");
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key !== "Escape") return;
+      if (!wrap.classList.contains("open")) return;
+      wrap.classList.remove("open");
+      toggle.setAttribute("aria-expanded", "false");
+    });
   })();
 </script>
 
