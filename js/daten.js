@@ -2044,30 +2044,6 @@ async function editCell(icon, index, field) {
 
     if (newValue !== oldValue) {
 
-      /* 🔍 Duplikatprüfung */
-      if (field === "charge" || field === "palette") {
-
-        const testCharge =
-          field === "charge" ? newValue : data[index].charge;
-        const testPalette =
-          field === "palette" ? newValue : data[index].palette;
-
-        const dupIndex = data.findIndex((row, i) =>
-          i !== index &&
-          String(row.charge).trim() === String(testCharge).trim() &&
-          String(row.palette).trim() === String(testPalette).trim()
-        );
-
-        if (dupIndex !== -1) {
-          alert(`Eintrag bereits vorhanden (Zeile ${dupIndex + 1})`);
-          scrollToKERow(dupIndex);
-          AppState.isEditing = false;   
-          renderKE();
-          reapplyKEColumns();
-          return;
-        }
-      }
-
       /* ✅ Speichern */
       data[index][field] = newValue;
       save();
