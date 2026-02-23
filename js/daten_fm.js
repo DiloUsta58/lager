@@ -553,14 +553,22 @@ async function editFM(icon, rowIndex, field) {
 
   const input = td.querySelector(".cell-input");
 
-      /* 🔧 Nur Zahlen für Bestand */
+    /* 🔧 Bestand: Dezimalzahl mit 2 Stellen */
     if (field === "bestand") {
+      input.setAttribute("inputmode", "decimal");
+      input.setAttribute("pattern", "[0-9]+([,.][0-9]{0,2})?");
       input.addEventListener("input", () => {
-        let v = input.value.replace(/\D/g, ""); // alles außer Ziffern entfernen
-
-        // Optional: führende Nullen entfernen
-        if (v.length > 1) v = v.replace(/^0+/, "");
-
+        let v = input.value;
+        v = v.replace(/\./g, ",").replace(/[^\d,]/g, "");
+        const parts = v.split(",");
+        const intPart = parts[0] || "";
+        const decPart = parts[1] ? parts[1].slice(0, 2) : "";
+        const endsWithComma = v.endsWith(",");
+        if (decPart !== "" || endsWithComma) {
+          v = `${intPart},${decPart}`;
+        } else {
+          v = intPart;
+        }
         input.value = v;
       });
     }
@@ -680,4 +688,3 @@ function resetFM() {
   fmData = structuredClone(DEFAULT_FM_DATA);
   renderFM();
 }
-
