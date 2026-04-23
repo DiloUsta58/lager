@@ -2795,7 +2795,8 @@ window.addEventListener("DOMContentLoaded", () => {
   const hh = String(lastModified.getHours()).padStart(2, "0");
   const min = String(lastModified.getMinutes()).padStart(2, "0");
   const formatted = `${dd}.${mm}.${yyyy} ( ${hh}:${min} )`;
-  el.textContent = formatted;
+  el.textContent = `Update Datum: ${formatted}`;
+  el.dataset.formatted = "true";
 });
 
 // Mobile: Material-Zelle kurz vollständig anzeigen (Popup)

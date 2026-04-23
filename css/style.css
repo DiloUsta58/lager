@@ -142,25 +142,31 @@ body.hints-off .hint-bar {
   display: none;
 }
 
-footer {
-  margin-top: 20px;
+.app-footer {
   margin-top: auto;
-  padding: 12px 18px;
-  border-top: 1px solid var(--border);
-  background: var(--bg-card);
-  color: var(--text);
+  position: relative;
+  z-index: 30;
   display: flex;
   align-items: center;
   justify-content: center;
-  text-align: center;
-  gap: 12px;
-  border-radius: 10px;
+  width: 100%;
+  gap: 10px;
+  min-height: 34px;
+  padding: 8px 12px;
+  box-sizing: border-box;
+  background: #172345;
+  border-top: 1px solid rgba(255,255,255,0.12);
+  color: #dbe6ff;
+  font-size: 12px;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 .footer-logo {
-  width: 20px;
-  height: 20px;
-  opacity: 0.9;
+  width: 16px;
+  height: 16px;
+  opacity: 0.95;
 }
 
 #kimlik {
@@ -169,20 +175,69 @@ footer {
 }
 
 #lastUpdate {
-  color: var(--textColorSum);
+  color: #dbe6ff;
   font-size: 12px;
 }
 
 #footerVersion {
   font-size: 12px;
-  opacity: 0.8;
+  color: #dbe6ff;
+}
+
+#updateStatus {
+  font-size: 12px;
 }
 
 @media (max-width: 768px) {
-  footer {
+  .app-footer {
     flex-direction: column;
     align-items: center;
   }
+}
+
+.update-notice {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(0,0,0,0.58);
+}
+
+.update-box {
+  width: min(420px, 100%);
+  padding: 18px;
+  border: 1px solid #3a4658;
+  border-radius: 8px;
+  background: #20242b;
+  color: #f4f7fb;
+  box-shadow: 0 20px 48px rgba(0,0,0,0.5);
+}
+
+.update-box h3 {
+  margin: 0 0 12px;
+  color: #fff;
+}
+
+.update-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.update-actions button {
+  flex: 1;
+  min-height: 38px;
+  border: 0;
+  border-radius: 6px;
+  background: #2f5597;
+  color: #fff;
+  font-weight: 700;
+}
+
+.update-actions .secondary {
+  background: #3b4250;
 }
 
 .material-popup {

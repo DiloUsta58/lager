@@ -8,14 +8,31 @@ async function sha256(text) {
     .join("");
 }
 
-const APP_VERSION = "2.6.12";  
+const APP_VERSION = "2.6.13";  
 const VERSION_KEY = "app_version";
+
+function updateAppInfoFooter() {
+  const versionEl = document.getElementById("footerVersion");
+  const releaseEl = document.getElementById("lastUpdate");
+  const statusEl = document.getElementById("updateStatus");
+
+  if (versionEl) versionEl.textContent = `Version: ${APP_VERSION}`;
+  if (releaseEl && !releaseEl.dataset.formatted) {
+    releaseEl.textContent = "Update Datum: …";
+  }
+  if (statusEl) {
+    statusEl.textContent = "Updateprüfung";
+    statusEl.className = "version-checking";
+  }
+}
 
 /* =====================================================
    SERVER-VERSION PRÜFEN
 ===================================================== */
 async function checkServerVersion() {
   const versionEl = document.getElementById("appVersion");
+  const statusEl = document.getElementById("updateStatus");
+  updateAppInfoFooter();
 
   try {
     const res = await fetch("https://dilousta58.github.io/lager/version.json", {
@@ -24,6 +41,10 @@ async function checkServerVersion() {
 
     if (!res.ok) {
       versionEl.className = "version-checking";
+      if (statusEl) {
+        statusEl.textContent = "Update offline";
+        statusEl.className = "version-checking";
+      }
       return;
     }
 
@@ -32,18 +53,34 @@ async function checkServerVersion() {
 
     if (!serverV) {
       versionEl.className = "version-checking";
+      if (statusEl) {
+        statusEl.textContent = "Update offline";
+        statusEl.className = "version-checking";
+      }
       return;
     }
 
     if (serverV === APP_VERSION) {
       versionEl.className = "version-ok";     // grün
+      if (statusEl) {
+        statusEl.textContent = "Aktuell";
+        statusEl.className = "version-ok";
+      }
     } else {
       versionEl.className = "version-outdated"; // rot
+      if (statusEl) {
+        statusEl.textContent = "Update verfügbar";
+        statusEl.className = "version-outdated";
+      }
       showServerUpdateNotice(APP_VERSION, serverV, data.changelog, data.apkUrl);
     }
 
   } catch (err) {
     versionEl.className = "version-checking"; // gelb
+    if (statusEl) {
+      statusEl.textContent = "Update offline";
+      statusEl.className = "version-checking";
+    }
   }
 }
 
@@ -52,6 +89,7 @@ async function checkServerVersion() {
    SERVER-UPDATE-HINWEIS ANZEIGEN
 ===================================================== */
 function showServerUpdateNotice(localV, serverV, changelog, apkUrl) {
+  document.querySelector(".update-notice")?.remove();
   const box = document.createElement("div");
   box.className = "update-notice";
   box.innerHTML = `
@@ -60,11 +98,15 @@ function showServerUpdateNotice(localV, serverV, changelog, apkUrl) {
       <p>Installiert: <b>${localV}</b></p>
       <p>Server-Version: <b>${serverV}</b></p>
       ${changelog ? `<p>Änderungen: ${changelog}</p>` : ""}
-      <button id="updateNowBtn">Jetzt aktualisieren</button>
+      <div class="update-actions">
+        <button id="updateNowBtn" type="button">Jetzt aktualisieren</button>
+        <button id="updateLaterBtn" class="secondary" type="button">Später</button>
+      </div>
     </div>
   `;
   document.body.appendChild(box);
 
+  document.getElementById("updateLaterBtn").onclick = () => box.remove();
   document.getElementById("updateNowBtn").onclick = () => {
     if (!apkUrl) {
       alert("Keine APK-Download-Adresse in version.json gefunden.");
@@ -74,6 +116,11 @@ function showServerUpdateNotice(localV, serverV, changelog, apkUrl) {
     box.style.pointerEvents = "none";
     box.style.opacity = "0";
     box.style.visibility = "hidden";
+    const statusEl = document.getElementById("updateStatus");
+    if (statusEl) {
+      statusEl.textContent = "Update gestartet";
+      statusEl.className = "version-checking";
+    }
 
     window.setTimeout(() => {
       box.remove();
@@ -111,6 +158,7 @@ function checkAppVersion() {
 ===================================================== */
 
 function showUpdateNotice(oldV, newV) {
+  document.querySelector(".update-notice")?.remove();
   const box = document.createElement("div");
   box.className = "update-notice";
   box.innerHTML = `
@@ -118,11 +166,15 @@ function showUpdateNotice(oldV, newV) {
       <h3>Neue Version verfügbar</h3>
       <p>Installiert: <b>${oldV}</b></p>
       <p>Aktuell: <b>${newV}</b></p>
-      <button id="updateNowBtn">Jetzt aktualisieren</button>
+      <div class="update-actions">
+        <button id="updateNowBtn" type="button">Jetzt aktualisieren</button>
+        <button id="updateLaterBtn" class="secondary" type="button">Später</button>
+      </div>
     </div>
   `;
   document.body.appendChild(box);
 
+  document.getElementById("updateLaterBtn").onclick = () => box.remove();
   document.getElementById("updateNowBtn").onclick = () => {
     box.style.pointerEvents = "none";
     box.style.opacity = "0";
@@ -159,7 +211,7 @@ function updateVersionUI() {
   if (!versionEl) return;
 
   versionEl.textContent = `Lagerverwaltung v${APP_VERSION}`;
-  versionEl.className = "version-checking";
+  versionEl.className = "";
 }
 
 /* =====================================================
@@ -221,7 +273,7 @@ async function login(e) {
   checkAppVersion();
   checkServerVersion();
 
-  document.getElementById("lastUpdate").style.display = "block";
+  document.getElementById("lastUpdate").style.display = "inline";
   LoadingManager.step(15, "Oberfläche initialisiert…");
 
   /* =========================
@@ -372,7 +424,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const isLoggedIn = sessionStorage.getItem("loggedIn") === "true";
   const role = sessionStorage.getItem("role");
 
-  document.getElementById("footerVersion").textContent = `Version: ${APP_VERSION}`;
+  updateAppInfoFooter();
 
   if (isLoggedIn && role) {
 
@@ -381,7 +433,7 @@ document.addEventListener("DOMContentLoaded", () => {
     ========================= */
     const versionEl = document.getElementById("appVersion");
     versionEl.textContent = `Lagerverwaltung v${APP_VERSION}`;
-    versionEl.className = "version-checking";
+    versionEl.className = "";
 
     // SESSION OK → APP STARTEN
     loggedIn = true;
