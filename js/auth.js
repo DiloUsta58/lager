@@ -8,7 +8,7 @@ async function sha256(text) {
     .join("");
 }
 
-const APP_VERSION = "2.6.7";  
+const APP_VERSION = "2.6.11";  
 const VERSION_KEY = "app_version";
 
 /* =====================================================
@@ -39,7 +39,7 @@ async function checkServerVersion() {
       versionEl.className = "version-ok";     // grün
     } else {
       versionEl.className = "version-outdated"; // rot
-      showServerUpdateNotice(APP_VERSION, serverV, data.changelog);
+      showServerUpdateNotice(APP_VERSION, serverV, data.changelog, data.apkUrl);
     }
 
   } catch (err) {
@@ -51,7 +51,7 @@ async function checkServerVersion() {
 /* =====================================================
    SERVER-UPDATE-HINWEIS ANZEIGEN
 ===================================================== */
-function showServerUpdateNotice(localV, serverV, changelog) {
+function showServerUpdateNotice(localV, serverV, changelog, apkUrl) {
   const box = document.createElement("div");
   box.className = "update-notice";
   box.innerHTML = `
@@ -66,7 +66,17 @@ function showServerUpdateNotice(localV, serverV, changelog) {
   document.body.appendChild(box);
 
   document.getElementById("updateNowBtn").onclick = () => {
-    location.reload(true);
+    if (!apkUrl) {
+      alert("Keine APK-Download-Adresse in version.json gefunden.");
+      return;
+    }
+
+    if (window.AndroidLager && typeof window.AndroidLager.downloadAndInstallApk === "function") {
+      window.AndroidLager.downloadAndInstallApk(apkUrl);
+      return;
+    }
+
+    window.location.href = apkUrl;
   };
 }
 

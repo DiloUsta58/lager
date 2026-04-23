@@ -1,8 +1,8 @@
 {
-  "name": "Lagerverwaltung v2.6.6",
-  "short_name": "Lagerverwaltung v2.6.6",
+  "name": "Lagerverwaltung v2.6.8",
+  "short_name": "Lagerverwaltung v2.6.8",
   "description": "Digitale Lagerverwaltung",
-  "start_url": ".",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#f5f6f8",
   "theme_color": "#1f4fd8",
@@ -50,7 +50,7 @@
       "purpose": "maskable"
     },
     {
-      "src": "/icons/icon-maskable-512x512-soft.png",
+      "src": "icons/icon-maskable-512x512-soft.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"

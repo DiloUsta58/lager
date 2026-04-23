@@ -1337,11 +1337,50 @@ function formatENummerDisplay(value) {
 /* =====================================================
    SPALTEN TOGGLE – KE
 ===================================================== */
+const KE_COLUMN_WIDTH_WEIGHTS = [8, 26, 14, 14, 14, 16, 14, 14, 18, 8];
+
+function normalizeKEColumnLayout() {
+  const table = document.querySelector("#keSection .KE-table");
+  if (!table) return;
+
+  const headerCells = Array.from(table.querySelectorAll("thead tr:first-child > th"));
+  const visibleIndexes = headerCells
+    .map((cell, index) => ({ cell, index }))
+    .filter(item => item.cell.style.display !== "none")
+    .map(item => item.index);
+
+  if (!visibleIndexes.length) return;
+
+  const totalWeight = visibleIndexes.reduce((sum, index) => {
+    return sum + (KE_COLUMN_WIDTH_WEIGHTS[index] || 12);
+  }, 0);
+
+  const widthFor = index => `${((KE_COLUMN_WIDTH_WEIGHTS[index] || 12) / totalWeight) * 100}%`;
+
+  headerCells.forEach((cell, index) => {
+    cell.style.width = visibleIndexes.includes(index) ? widthFor(index) : "";
+  });
+
+  table.querySelectorAll("tbody tr").forEach(row => {
+    if (row.classList.contains("category")) {
+      const categoryCell = row.querySelector("td");
+      if (categoryCell) categoryCell.colSpan = visibleIndexes.length;
+      return;
+    }
+
+    Array.from(row.children).forEach((cell, index) => {
+      cell.style.width = visibleIndexes.includes(index) ? widthFor(index) : "";
+    });
+  });
+}
+
 function toggleKEColumn(colIndex, visible) {
   document.querySelectorAll(".KE-table tr").forEach(row => {
+    if (row.classList.contains("category")) return;
     const cell = row.children[colIndex];
     if (cell) cell.style.display = visible ? "" : "none";
   });
+  normalizeKEColumnLayout();
 }
 
 function reapplyKEColumns() {
@@ -2632,9 +2671,15 @@ function exportAllData() {
     { type: "application/json" }
   );
 
+  const filename = `lager_backup_${new Date().toISOString().slice(0,10)}.json`;
+  if (window.AndroidLager && typeof window.AndroidLager.saveBackup === "function") {
+    window.AndroidLager.saveBackup(JSON.stringify(payload, null, 2), filename);
+    return;
+  }
+
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = `lager_backup_${new Date().toISOString().slice(0,10)}.json`;
+  a.download = filename;
   a.click();
 }
 

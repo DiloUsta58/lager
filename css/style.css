@@ -469,11 +469,13 @@ h1, h2, h3 {
 ========================= */
 
 td.row-action {
-  width: 44px;
-  min-width: 44px;
+  width: 56px;
+  min-width: 56px;
   text-align: center;
   vertical-align: middle;
-  overflow: visible;
+  overflow: hidden;
+  padding-left: 4px !important;
+  padding-right: 4px !important;
 }
 
 td.protected .edit-icon {
@@ -518,10 +520,12 @@ tr.history-empty {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
-  min-width: 32px;
-  min-height: 32px;
+  width: 30px;
+  min-width: 30px;
+  height: 30px;
+  min-height: 30px;
   cursor: pointer;
   border-radius: 8px;
 
@@ -580,8 +584,12 @@ tr.category .row-lock {
 .lager-table {
   width: 100%;
   border-collapse: collapse;
-  background: var(--bg-card);
+  background: #ffffff;
   font-size: 14px;
+}
+
+[data-theme="dark"] .lager-table {
+  background: #1e1e1e;
 }
 
 /* Schriftgröße nur für Haupttabellen */
@@ -1514,11 +1522,14 @@ th:nth-child(7) {   /* Summe */
   width: 100%;
 }
 
-/* Material – Ellipsis */
+/* Material – vollständig lesbar mit Zeilenumbruch */
 #keSection td:nth-child(2) {
-  overflow: hidden;
-  text-overflow: ellipsis;
-
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal !important;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  line-height: 1.25;
 }
 
 /* + */
@@ -2209,21 +2220,25 @@ mark.hit.active-hit {
     width: 100%;
   }
 
-  /* KE: Material-Zelle kürzen auf Mobile */
+  /* KE: Material-Zelle auf Mobile/Tablet vollständig umbrechen */
   #keSection .KE-table td:nth-child(2) {
-    max-width: 20ch;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    max-width: none;
+    white-space: normal !important;
+    overflow: visible;
+    text-overflow: clip;
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 
   #keSection .KE-table td:nth-child(2) .edit-wrapper span {
-    display: inline-block;
-    max-width: 20ch;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    vertical-align: bottom;
+    display: inline;
+    max-width: none;
+    white-space: normal !important;
+    overflow: visible;
+    text-overflow: clip;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    vertical-align: baseline;
   }
 
   /* Tabellenüberschriften: max 10 Zeichen auf Mobile */
