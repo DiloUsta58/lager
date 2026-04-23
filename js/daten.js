@@ -1313,6 +1313,10 @@ function updatePrintDate() {
 
 function printTable() {
   updatePrintDate();
+  if (window.AndroidLager && typeof window.AndroidLager.printPage === "function") {
+    window.AndroidLager.printPage();
+    return;
+  }
   window.print();
 }
 
