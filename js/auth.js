@@ -8,7 +8,7 @@ async function sha256(text) {
     .join("");
 }
 
-const APP_VERSION = "2.6.11";  
+const APP_VERSION = "2.6.12";  
 const VERSION_KEY = "app_version";
 
 /* =====================================================
@@ -71,12 +71,18 @@ function showServerUpdateNotice(localV, serverV, changelog, apkUrl) {
       return;
     }
 
-    if (window.AndroidLager && typeof window.AndroidLager.downloadAndInstallApk === "function") {
-      window.AndroidLager.downloadAndInstallApk(apkUrl);
-      return;
-    }
+    box.style.pointerEvents = "none";
+    box.style.opacity = "0";
+    box.style.visibility = "hidden";
 
-    window.location.href = apkUrl;
+    window.setTimeout(() => {
+      box.remove();
+      if (window.AndroidLager && typeof window.AndroidLager.downloadAndInstallApk === "function") {
+        window.AndroidLager.downloadAndInstallApk(apkUrl);
+        return;
+      }
+      window.location.href = apkUrl;
+    }, 120);
   };
 }
 
@@ -118,8 +124,14 @@ function showUpdateNotice(oldV, newV) {
   document.body.appendChild(box);
 
   document.getElementById("updateNowBtn").onclick = () => {
-    localStorage.setItem(VERSION_KEY, newV);
-    location.reload(true);
+    box.style.pointerEvents = "none";
+    box.style.opacity = "0";
+    box.style.visibility = "hidden";
+    window.setTimeout(() => {
+      box.remove();
+      localStorage.setItem(VERSION_KEY, newV);
+      location.reload(true);
+    }, 120);
   };
 }
 
